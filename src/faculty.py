@@ -1,2 +1,2 @@
 def faculty():
-    print("Menu:\nAdd\nRemove\Modify")
+    print("Menu:\nAdd\nRemove\nModify")
