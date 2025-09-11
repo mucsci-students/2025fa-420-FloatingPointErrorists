@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f8e5c83f-338a-47c9-abf9-3d9a5d64f1a8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.github/workflows/ci.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/unittests/facultytest.py" beforeDir="false" afterPath="$PROJECT_DIR$/unittests/test_faculty.py" afterDir="false" />
-    </list>
+    <list default="true" id="f8e5c83f-338a-47c9-abf9-3d9a5d64f1a8" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -77,7 +74,7 @@
       <workItem from="1757425473741" duration="1495000" />
       <workItem from="1757427013182" duration="170000" />
       <workItem from="1757427220671" duration="2276000" />
-      <workItem from="1757539710012" duration="9959000" />
+      <workItem from="1757539710012" duration="10319000" />
     </task>
     <servers />
   </component>
