@@ -1,13 +1,13 @@
 import click, json, shlex
 
 @click.group()
-def cli():
+def cli() -> None:
     """Scheduler CLI — interactive shell."""
     pass
 
 @cli.command("load-config")
 @click.argument("path", type=click.Path(exists=True))
-def load_config(path):
+def load_config(path: str) -> None:
     """Load a JSON configuration file."""
     try:
         with open(path) as config_file:
@@ -18,11 +18,11 @@ def load_config(path):
         raise click.ClickException(f"Invalid JSON: {e}")
 
 @cli.command("quit")
-def quit_program():
+def quit_program() -> None:
     """Exit the program."""
     raise SystemExit
 
-def run_shell():
+def run_shell() -> None:
     click.echo("Welcome to the Scheduler CLI!")
     click.echo("Type 'help' to see available commands, 'quit' to exit.\n")
     while True:

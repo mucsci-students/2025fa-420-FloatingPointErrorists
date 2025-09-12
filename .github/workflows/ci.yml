@@ -11,6 +11,7 @@ jobs:
           python-version: "3.13"
       - run: pip install -e .[dev]
       - run: pytest --cov=src
+      - run: mypy src
   test-windows:
     runs-on: windows-latest
     steps:
@@ -20,6 +21,7 @@ jobs:
           python-version: "3.13"
       - run: pip install -e .[dev]
       - run: pytest --cov=src
+      - run: mypy src
   test-macos:
     runs-on: macos-latest
     steps:
@@ -29,3 +31,4 @@ jobs:
           python-version: "3.13"
       - run: pip install -e .[dev]
       - run: pytest --cov=src
+      - run: mypy src
