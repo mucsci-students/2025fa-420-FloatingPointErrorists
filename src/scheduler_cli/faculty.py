@@ -1,2 +1,2 @@
-def faculty():
+def faculty() -> None:
     print("Menu:\nAdd\nRemove\nModify")

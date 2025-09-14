@@ -11,6 +11,12 @@ Ian Oister
 Valentino Pirocchi
 Tommy Nguyen
 
+Directions:
+
+- To install dev packages: `pip install -e .[dev]`
+- To install dependencies: `pip install -e .`
+- To run: `scheduler-cli`
+
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣤⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣤⣾⠿⣻⣿⠟⠁⠀⠀⠀⠀⣠⣾⡆⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⡿⠟⢉⣴⣾⠟⠁⠀⠀⠀⢀⣴⡿⠋⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀
