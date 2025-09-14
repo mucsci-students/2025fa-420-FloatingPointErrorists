@@ -5,3 +5,5 @@ __pycache__
 .idea
 *.egg-info
 *.egg-info/
+.vscode
+example.json
