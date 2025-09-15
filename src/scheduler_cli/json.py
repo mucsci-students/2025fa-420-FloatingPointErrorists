@@ -1,60 +1,60 @@
-import json
-from typing import Any
+from scheduler import load_config_from_file, CombinedConfig, SchedulerConfig
 
-"""
-Module for handling JSON configuration files.
-
-It has a class JsonConfig that can load, save, and represent JSON configurations (for now).
-
-It has fields for the file path and the configuration data itself.
-"""
 class JsonConfig:
+    """
+    Class to handle loading, saving, and displaying scheduler configuration from a JSON file.
+
+    Attributes:
+        file_path (str): The path to the JSON configuration file.
+        config (SchedulerConfig): The loaded scheduler configuration.
+
+    If you would like to modify the config in this class, take a look at: https://mucsci.github.io/Scheduler/scheduler.html#SchedulerConfig
+    """
+
     def __init__(self, file_path: str) -> None:
-        self.__file_path: str = file_path
-        with open(file_path, "r") as file:
-            self.__config = json.load(file)
+        self._file_path: str = file_path
+        self._combinedConfig: CombinedConfig = load_config_from_file(CombinedConfig, file_path)
+        self._schedulerConfig: SchedulerConfig = self._combinedConfig.config
 
-    def get_config(self) -> Any:
-        return self.__config
+    @property
+    def config(self) -> SchedulerConfig:
+        """The loaded scheduler configuration."""
+        return self._schedulerConfig
 
-    def get_file_path(self) -> str:
-        return self.__file_path
+    @property
+    def file_path(self) -> str:
+        """The path to the JSON configuration file."""
+        return self._file_path
 
     def save(self) -> None:
-        with open(self.__file_path, "w") as file:
-            json.dump(self.__config, file, indent=4)
+        """Save the current configuration back to the JSON file."""
+        with open(self._file_path, "w", encoding="utf-8") as file:
+            file.write(self._combinedConfig.model_dump_json(indent=4))
 
     def __str__(self) -> str:
-        cfg = self.__config["config"]
+        config = self._schedulerConfig
         lines = ["Rooms:"]
-        for room in cfg.get("rooms", []):
+        for room in config.rooms:
             lines.append(f"  - {room}")
         lines.append("\nLabs:")
-        for lab in cfg.get("labs", []):
+        for lab in config.labs:
             lines.append(f"  - {lab}")
         lines.append("\nCourses:")
-        for course in cfg.get("courses", []):
-            lines.append(f"  - {course['course_id']} ({course['credits']} credits)")
-            lines.append(f"\tRooms: {', '.join(course['room'])}")
-            if course["lab"]:
-                lines.append(f"\tLabs: {', '.join(course['lab'])}")
-            if course["conflicts"]:
-                lines.append(f"\tConflicts: {', '.join(course['conflicts'])}")
-            if course["faculty"]:
-                lines.append(f"\tFaculty: {', '.join(course['faculty'])}")
+        for course in config.courses:
+            lines.append(str(course))
         lines.append("\nFaculty:")
-        for faculty in cfg.get("faculty", []):
-            lines.append(f"  - {faculty['name']}")
-            lines.append(f"\tCredits: {faculty['minimum_credits']}-{faculty['maximum_credits']}")
-            lines.append(f"\tUnique course limit: {faculty['unique_course_limit']}")
-            lines.append(f"\tTimes:")
-            for day, times in faculty["times"].items():
-                if times:
-                    lines.append(f"\t{day}: {', '.join(times)}")
-            if faculty["course_preferences"]:
-                lines.append(f"\tCourse preferences: {faculty['course_preferences']}")
-            if faculty["room_preferences"]:
-                lines.append(f"\tRoom preferences: {faculty['room_preferences']}")
-            if faculty["lab_preferences"]:
-                lines.append(f"\tLab preferences: {faculty['lab_preferences']}")
+        for faculty in config.faculty:
+            lines.append(f"  - {faculty.name}")
+            lines.append(f"\tCredits: {faculty.maximum_credits}-{faculty.maximum_credits}")
+            lines.append(f"\tUnique course limit: {faculty.unique_course_limit}")
+            lines.append("\tTimes:")
+            for day in faculty.times:
+                lines.append(f"\t{day}: {', '.join(str(t) for t in faculty.times[day])}")
+                pass
+            if faculty.course_preferences:
+                lines.append(f"\tCourse preferences: {faculty.course_preferences}")
+            if faculty.room_preferences:
+                lines.append(f"\tRoom preferences: {faculty.room_preferences}")
+            if faculty.lab_preferences:
+                lines.append(f"\tLab preferences: {faculty.lab_preferences}")
         return "\n".join(lines)
