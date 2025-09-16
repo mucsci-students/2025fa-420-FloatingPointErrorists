@@ -1,7 +1,7 @@
-from .cli import run_shell
+from .cli import cli
 
 def main() -> None:
-    run_shell()
+    cli()
 
 if __name__ == "__main__":
     main()
