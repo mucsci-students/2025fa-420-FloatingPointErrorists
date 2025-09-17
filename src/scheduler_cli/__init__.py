@@ -1,3 +1,3 @@
-from .cli import cli
+from .cli import cli, run_shell
 
-__all__ = ["cli"]
+__all__ = ["cli", "run_shell"]

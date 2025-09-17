@@ -1079,7 +1079,9 @@
                 "disabled": true,
                 "start_time": null
             }
-        ]
+        ],
+        "max_time_gap": 30,
+        "min_time_overlap": 45
     },
     "limit": 100,
     "optimizer_flags": [
