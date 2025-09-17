@@ -91,7 +91,7 @@ def faculty(ctx: click.Context) -> None:
         click.echo(NO_CONFIG_LOADED)
         ctx.exit(1)
 
-@faculty.command()
+@faculty.command() # type: ignore
 @click.pass_context
 def add(ctx: click.Context) -> None:
     name = click.prompt("Faculty member's name")
@@ -100,14 +100,14 @@ def add(ctx: click.Context) -> None:
     unique_course_limit = click.prompt("Unique course limit", type=int)
 
 
-@faculty.command()
+@faculty.command() # type: ignore
 @click.argument("name")
-def delete(name):
+def delete(name: str) -> None:
     click.echo(f"Faculty '{name}' deleted.")
 
 
-@faculty.command()
+@faculty.command() # type: ignore
 @click.argument("old_name")
 @click.argument("new_name")
-def modify(old_name, new_name):
+def modify(old_name: str, new_name: str) -> None:
     click.echo(f"Faculty '{old_name}' renamed to '{new_name}'.")
