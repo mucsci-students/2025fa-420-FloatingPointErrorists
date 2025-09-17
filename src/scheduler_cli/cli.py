@@ -17,7 +17,8 @@ To utilize it for a command:
 To read up on how to use click, visit: https://click.palletsprojects.com/en/stable/
 """
 
-CONFIG_KEY = "config"
+CONFIG_KEY: str = "config"
+NO_CONFIG_LOADED: str = "No configuration loaded. Please load a configuration first."
 
 # ====== CLI Definition & General functions ======
 @shell(prompt="scheduler> ", intro="Welcome to the Scheduler CLI!\nType 'help' to see available commands, 'quit' to exit.\n") # type: ignore
@@ -25,6 +26,7 @@ CONFIG_KEY = "config"
 def cli(ctx: click.Context) -> None:
     """Scheduler CLI — interactive shell."""
     ctx.ensure_object(dict)
+    cli.add_command(faculty)
 
 def run_shell() -> None:
     """Run the interactive shell."""
@@ -34,7 +36,7 @@ def handle_sigint(signum: int, frame: types.FrameType | None) -> None:
     """Handle SIGINT (Ctrl+C) signal."""
     import sys
     click.echo("\nExiting on user interrupt (Ctrl+C).")
-    sys.exit(130)  # 130 is the conventional exit code for SIGINT
+    sys.exit(0)
 
 def apply_signal_handlers() -> None:
     """Apply signal handlers for graceful shutdown."""
@@ -61,7 +63,7 @@ def show(ctx: click.Context) -> None:
     """Show the loaded configuration."""
     config = ctx.obj.get(CONFIG_KEY)
     if not config:
-        click.echo("No configuration loaded.")
+        click.echo(NO_CONFIG_LOADED)
     else:
         click.echo(config)
 
@@ -72,9 +74,40 @@ def save(ctx: click.Context) -> None:
     try:
         config = ctx.obj.get(CONFIG_KEY)
         if not config:
-            click.echo("No configuration loaded.")
+            click.echo(NO_CONFIG_LOADED)
         else:
             config.save()
             click.echo("Configuration saved.")
     except PermissionError as e:
         raise click.ClickException(f"Permission error: {e}")
+
+# ===== Faculty shell =====
+@shell(prompt="faculty> ", intro="You may now add, modify, or delete faculty.\nType 'help' to see available commands, 'exit' to return to main shell.\n") # type: ignore
+@click.pass_context
+def faculty(ctx: click.Context) -> None:
+    """Manage faculty"""
+    config = ctx.obj.get(CONFIG_KEY)
+    if not config:
+        click.echo(NO_CONFIG_LOADED)
+        ctx.exit(1)
+
+@faculty.command()
+@click.pass_context
+def add(ctx: click.Context) -> None:
+    name = click.prompt("Faculty member's name")
+    maximum_credits = click.prompt("Maximum credit hours", type=int)
+    minimum_credits = click.prompt("Minimum credit hours", type=int)
+    unique_course_limit = click.prompt("Unique course limit", type=int)
+
+
+@faculty.command()
+@click.argument("name")
+def delete(name):
+    click.echo(f"Faculty '{name}' deleted.")
+
+
+@faculty.command()
+@click.argument("old_name")
+@click.argument("new_name")
+def modify(old_name, new_name):
+    click.echo(f"Faculty '{old_name}' renamed to '{new_name}'.")
