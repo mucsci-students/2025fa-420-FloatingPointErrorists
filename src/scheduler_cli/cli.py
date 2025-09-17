@@ -1,4 +1,5 @@
 import click
+import types
 from click_shell import shell
 from .json import JsonConfig
 
@@ -19,7 +20,7 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 CONFIG_KEY = "config"
 
 # ====== CLI Definition & General functions ======
-@shell(prompt="scheduler> ", intro="Welcome to the Scheduler CLI!\nType 'help' to see available commands, 'quit' to exit.\n")
+@shell(prompt="scheduler> ", intro="Welcome to the Scheduler CLI!\nType 'help' to see available commands, 'quit' to exit.\n") # type: ignore
 @click.pass_context
 def cli(ctx: click.Context) -> None:
     """Scheduler CLI — interactive shell."""
@@ -29,19 +30,19 @@ def run_shell() -> None:
     """Run the interactive shell."""
     cli()
 
-def handle_sigint(signum, frame):
+def handle_sigint(signum: int, frame: types.FrameType | None) -> None:
     """Handle SIGINT (Ctrl+C) signal."""
     import sys
     click.echo("\nExiting on user interrupt (Ctrl+C).")
     sys.exit(130)  # 130 is the conventional exit code for SIGINT
 
-def apply_signal_handlers():
+def apply_signal_handlers() -> None:
     """Apply signal handlers for graceful shutdown."""
     import signal
     signal.signal(signal.SIGINT, handle_sigint)
 
 # ====== JSON Commands ======
-@cli.command()
+@cli.command() # type: ignore
 @click.argument("file_path", type=click.Path(exists=True))
 @click.pass_context
 def load(ctx: click.Context, file_path: str) -> None:
@@ -54,7 +55,7 @@ def load(ctx: click.Context, file_path: str) -> None:
     except json.JSONDecodeError as e:
         raise click.ClickException(f"Invalid JSON: {e}")
 
-@cli.command()
+@cli.command() # type: ignore
 @click.pass_context
 def show(ctx: click.Context) -> None:
     """Show the loaded configuration."""
@@ -64,7 +65,7 @@ def show(ctx: click.Context) -> None:
     else:
         click.echo(config)
 
-@cli.command()
+@cli.command() # type: ignore
 @click.pass_context
 def save(ctx: click.Context) -> None:
     """Save the current configuration back to the file."""
