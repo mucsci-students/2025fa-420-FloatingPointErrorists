@@ -15,5 +15,6 @@ def add_course(json_config: JsonConfig, course_id: str, credits: int, room: list
     )
     json_config.config.courses.append(course_config)
     
-
+@staticmethod
+def del_course():
     
