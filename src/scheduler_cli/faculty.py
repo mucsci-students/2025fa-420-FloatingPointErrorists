@@ -10,14 +10,13 @@ This class allows the user to create, modify and delete faculty from the JsonCon
 
 
 class Faculty:
-    """adds a new faculty member to the config file"""
 
     @staticmethod
     def add_faculty(json_config: JsonConfig, name: str, maximum_credits: int, minimum_credits: int,
                     unique_course_limit: Annotated[int, Gt(0)],
                     times: Dict[Day, List[str]] = {}, course_preferences: Dict[str, int] = {},
                     room_preferences: Dict[str, int] = {}, lab_preferences: Dict[str, int] = {}) -> None:
-        """creates a new faculty config file"""
+        """adds a new faculty member to the config file"""
         faculty_config = FacultyConfig(
             name=name,
             maximum_credits=maximum_credits,
@@ -31,14 +30,12 @@ class Faculty:
         """adds the new faculty config to the scheduler config"""
         json_config.config.faculty.append(faculty_config)
 
-    """modifies a current faculty member and updates their information"""
-
     @staticmethod
     def mod_faculty(json_config: JsonConfig, name: str, maximum_credits: int, minimum_credits: int,
                     unique_course_limit: Annotated[int, Gt(0)],
                     times: Dict[Day, List[str]] = {}, course_preferences: Dict[str, int] = {},
                     room_preferences: Dict[str, int] = {}, lab_preferences: Dict[str, int] = {}) -> None:
-        """creates a new faculty config file with updated faculty info"""
+        """modifies a current faculty member and updates their information"""
         faculty_config = FacultyConfig(
             name=name,
             maximum_credits=maximum_credits,
@@ -54,8 +51,6 @@ class Faculty:
             if json_config.config.faculty[i].name == name:
                 json_config.config.faculty[i] = faculty_config
                 break
-
-    """deletes a faculty member from the scheduler config"""
 
     @staticmethod
     def del_faculty(json_config: JsonConfig, name: str) -> None:
