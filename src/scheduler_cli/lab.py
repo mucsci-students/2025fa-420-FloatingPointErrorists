@@ -13,7 +13,7 @@ class Lab:
     @staticmethod
     def mod_lab(json_config: JsonConfig, lab: str, newLab: str) -> None:
         """Takes in the name of an existing lab and changes it to the new lab"""
-        json_config.scheduler_config.labs[json_config.labs.index(lab)] = newLab
+        json_config.scheduler_config.labs[json_config.scheduler_config.labs.index(lab)] = newLab
 
     @staticmethod
     def del_lab(json_config: JsonConfig, lab: str) -> None:
