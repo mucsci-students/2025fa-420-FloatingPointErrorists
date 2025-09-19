@@ -18,7 +18,6 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 """
 
 CONFIG_KEY: str = "config"
-NO_CONFIG_LOADED: str = "No configuration loaded. Please do 'load <config.json>' first."
 
 # ====== CLI Definition & General functions ======
 @shell(prompt="scheduler> ", intro="Welcome to the Scheduler CLI!\nType 'help' to see available commands, 'quit' to exit.\n") # type: ignore
@@ -27,17 +26,12 @@ def cli(ctx: click.Context) -> None:
     """Scheduler CLI — interactive shell."""
     from .faculty_cli import faculty
     ctx.ensure_object(dict)
-    cli.add_command(faculty)
-
-def run_shell() -> None:
-    """Run the interactive shell."""
-    cli()
+    cli.add_command(faculty) # Add faculty sub-shell
 
 def handle_sigint(signum: int, frame: types.FrameType | None) -> None:
     """Handle SIGINT (Ctrl+C) signal."""
-    import sys
     click.echo("\nExiting on user interrupt (Ctrl+C).")
-    sys.exit(0)
+    raise SystemExit
 
 def apply_signal_handlers() -> None:
     """Apply signal handlers for graceful shutdown."""
@@ -48,7 +42,7 @@ def get_json_config(ctx: click.Context) -> JsonConfig:
     """Helper function to get the current JSON configuration."""
     config: JsonConfig = ctx.obj.get(CONFIG_KEY)
     if not config:
-        raise click.ClickException(NO_CONFIG_LOADED)
+        raise click.ClickException("No configuration loaded. Please do 'load <config.json>' first.")
     return config
 
 # ====== JSON Commands ======

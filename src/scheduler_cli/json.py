@@ -1,3 +1,4 @@
+import os
 from scheduler import load_config_from_file, CombinedConfig, SchedulerConfig, TimeSlotConfig
 
 class JsonConfig:
@@ -10,11 +11,17 @@ class JsonConfig:
         time_slot_config (TimeSlotConfig): The loaded time slot configuration.
         combined_config (CombinedConfig): The loaded combined configuration.
 
-    If you would like to modify the config in this class, take a look at: https://mucsci.github.io/Scheduler/scheduler.html#SchedulerConfig
+    If you would like to modify the scheduler config in this class, take a look at: https://mucsci.github.io/Scheduler/scheduler.html#SchedulerConfig
     """
 
     def __init__(self, file_path: str) -> None:
         self._file_path: str = file_path
+        # Check if file exists and is empty. If it is empty, populate it with default.json
+        if os.path.getsize(file_path) == 0:
+            with open('data/default.json', 'r', encoding='utf-8') as default_config:
+                default_data = default_config.read()
+            with open(file_path, 'w', encoding='utf-8') as target_file:
+                target_file.write(default_data)
         self._combined_config: CombinedConfig = load_config_from_file(CombinedConfig, file_path)
         self._scheduler_config: SchedulerConfig = self._combined_config.config
         self._time_slot_config: TimeSlotConfig = self._combined_config.time_slot_config
@@ -43,6 +50,10 @@ class JsonConfig:
         """Save the current configuration back to the JSON file."""
         with open(self._file_path, "w", encoding="utf-8") as file:
             file.write(self._combined_config.model_dump_json(indent=4))
+
+    def set_optimization(self, to_optimize: bool) -> None:
+        """Set the optimizer flags"""
+        self._combined_config.optimizer_flags = ["faculty_course", "faculty_room", "faculty_lab", "same_room", "same_lab", "pack_rooms"] if to_optimize else []
 
     def _scheduler_str(self) -> str:
         """String representation of the scheduler configuration."""

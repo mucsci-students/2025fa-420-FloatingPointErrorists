@@ -1,8 +1,8 @@
-from .cli import run_shell, apply_signal_handlers
+from .cli import cli, apply_signal_handlers
 
 def main() -> None:
     apply_signal_handlers()
-    run_shell()
+    cli()
 
 if __name__ == "__main__":
     main()
