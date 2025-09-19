@@ -4,12 +4,10 @@ from typing import Dict, List, Annotated
 from .json import JsonConfig
 from scheduler import load_config_from_file, CombinedConfig, SchedulerConfig, FacultyConfig
 
-"""
-This class allows the user to create, modify and delete faculty from the JsonConfig
-"""
-
-
 class Faculty:
+    """
+    This class allows the user to create, modify and delete faculty from the JsonConfig
+    """
 
     @staticmethod
     def add_faculty(json_config: JsonConfig, name: str, maximum_credits: int, minimum_credits: int,
