@@ -4,16 +4,13 @@ from typing import Any
 Module for handling Rooms and Labs in the config files
 """
 class Room:
-    def __init__(self, config: Any, room: list[str]) -> None:
-        self._config = config
-        self._room = room
+    def add_room(json_config: JsonConfig, newRoom: str) -> None:
+        json_config.rooms.append(newRoom)
+        json_config.rooms.sort()
 
-    def get_room(self) -> list[str]:
-        return self._room
-    
-    def add_room(self, newRoom: str):
-        self._room.append(newRoom)
+    def mod_room(json_config: JsonConfig, room: str, newRoom: str):
+        json_config.rooms[json_config.rooms.index(room)] = newRoom
 
-    #def set_room(self, )
 
-    #def del_room(self):
+    def del_room(json_config: JsonConfig, room: str):
+        json_config.rooms.remove(room)
