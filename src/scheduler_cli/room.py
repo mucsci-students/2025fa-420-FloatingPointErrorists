@@ -1,7 +1,7 @@
 from .json import JsonConfig
 from typing import Any
 """
-Module for handling Rooms and Labs in the config files
+Module for handling Rooms in the config files
 """
 class Room:
     @staticmethod
