@@ -37,26 +37,6 @@ def load(ctx: click.Context, file_path: str) -> None:
     except json.JSONDecodeError as e:
         raise click.ClickException(f"Invalid JSON: {e}")
 
-@cli.command("room")
-@click.pass_context
-def room(ctx: click.Context) -> None:
-    """Modify the rooms of a configuration"""
-    config = ctx.obj.get(CONFIG_KEY)
-    if not config:
-        click.echo("No configuration loaded.")
-    else:
-        click.echo(config)
-
-@cli.command("lab")
-@click.pass_context
-def room(ctx: click.Context) -> None:
-    """Modify the labs of a configuration"""
-    config = ctx.obj.get(CONFIG_KEY)
-    if not config:
-        click.echo("No configuration loaded.")
-    else:
-        click.echo(config)
-
 @cli.command("show")
 @click.pass_context
 def show(ctx: click.Context) -> None:
