@@ -1,4 +1,4 @@
-from .cli import cli, apply_signal_handlers
+from .base_cli import cli, apply_signal_handlers
 
 def main() -> None:
     apply_signal_handlers()

@@ -24,9 +24,7 @@ CONFIG_KEY: str = "config"
 @click.pass_context
 def cli(ctx: click.Context) -> None:
     """Scheduler CLI — interactive shell."""
-    from .faculty_cli import faculty
     ctx.ensure_object(dict)
-    cli.add_command(faculty) # Add faculty sub-shell
 
 def handle_sigint(signum: int, frame: types.FrameType | None) -> None:
     """Handle SIGINT (Ctrl+C) signal."""
@@ -45,6 +43,11 @@ def get_json_config(ctx: click.Context) -> JsonConfig:
         raise click.ClickException("No configuration loaded. Please do 'load <config.json>' first.")
     return config
 
+def enable_configuration_commands() -> None:
+    """Add all the sub-shells to the cli."""
+    from .faculty_cli import faculty
+    cli.add_command(faculty)  # Add faculty sub-shell
+
 # ====== JSON Commands ======
 @cli.command() # type: ignore
 @click.argument("file_path", type=click.Path(exists=True))
@@ -55,6 +58,7 @@ def load(ctx: click.Context, file_path: str) -> None:
     try:
         config = JsonConfig(file_path)
         ctx.obj[CONFIG_KEY] = config
+        enable_configuration_commands()
         click.echo("Configuration loaded")
     except json.JSONDecodeError as e:
         raise click.ClickException(f"Invalid JSON: {e}")

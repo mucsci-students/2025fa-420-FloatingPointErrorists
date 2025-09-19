@@ -1,7 +1,8 @@
 import click
 from click_shell import shell
 from scheduler import FacultyConfig
-from scheduler_cli.cli import get_json_config, save, show
+from scheduler_cli.base_cli import get_json_config, save, show
+from scheduler_cli.json import JsonConfig
 
 """
 This module implements a command-line interface (CLI) for managing faculty in the configuration file.
@@ -46,30 +47,33 @@ def add_times(default: bool) -> dict[str, list[str]]:
         times.setdefault(day, []).extend(time_ranges)
     return times
 
-def add_course_preferences(default: bool) -> dict[str, int]:
+def add_course_preferences(json_config: JsonConfig, default: bool) -> dict[str, int]:
     """Helper function to add course preferences for a faculty member."""
     course_preferences = {}
+    course_ids = [c.course_id for c in json_config.scheduler_config.courses]
     while click.confirm("Add course preference?", default=default):
-        course = click.prompt("Course ID")
-        preference = click.prompt("Preference score", type=click.Choise([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), show_choices=True)
+        course = click.prompt("Course ID", type=click.Choice(course_ids), show_choices=False)
+        preference = click.prompt("Preference score", type=click.Choice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), show_choices=True)
         course_preferences[course] = preference
     return course_preferences
 
-def add_room_preferences(default: bool) -> dict[str, int]:
+def add_room_preferences(json_config: JsonConfig, default: bool) -> dict[str, int]:
     """Helper function to add room preferences for a faculty member."""
     room_preferences = {}
+    room_ids = [room for room in json_config.scheduler_config.rooms]
     while click.confirm("Add room preference?", default=default):
-        room = click.prompt("Room ID")
-        preference = click.prompt("Preference score", type=click.Choise([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), show_choices=True)
+        room = click.prompt("Room ID", type=click.Choice(room_ids), show_choices=False)
+        preference = click.prompt("Preference score", type=click.Choice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), show_choices=True)
         room_preferences[room] = preference
     return room_preferences
 
-def add_lab_preferences(default: bool) -> dict[str, int]:
+def add_lab_preferences(json_config: JsonConfig, default: bool) -> dict[str, int]:
     """Helper function to add lab preferences for a faculty member."""
     lab_preferences = {}
+    lab_ids = [lab for lab in json_config.scheduler_config.labs]
     while click.confirm("Add lab preference?", default=default):
-        lab = click.prompt("Lab ID")
-        preference = click.prompt("Preference score", type=click.Choise([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), show_choices=True)
+        lab = click.prompt("Lab ID", type=click.Choice(lab_ids), show_choices=False)
+        preference = click.prompt("Preference score", type=click.Choice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), show_choices=True)
         lab_preferences[lab] = preference
     return lab_preferences
 
@@ -77,18 +81,19 @@ def add_lab_preferences(default: bool) -> dict[str, int]:
 @click.pass_context
 def add(ctx: click.Context) -> None:
     """Add a new faculty member."""
+    json_config = get_json_config(ctx)
     name = click.prompt("Faculty member's name")
     maximum_credits = click.prompt("Maximum credit hours", type=int)
     minimum_credits = click.prompt("Minimum credit hours", type=int)
     unique_course_limit = click.prompt("Unique course limit", type=int)
     times = add_times(False)
-    course_preferences = add_course_preferences(False)
-    room_preferences = add_room_preferences(False)
-    lab_preferences = add_lab_preferences(False)
+    course_preferences = add_course_preferences(json_config, False)
+    room_preferences = add_room_preferences(json_config, False)
+    lab_preferences = add_lab_preferences(json_config, False)
     faculty_config = FacultyConfig(name = name, maximum_credits = maximum_credits, minimum_credits = minimum_credits,
                                   unique_course_limit = unique_course_limit, times = times, course_preferences = course_preferences,
                                   room_preferences=room_preferences, lab_preferences=lab_preferences)
-    get_json_config(ctx).scheduler_config.faculty.append(faculty_config)
+    json_config.scheduler_config.faculty.append(faculty_config)
     click.echo(f"Faculty '{name}' added.")
 
 @faculty.command()  # type: ignore
@@ -108,7 +113,8 @@ def delete(ctx: click.Context) -> None:
 @click.pass_context
 def modify(ctx: click.Context) -> None:
     """Modify an existing faculty member."""
-    faculty_list = get_json_config(ctx).scheduler_config.faculty
+    json_config = get_json_config(ctx)
+    faculty_list = json_config.scheduler_config.faculty
     name = click.prompt("Enter the name of the faculty to modify")
     faculty_obj = next((f for f in faculty_list if f.name == name), None)
     if not faculty_obj:
@@ -123,13 +129,13 @@ def modify(ctx: click.Context) -> None:
         times = add_times(True)
     course_preferences = faculty_obj.course_preferences.copy()
     if click.confirm("Modify course preferences? (you will create a new one from scratch)", default=False):
-        course_preferences = add_course_preferences(True)
+        course_preferences = add_course_preferences(json_config, True)
     room_preferences = faculty_obj.room_preferences.copy()
     if click.confirm("Modify room preferences? (you will create a new one from scratch)", default=False):
-        room_preferences = add_room_preferences(True)
+        room_preferences = add_room_preferences(json_config, True)
     lab_preferences = faculty_obj.lab_preferences.copy()
     if click.confirm("Modify lab preferences? (you will create a new one from scratch)", default=False):
-        lab_preferences = add_lab_preferences(True)
+        lab_preferences = add_lab_preferences(json_config, True)
     faculty_config = FacultyConfig(name=new_name, maximum_credits=maximum_credits, minimum_credits=minimum_credits,
                                    unique_course_limit=unique_course_limit, times=times,
                                    course_preferences=course_preferences,
