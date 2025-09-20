@@ -1,4 +1,3 @@
-from _ast import Gt
 from calendar import Day
 from typing import Dict, List, Annotated
 from .json import JsonConfig
@@ -11,7 +10,7 @@ class Faculty:
 
     @staticmethod
     def add_faculty(json_config: JsonConfig, name: str, maximum_credits: int, minimum_credits: int,
-                    unique_course_limit: Annotated[int, Gt(0)],
+                    unique_course_limit: int,
                     times: Dict[Day, List[str]] = {}, course_preferences: Dict[str, int] = {},
                     room_preferences: Dict[str, int] = {}, lab_preferences: Dict[str, int] = {}) -> None:
         """adds a new faculty member to the config file"""
@@ -30,7 +29,7 @@ class Faculty:
 
     @staticmethod
     def mod_faculty(json_config: JsonConfig, name: str, maximum_credits: int, minimum_credits: int,
-                    unique_course_limit: Annotated[int, Gt(0)],
+                    unique_course_limit: int,
                     times: Dict[Day, List[str]] = {}, course_preferences: Dict[str, int] = {},
                     room_preferences: Dict[str, int] = {}, lab_preferences: Dict[str, int] = {}) -> None:
         """modifies a current faculty member and updates their information"""
