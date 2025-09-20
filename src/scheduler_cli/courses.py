@@ -24,7 +24,10 @@ def mod_course(index: int, json_config: JsonConfig, course_id: str, credits: int
         conflicts=conflicts,
         faculty=faculty
     )
-    json_config.config.courses.__setitem__(index, course_config)
+    for i, faculty in enumerate(json_config.config.courses):
+        if json_config.config.faculty[i].name == index:
+            json_config.config.faculty[i] = course_config
+            break
 
 
 @staticmethod    
@@ -34,4 +37,3 @@ def del_course(index: int, json_config:JsonConfig) -> None:
 
 
     
-    def __str__(self) -> str:
