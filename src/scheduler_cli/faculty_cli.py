@@ -1,8 +1,8 @@
 import click
 from click_shell import shell
 from scheduler import FacultyConfig
-from scheduler_cli.base_cli import get_json_config, save, show
-from scheduler_cli.json import JsonConfig
+from .base_cli import get_json_config, show
+from .json import JsonConfig
 
 """
 This module implements a command-line interface (CLI) for managing faculty in the configuration file.
@@ -20,12 +20,9 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 
 # ===== Faculty shell =====
 @shell(prompt="faculty> ", intro="You may now add, modify, or delete faculty.\nType 'help' to see available commands, 'exit' to return to main shell.\n") # type: ignore
-@click.pass_context
-def faculty(ctx: click.Context) -> None:
+def faculty() -> None:
     """Manage faculty"""
-    config = get_json_config(ctx)
     faculty.add_command(show)
-    faculty.add_command(save)
 
 def normalize_range(r: str) -> str:
     """

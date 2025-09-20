@@ -51,6 +51,12 @@ class JsonConfig:
         with open(self._file_path, "w", encoding="utf-8") as file:
             file.write(self._combined_config.model_dump_json(indent=4))
 
+    def set_limit(self, limit: int) -> None:
+        """Set the limit for the scheduler"""
+        if limit <= 0:
+            raise ValueError("Limit must be a positive integer.")
+        self._combined_config.limit = limit
+
     def set_optimization(self, to_optimize: bool) -> None:
         """Set the optimizer flags"""
         self._combined_config.optimizer_flags = ["faculty_course", "faculty_room", "faculty_lab", "same_room", "same_lab", "pack_rooms"] if to_optimize else []
