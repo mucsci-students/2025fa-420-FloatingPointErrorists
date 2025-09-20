@@ -46,7 +46,13 @@ def get_json_config(ctx: click.Context) -> JsonConfig:
 def enable_configuration_commands() -> None:
     """Add all the sub-shells to the cli."""
     from .faculty_cli import faculty
+    from .course_cli import courses
+    from .room_cli import rooms
+    from .lab_cli import labs
     cli.add_command(faculty)  # Add faculty sub-shell
+    cli.add_command(courses)  # Add courses sub-shell
+    cli.add_command(rooms)  # Add rooms sub-shell
+    cli.add_command(labs)  # Add labs sub-shell
 
 # ====== JSON Commands ======
 @cli.command() # type: ignore
