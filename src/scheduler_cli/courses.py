@@ -1,8 +1,8 @@
 from .json import JsonConfig
 from scheduler import load_config_from_file, CombinedConfig, SchedulerConfig, CourseConfig
 from typing import Any
-
-
+    
+@staticmethod
 def add_course(json_config: JsonConfig, course_id: str, credits: int, room: list[str], lab: list[str], conflicts: list[str], faculty: list[str]) -> None:
 
     course_config = CourseConfig(
@@ -15,7 +15,7 @@ def add_course(json_config: JsonConfig, course_id: str, credits: int, room: list
     )
     json_config.config.courses.append(course_config)
 
-def mod_course(json_config: JsonConfig, course_id: str, credits: int, room: list[str], lab: list[str], conflicts: list[str], faculty: list[str]) -> None:
+def mod_course(index: int, json_config: JsonConfig, course_id: str, credits: int, room: list[str], lab: list[str], conflicts: list[str], faculty: list[str]) -> None:
     course_config = CourseConfig(
         course_id=course_id,
         credits=credits,
@@ -24,22 +24,14 @@ def mod_course(json_config: JsonConfig, course_id: str, credits: int, room: list
         conflicts=conflicts,
         faculty=faculty
     )
-    course_index: int = json_config.config.courses.index(course_config)
-    json_config.config.courses.__setitem__(course_index, course_config)
+    json_config.config.courses.__setitem__(index, course_config)
+
+
+@staticmethod    
+def del_course(index: int, json_config:JsonConfig) -> None:
+    config_to_delete = json_config.config.courses.__getitem__(index)
+    json_config.config.courses.remove(config_to_delete)
 
 
     
-def del_course(json_config: JsonConfig, course_id: str, credits: int, room: list[str], lab: list[str], conflicts: list[str], faculty: list[str]) -> None:
-    course_config = CourseConfig(
-        course_id=course_id,
-        credits=credits,
-        room=room,
-        lab=lab,
-        conflicts=conflicts,
-        faculty=faculty
-    )
-
-    json_config.config.courses.remove(course_config)
-
-
-    
+    def __str__(self) -> str:
