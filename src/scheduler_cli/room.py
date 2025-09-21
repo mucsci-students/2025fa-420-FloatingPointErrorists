@@ -13,7 +13,7 @@ class Room:
     @staticmethod
     def mod_room(json_config: JsonConfig, room: str, newRoom: str) -> None:
         """Takes in the name of an existing room and changes it to the new room"""
-        json_config.scheduler_config.rooms[json_config.rooms.index(room)] = newRoom
+        json_config.scheduler_config.rooms[json_config.scheduler_config.rooms.index(room)] = newRoom
 
     @staticmethod
     def del_room(json_config: JsonConfig, room: str) -> None:
