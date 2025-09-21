@@ -32,7 +32,11 @@ def add(ctx: click.Context) -> None:
     while click.confirm("Add another?", default=False):
         lab_list.append(click.prompt("Enter lab name", type=str))
     for lb in lab_list:
-        Lab.add_lab(json_config, lb)
+        try:
+            Lab.add_lab(json_config, lb)
+        except ValueError as e:
+            click.echo(f"{e}")
+            lab_list.remove(lb)
     click.echo(f"Added {lab_list}.")
 
 @labs.command()  # type: ignore
