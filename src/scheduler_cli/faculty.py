@@ -1,7 +1,7 @@
 from _ast import Gt
 from typing import Dict, List, Annotated
 from .json import JsonConfig
-from scheduler import FacultyConfig
+from scheduler import FacultyConfig, CourseConfig
 
 class Faculty:
     """
@@ -28,13 +28,13 @@ class Faculty:
         json_config.scheduler_config.faculty.append(faculty_config)
 
     @staticmethod
-    def mod_faculty(json_config: JsonConfig, name: str, maximum_credits: int, minimum_credits: int,
+    def mod_faculty(json_config: JsonConfig, old_name: str,  new_name: str, maximum_credits: int, minimum_credits: int,
                     unique_course_limit: Annotated[int, Gt()],
                     times: Dict[str, List[str]] = {}, course_preferences: Dict[str, int] = {},
                     room_preferences: Dict[str, int] = {}, lab_preferences: Dict[str, int] = {}) -> None:
         """modifies a current faculty member and updates their information"""
         faculty_config = FacultyConfig(
-            name=name,
+            name=new_name,
             maximum_credits=maximum_credits,
             minimum_credits=minimum_credits,
             unique_course_limit=unique_course_limit,
@@ -45,9 +45,13 @@ class Faculty:
         )
         """finds the faculty within the scheduler and replaces it with the updated one"""
         for i, faculty in enumerate(json_config.scheduler_config.faculty):
-            if json_config.scheduler_config.faculty[i].name == name:
+            if json_config.scheduler_config.faculty[i].name == old_name:
                 json_config.scheduler_config.faculty[i] = faculty_config
-                break
+        for i, courses in enumerate(json_config.scheduler_config.courses):
+                for f, faculty in enumerate(json_config.scheduler_config.courses[i].faculty):
+                    if json_config.scheduler_config.courses[i].faculty[f] == old_name:
+                        json_config.scheduler_config.courses[i].faculty[f] = new_name
+                        break
 
     @staticmethod
     def del_faculty(json_config: JsonConfig, name: str) -> None:
@@ -55,4 +59,7 @@ class Faculty:
         for i, faculty in enumerate(json_config.scheduler_config.faculty):
             if json_config.scheduler_config.faculty[i].name == name:
                 del json_config.scheduler_config.faculty[i]
-                break
+        for i, courses in enumerate(json_config.scheduler_config.courses):
+                if name in json_config.scheduler_config.courses[i].faculty:
+                    json_config.scheduler_config.courses[i].faculty.remove(name)
+                    break
