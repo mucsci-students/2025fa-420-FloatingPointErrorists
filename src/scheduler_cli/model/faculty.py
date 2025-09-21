@@ -1,7 +1,8 @@
 from _ast import Gt
 from typing import Dict, List, Annotated
-from .json import JsonConfig
-from scheduler import FacultyConfig, CourseConfig
+from scheduler_cli.model.json import JsonConfig
+from scheduler import FacultyConfig
+
 
 class Faculty:
     """

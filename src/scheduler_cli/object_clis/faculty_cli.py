@@ -1,8 +1,8 @@
 import click
 from click_shell import shell
-from .faculty import Faculty
-from .base_cli import get_json_config, show
-from .json import JsonConfig
+from scheduler_cli.model.faculty import Faculty
+from scheduler_cli.base_cli import get_json_config, show, clear, run, save
+from scheduler_cli.model.json import JsonConfig
 
 """
 This module implements a command-line interface (CLI) for managing faculty in the configuration file.
@@ -23,6 +23,9 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 def faculty() -> None:
     """Manage faculty"""
     faculty.add_command(show)
+    faculty.add_command(clear)
+    faculty.add_command(run)
+    faculty.add_command(save)
 
 def normalize_range(r: str) -> str:
     """
@@ -48,9 +51,8 @@ def add_times(default: bool) -> dict[str, list[str]]:
 def add_course_preferences(json_config: JsonConfig, default: bool) -> dict[str, int]:
     """Helper function to add course preferences for a faculty member."""
     course_preferences = {}
-    course_ids = [c.course_id for c in json_config.scheduler_config.courses]
     while click.confirm("Add course preference?", default=default):
-        course = click.prompt("Course ID", type=click.Choice(course_ids), show_choices=False)
+        course = click.prompt("Course ID", type=str)
         preference = click.prompt("Preference score", type=click.Choice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), show_choices=True)
         course_preferences[course] = preference
     return course_preferences
@@ -81,8 +83,16 @@ def add(ctx: click.Context) -> None:
     """Add a new faculty member."""
     json_config = get_json_config(ctx)
     name = click.prompt("Faculty member's name")
-    maximum_credits = click.prompt("Maximum credit hours", type=int)
-    minimum_credits = click.prompt("Minimum credit hours", type=int)
+    credit_choices = [0, 1, 2, 3, 4, 12]
+    maximum_credits = click.prompt("Maximum credit hours", type=click.Choice(credit_choices))
+    if maximum_credits == 12:
+        credit_choices = [12]
+    else:
+        credit_choices.remove(12)
+        for credit in credit_choices:
+            if credit > maximum_credits:
+                credit_choices.remove(credit)
+    minimum_credits = click.prompt("Minimum credit hours", type=click.Choice(credit_choices), default=maximum_credits)
     unique_course_limit = click.prompt("Unique course limit", type=int)
     times = add_times(False)
     course_preferences = add_course_preferences(json_config, False)
@@ -97,6 +107,9 @@ def delete(ctx: click.Context) -> None:
     """Delete a faculty member."""
     json_config = get_json_config(ctx)
     faculty_list = json_config.scheduler_config.faculty
+    if len(faculty_list) == 0:
+        click.echo("No faculty members to delete.")
+        return
     name = click.prompt("Enter the name of the faculty to delete")
     faculty_obj = next((f for f in faculty_list if f.name == name), None)
     if not faculty_obj:
@@ -111,14 +124,26 @@ def modify(ctx: click.Context) -> None:
     """Modify an existing faculty member."""
     json_config = get_json_config(ctx)
     faculty_list = json_config.scheduler_config.faculty
+    if len(faculty_list) == 0:
+        click.echo("No faculty members to modify.")
+        return
     name = click.prompt("Enter the name of the faculty to modify")
     faculty_obj = next((f for f in faculty_list if f.name == name), None)
     if not faculty_obj:
         click.echo(f"Faculty '{name}' not found.")
         return
     new_name = click.prompt("Faculty member's name", type=str, default=faculty_obj.name)
-    maximum_credits = click.prompt("Maximum credit hours", type=int, default=faculty_obj.maximum_credits)
-    minimum_credits = click.prompt("Minimum credit hours", type=int, default=faculty_obj.minimum_credits)
+    credit_choices = [0, 1, 2, 3, 4, 12]
+    maximum_credits = click.prompt("Maximum credit hours", type=click.Choice(credit_choices), show_choices=True, default=faculty_obj.maximum_credits)
+    if maximum_credits == 12:
+        credit_choices = [12]
+    else:
+        credit_choices.remove(12)
+        for credit in credit_choices:
+            if credit > maximum_credits:
+                credit_choices.remove(credit)
+    minimum_credits = click.prompt("Minimum credit hours", type=click.Choice(credit_choices), show_choices=True,
+                                   default=faculty_obj.minimum_credits if maximum_credits == faculty_obj.maximum_credits else maximum_credits)
     unique_course_limit = click.prompt("Unique course limit", type=int, default=faculty_obj.unique_course_limit)
     times = faculty_obj.times
     if click.confirm("Modify available times? (you will create a new set from scratch)", default=False):

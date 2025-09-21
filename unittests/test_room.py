@@ -1,8 +1,6 @@
-import json
 from pathlib import Path
 from click.testing import CliRunner
-from scheduler_cli import cli
-from scheduler_cli.room import Room
+from scheduler_cli import cli, Room
 
 CONFIG_KEY = "config"
 

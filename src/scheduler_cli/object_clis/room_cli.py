@@ -1,7 +1,7 @@
 import click
 from click_shell import shell
-from .base_cli import get_json_config, show
-from .room import Room
+from scheduler_cli.base_cli import get_json_config, show, clear, save, run
+from scheduler_cli.model.room import Room
 
 """
 This module implements a command-line interface (CLI) for managing rooms in the configuration file.
@@ -22,6 +22,9 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 def rooms() -> None:
     """Manage rooms."""
     rooms.add_command(show)
+    rooms.add_command(clear)
+    rooms.add_command(save)
+    rooms.add_command(run)
 
 @rooms.command() # type: ignore
 @click.pass_context
@@ -44,12 +47,15 @@ def add(ctx: click.Context) -> None:
 def delete(ctx: click.Context) -> None:
     """Delete a room."""
     json_config = get_json_config(ctx)
-    room_ids = [room for room in json_config.scheduler_config.rooms]
-    rm = click.prompt("Enter room name", type=click.Choice(room_ids), show_default=False)
+    room_ids = json_config.scheduler_config.rooms
+    if len(room_ids) == 0:
+        click.echo("No rooms to delete.")
+        return
+    rm = click.prompt("Enter room name", type=click.Choice(room_ids), show_default=False, show_choices=False)
     Room.del_room(json_config, rm)
     click.echo(f"{rm} deleted.")
     while click.confirm("Delete another?", default=False):
-        rm = click.prompt("Enter room name", type=click.Choice(room_ids), show_default=False)
+        rm = click.prompt("Enter room name", type=click.Choice(room_ids), show_default=False, show_choices=False)
         Room.del_room(json_config, rm)
         click.echo(f"{rm} deleted.")
 
@@ -58,8 +64,11 @@ def delete(ctx: click.Context) -> None:
 def modify(ctx: click.Context) -> None:
     """Modify a room."""
     json_config = get_json_config(ctx)
-    room_ids = [room for room in json_config.scheduler_config.rooms]
-    rm = click.prompt("Enter room name to modify", type=click.Choice(room_ids), show_default=False)
+    room_ids = json_config.scheduler_config.rooms
+    if len(room_ids) == 0:
+        click.echo("No rooms to modify.")
+        return
+    rm = click.prompt("Enter room name to modify", type=click.Choice(room_ids), show_default=False, show_choices=False)
     rm2 = click.prompt("New room name", type=str)
     Room.mod_room(json_config, rm, rm2)
     click.echo(f"{rm} is now {rm2}.")
