@@ -1,8 +1,8 @@
 import click
 from click_shell import shell
-from .base_cli import get_json_config, show, clear, save, run
-from .courses import Course
-from .json import JsonConfig
+from scheduler_cli.base_cli import get_json_config, show, clear, save, run
+from scheduler_cli.model.courses import Course
+from scheduler_cli.model.json import JsonConfig
 
 """
 This module implements a command-line interface (CLI) for managing courses in the configuration file.
