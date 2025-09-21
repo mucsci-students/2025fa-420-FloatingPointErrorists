@@ -65,8 +65,8 @@ def check_valid_config(json_config: JsonConfig) -> None:
         raise click.ClickException("No labs defined in the configuration.")
     if len(config.faculty) == 0:
         raise click.ClickException("No faculty defined in the configuration.")
-    if len(config.courses) == 0 and len(config.labs) == 0:
-        raise click.ClickException("No courses or labs defined in the configuration.")
+    if len(config.courses) == 0:
+        raise click.ClickException("No courses defined in the configuration.")
 
 @cli.command() # type: ignore
 def clear() -> None:
