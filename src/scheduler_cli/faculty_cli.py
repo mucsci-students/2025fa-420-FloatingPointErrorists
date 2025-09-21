@@ -132,5 +132,5 @@ def modify(ctx: click.Context) -> None:
     lab_preferences = faculty_obj.lab_preferences.copy()
     if click.confirm("Modify lab preferences? (you will create a new one from scratch)", default=False):
         lab_preferences = add_lab_preferences(json_config, True)
-    Faculty.mod_faculty(json_config, new_name, maximum_credits, minimum_credits, unique_course_limit, times, course_preferences, room_preferences, lab_preferences)
+    Faculty.mod_faculty(json_config, name, new_name, maximum_credits, minimum_credits, unique_course_limit, times, course_preferences, room_preferences, lab_preferences)
     click.echo(f"Faculty '{name}' modified.")
