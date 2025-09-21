@@ -101,6 +101,11 @@ def run(ctx: click.Context) -> None:
     click.echo("Running scheduler, please give it up to a minute...")
 
     schedule_list = run_using_config(config.combined_config)
+    for schedule in schedule_list:
+        click.echo("Schedule:")
+        for course in schedule:
+            click.echo(f"{course.as_csv()}")
+
 
     typing = click.prompt("\nDo you want to save the program as a Json, CSV, both or none?", type=click.Choice(['json', 'csv', 'both', 'none']), default="csv")
     if (typing == 'none'):
@@ -108,7 +113,15 @@ def run(ctx: click.Context) -> None:
     else:
         name = click.prompt("Enter the filename (without extension)", default="schedules")
         if typing == 'json' or typing == 'both':
-            write_as_json(schedule_list, name)
+            try:
+                write_as_json(schedule_list, name)
+                click.echo(f"Schedules saved as {name}.json")
+            except Exception as e:
+                click.echo(f"An error occurred while writing JSON: {e}")
         if typing == 'csv' or typing == 'both':
-            write_as_csv(schedule_list, name)
+            try:
+                write_as_csv(schedule_list, name)
+                click.echo(f"Schedules saved as {name}.csv")
+            except Exception as e:
+                click.echo(f"An error occurred while writing CSV: {e}")
     click.echo("Run complete.")
