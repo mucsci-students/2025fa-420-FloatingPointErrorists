@@ -19,6 +19,8 @@ class JsonConfig:
         if not os.path.exists(file_path):
             file_path = f"configs/{file_path}.json"
         self._file_path: str = file_path
+        # Ensure configs directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         # Check if file exists and is empty. If it is empty, populate it with default.json. If it doesn't exist, create it and populate it with default.json
         if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
             with open('data/default.json', 'r', encoding='utf-8') as default_config:
