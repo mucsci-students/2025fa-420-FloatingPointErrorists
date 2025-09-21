@@ -56,6 +56,18 @@ def enable_configuration_commands() -> None:
     cli.add_command(rooms)  # Add rooms sub-shell
     cli.add_command(labs)  # Add labs sub-shell
 
+def check_valid_config(json_config: JsonConfig) -> None:
+    """Check if a valid configuration is loaded."""
+    config = json_config.scheduler_config
+    if len(config.rooms) == 0:
+        raise click.ClickException("No rooms defined in the configuration.")
+    if len(config.labs) == 0:
+        raise click.ClickException("No labs defined in the configuration.")
+    if len(config.faculty) == 0:
+        raise click.ClickException("No faculty defined in the configuration.")
+    if len(config.courses) == 0 and len(config.labs) == 0:
+        raise click.ClickException("No courses or labs defined in the configuration.")
+
 @cli.command() # type: ignore
 def clear() -> None:
     """Clear the terminal screen."""
@@ -99,6 +111,7 @@ def save(ctx: click.Context) -> None:
 def run(ctx: click.Context) -> None:
     """Run the scheduler with the current configuration."""
     config = get_json_config(ctx)
+    check_valid_config(config)
     config.set_optimization(click.confirm("Do you want to optimize the schedules?", default=True))  # Ensure optimizations are set
     config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1, max=100), default=1) ) # Ensure limits are set)
     click.echo("Running scheduler, please give it up to a minute...")

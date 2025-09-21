@@ -12,14 +12,14 @@ def test_load_config_valid_json():
 
 def test_load_config_new_file():
     runner = CliRunner()
-    test_file = "nonexistent.json"
+    test_file = "nonexistent"
     try:
         result = runner.invoke(cli, ["load", test_file])
         assert result.exit_code == 0
         assert "Configuration loaded" in result.output
     finally:
-        if os.path.exists(test_file):
-            os.remove(test_file)
+        if os.path.exists(f"configs/{test_file}.json"):
+            os.remove(f"configs/{test_file}.json")
 
 def test_load_config_invalid_json(tmp_path):
     runner = CliRunner()

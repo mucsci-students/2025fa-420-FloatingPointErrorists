@@ -15,6 +15,9 @@ class JsonConfig:
     """
 
     def __init__(self, file_path: str) -> None:
+        """Initialize the JsonConfig with the path to the JSON file."""
+        if not os.path.exists(file_path):
+            file_path = f"configs/{file_path}.json"
         self._file_path: str = file_path
         # Check if file exists and is empty. If it is empty, populate it with default.json. If it doesn't exist, create it and populate it with default.json
         if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
