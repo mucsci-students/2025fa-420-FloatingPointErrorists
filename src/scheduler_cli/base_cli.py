@@ -1,0 +1,88 @@
+import click
+import types
+from click_shell import shell
+from .json import JsonConfig
+
+"""
+This module implements a command-line interface (CLI) for managing JSON configuration files.
+It allows users to load, view, and save configurations interactively.
+
+The ctx.obj dictionary is used to store the current configuration state across different commands.
+To utilize it for a command:
+
+1- Ensure @click.pass_context is above the command function definition.
+2- Add a parameter ctx: click.Context to the command function.
+3- If you want to add something to the context object, use ctx.obj[key] = value.
+
+To read up on how to use click, visit: https://click.palletsprojects.com/en/stable/
+"""
+
+CONFIG_KEY: str = "config"
+
+# ====== CLI Definition & General functions ======
+@shell(prompt="scheduler> ", intro="Welcome to the Scheduler CLI!\nType 'help' to see available commands, 'quit' to exit.\n") # type: ignore
+@click.pass_context
+def cli(ctx: click.Context) -> None:
+    """Scheduler CLI — interactive shell."""
+    ctx.ensure_object(dict)
+
+def handle_sigint(signum: int, frame: types.FrameType | None) -> None:
+    """Handle SIGINT (Ctrl+C) signal."""
+    click.echo("\nExiting on user interrupt (Ctrl+C).")
+    raise SystemExit
+
+def apply_signal_handlers() -> None:
+    """Apply signal handlers for graceful shutdown."""
+    import signal
+    signal.signal(signal.SIGINT, handle_sigint)
+
+def get_json_config(ctx: click.Context) -> JsonConfig:
+    """Helper function to get the current JSON configuration."""
+    config: JsonConfig = ctx.obj.get(CONFIG_KEY)
+    if not config:
+        raise click.ClickException("No configuration loaded. Please do 'load <config.json>' first.")
+    return config
+
+def enable_configuration_commands() -> None:
+    """Add all the sub-shells to the cli."""
+    from .faculty_cli import faculty
+    from .course_cli import courses
+    from .room_cli import rooms
+    from .lab_cli import labs
+    cli.add_command(faculty)  # Add faculty sub-shell
+    cli.add_command(courses)  # Add courses sub-shell
+    cli.add_command(rooms)  # Add rooms sub-shell
+    cli.add_command(labs)  # Add labs sub-shell
+
+# ====== JSON Commands ======
+@cli.command() # type: ignore
+@click.argument("file_path", type=click.Path(exists=True))
+@click.pass_context
+def load(ctx: click.Context, file_path: str) -> None:
+    """Load a JSON configuration file."""
+    import json
+    try:
+        config = JsonConfig(file_path)
+        ctx.obj[CONFIG_KEY] = config
+        enable_configuration_commands()
+        click.echo("Configuration loaded")
+    except json.JSONDecodeError as e:
+        raise click.ClickException(f"Invalid JSON: {e}")
+
+@cli.command() # type: ignore
+@click.pass_context
+def show(ctx: click.Context) -> None:
+    """Show the loaded configuration."""
+    config = get_json_config(ctx)
+    click.echo(config)
+
+@cli.command() # type: ignore
+@click.pass_context
+def save(ctx: click.Context) -> None:
+    """Save the current configuration back to the file."""
+    try:
+        config = get_json_config(ctx)
+        config.save()
+        click.echo("Configuration saved.")
+    except PermissionError as e:
+        raise click.ClickException(f"Permission error: {e}")
