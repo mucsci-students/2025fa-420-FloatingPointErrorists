@@ -1,6 +1,6 @@
 import click
 from click_shell import shell
-from .base_cli import get_json_config, show, clear
+from .base_cli import get_json_config, show, clear, save, run
 from .courses import Course
 from .json import JsonConfig
 
@@ -24,6 +24,8 @@ def courses() -> None:
     """Manage courses."""
     courses.add_command(show)
     courses.add_command(clear)
+    courses.add_command(run)
+    courses.add_command(save)
 
 def get_course_index(json_config: JsonConfig, prompt_text: str) -> int:
     """Helper function to get a valid course index from the user."""

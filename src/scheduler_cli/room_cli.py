@@ -1,6 +1,6 @@
 import click
 from click_shell import shell
-from .base_cli import get_json_config, show, clear
+from .base_cli import get_json_config, show, clear, save, run
 from .room import Room
 
 """
@@ -23,6 +23,8 @@ def rooms() -> None:
     """Manage rooms."""
     rooms.add_command(show)
     rooms.add_command(clear)
+    rooms.add_command(save)
+    rooms.add_command(run)
 
 @rooms.command() # type: ignore
 @click.pass_context

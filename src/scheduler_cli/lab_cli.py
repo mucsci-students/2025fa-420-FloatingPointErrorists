@@ -1,6 +1,6 @@
 import click
 from click_shell import shell
-from .base_cli import get_json_config, show, clear
+from .base_cli import get_json_config, show, clear, save, run
 from .lab import Lab
 
 """
@@ -23,6 +23,8 @@ def labs() -> None:
     """Manage rooms."""
     labs.add_command(show)
     labs.add_command(clear)
+    labs.add_command(save)
+    labs.add_command(run)
 
 @labs.command()  # type: ignore
 @click.pass_context

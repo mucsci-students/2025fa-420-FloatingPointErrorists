@@ -1,7 +1,7 @@
 import click
 from click_shell import shell
 from .faculty import Faculty
-from .base_cli import get_json_config, show, clear
+from .base_cli import get_json_config, show, clear, run, save
 from .json import JsonConfig
 
 """
@@ -24,6 +24,8 @@ def faculty() -> None:
     """Manage faculty"""
     faculty.add_command(show)
     faculty.add_command(clear)
+    faculty.add_command(run)
+    faculty.add_command(save)
 
 def normalize_range(r: str) -> str:
     """
