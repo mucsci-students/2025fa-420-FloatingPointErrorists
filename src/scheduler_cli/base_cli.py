@@ -1,6 +1,7 @@
 import click
 import types
 import os
+import signal
 from click_shell import shell
 from .json import JsonConfig
 from .run_scheduler import run_using_config, write_as_json, write_as_csv
@@ -35,7 +36,6 @@ def handle_sigint(signum: int, frame: types.FrameType | None) -> None:
 
 def apply_signal_handlers() -> None:
     """Apply signal handlers for graceful shutdown."""
-    import signal
     signal.signal(signal.SIGINT, handle_sigint)
 
 def get_json_config(ctx: click.Context) -> JsonConfig:
@@ -63,7 +63,7 @@ def clear() -> None:
 
 # ====== JSON Commands ======
 @cli.command() # type: ignore
-@click.argument("file_path", type=click.Path(exists=True))
+@click.argument("file_path", type=click.Path())
 @click.pass_context
 def load(ctx: click.Context, file_path: str) -> None:
     """Load a JSON configuration file."""
@@ -93,28 +93,22 @@ def save(ctx: click.Context) -> None:
         click.echo("Configuration saved.")
     except PermissionError as e:
         raise click.ClickException(f"Permission error: {e}")
-    
+
 @cli.command() # type: ignore
 @click.pass_context
 def run(ctx: click.Context) -> None:
     """Run the scheduler with the current configuration."""
     config = get_json_config(ctx)
-
     config.set_optimization(click.confirm("Do you want to optimize the schedules?", default=True))  # Ensure optimizations are set
-
     config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1, max=100), default=1) ) # Ensure limits are set)
-
     click.echo("Running scheduler, please give it up to a minute...")
-
     schedule_list = run_using_config(config.combined_config)
     for schedule in schedule_list:
         click.echo("Schedule:")
         for course in schedule:
             click.echo(f"{course.as_csv()}")
-
-
     typing = click.prompt("\nDo you want to save the program as a Json, CSV, both or none?", type=click.Choice(['json', 'csv', 'both', 'none']), default="csv")
-    if (typing == 'none'):
+    if typing == 'none':
         click.echo("Not saving the file.")
     else:
         name = click.prompt("Enter the filename (without extension)", default="schedules")

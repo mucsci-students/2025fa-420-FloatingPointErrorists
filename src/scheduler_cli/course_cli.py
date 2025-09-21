@@ -67,8 +67,8 @@ def add_new_faculty(valid_faculty: list[str], default: bool) -> list[str]:
 def add(ctx: click.Context) -> None:
     """Add a course."""
     json_config = get_json_config(ctx)
-    room_ids = [room for room in json_config.scheduler_config.rooms]
-    lab_ids = [lab for lab in json_config.scheduler_config.labs]
+    room_ids = json_config.scheduler_config.rooms
+    lab_ids = json_config.scheduler_config.labs
     course_ids = [c.course_id for c in json_config.scheduler_config.courses]
     faculty_names = [faculty.name for faculty in json_config.scheduler_config.faculty]
     course_id = click.prompt("Enter course ID", type=str)
@@ -120,7 +120,7 @@ def modify(ctx: click.Context) -> None:
     if click.confirm("Modify course rooms? (you will create a new set from scratch)", default=False):
         room = add_new_rooms(json_config.scheduler_config.rooms, True)
     if click.confirm("Modify course labs? (you will create a new set from scratch)", default=False):
-        lab = add_new_rooms(json_config.scheduler_config.labs, True)
+        lab = add_new_labs(json_config.scheduler_config.labs, True)
     if click.confirm("Modify course conflicts? (you will create a new set from scratch)", default=False):
         conflicts = add_new_conflicts(valid_courses, True)
     if click.confirm("Modify course faculty? (you will create a new set from scratch)", default=False):

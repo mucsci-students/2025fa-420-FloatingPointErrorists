@@ -22,7 +22,7 @@ def run_using_config(usr_config: CombinedConfig) -> list[list["CourseInstance"]]
 def write_as_json(slist: list[list["CourseInstance"]], name: str) -> None:
 
     #make new file 
-    path = 'data/' + name + '.json'
+    path = 'schedules/' + name + '.json'
     file = open(path, 'w')
 
     #writing for json
@@ -35,7 +35,7 @@ def write_as_json(slist: list[list["CourseInstance"]], name: str) -> None:
 def write_as_csv(slist: list[list["CourseInstance"]], name: str) -> None:
 
     #make new file 
-    path = 'data/' + name + '.csv'
+    path = 'schedules/' + name + '.csv'
     file = open(path, 'w')
 
     #writing for csv

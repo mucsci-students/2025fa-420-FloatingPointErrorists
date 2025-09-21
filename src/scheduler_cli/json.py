@@ -17,7 +17,7 @@ class JsonConfig:
     def __init__(self, file_path: str) -> None:
         self._file_path: str = file_path
         # Check if file exists and is empty. If it is empty, populate it with default.json
-        if os.path.getsize(file_path) == 0:
+        if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
             with open('data/default.json', 'r', encoding='utf-8') as default_config:
                 default_data = default_config.read()
             with open(file_path, 'w', encoding='utf-8') as target_file:
@@ -61,7 +61,7 @@ class JsonConfig:
         """Set the optimizer flags"""
         self._combined_config.optimizer_flags = ["faculty_course", "faculty_room", "faculty_lab", "same_room", "same_lab", "pack_rooms"] if to_optimize else []
 
-    def _scheduler_str(self) -> str:
+    def scheduler_str(self) -> str:
         """String representation of the scheduler configuration."""
         scheduler_config = self._scheduler_config
         lines = ["Rooms:"]
@@ -89,7 +89,7 @@ class JsonConfig:
                 lines.append(f"\tLab preferences: {faculty.lab_preferences}")
         return "\n".join(lines)
 
-    def _time_slot_str(self) -> str:
+    def time_slot_str(self) -> str:
         """String representation of the time slot configuration."""
         time_slot_config = self._time_slot_config
         lines = ["\nTime Slot Config:"]
@@ -109,7 +109,7 @@ class JsonConfig:
     def __str__(self) -> str:
         """String representation of the entire configuration."""
         combined_config = self._combined_config
-        lines = [self._scheduler_str(), self._time_slot_str(), f"\nLimit: {getattr(combined_config, 'limit', None)}",
+        lines = [self.scheduler_str(), f"\nLimit: {getattr(combined_config, 'limit', None)}",
                  "\nOptimizer Flags:"]
         for flag in getattr(combined_config, "optimizer_flags", []):
             lines.append(f"  - {flag}")
