@@ -16,7 +16,7 @@ class JsonConfig:
 
     def __init__(self, file_path: str) -> None:
         self._file_path: str = file_path
-        # Check if file exists and is empty. If it is empty, populate it with default.json
+        # Check if file exists and is empty. If it is empty, populate it with default.json. If it doesn't exist, create it and populate it with default.json
         if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
             with open('data/default.json', 'r', encoding='utf-8') as default_config:
                 default_data = default_config.read()
