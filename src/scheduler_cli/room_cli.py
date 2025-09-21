@@ -1,6 +1,7 @@
 import click
 from click_shell import shell
 from .base_cli import get_json_config, show
+from .room import Room
 
 """
 This module implements a command-line interface (CLI) for managing rooms in the configuration file.
@@ -17,23 +18,21 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 """
 
 # ===== Rooms shell =====
-@shell(prompt="Rooms> ", intro="You may now add, modify, or delete rooms.\n Type 'help' to see available commands, 'quit' to exit.\n") # type: ignore
+@shell(prompt="rooms> ", intro="You may now add, modify, or delete rooms.\n Type 'help' to see available commands, 'quit' to exit.\n") # type: ignore
 def rooms() -> None:
     """Manage rooms."""
     rooms.add_command(show)
-
 
 @rooms.command()
 @click.pass_context
 def add(ctx: click.Context) -> None:
     """Add a room."""
     json_config = get_json_config(ctx)
-    rms = []
-    rms.append(click.prompt("Enter room name", type=str))
+    rms = [click.prompt("Enter room name", type=str)]
     while click.confirm("Add another?", default=False):
         rms.append(click.prompt("Enter room name", type=str))
     for room in rms:
-        room.add_room(json_config, rms)
+        Room.add_room(json_config, room)
     click.echo(f"{rms} added.")
 
 @rooms.command()
@@ -43,11 +42,11 @@ def delete(ctx: click.Context) -> None:
     json_config = get_json_config(ctx)
     room_ids = [room for room in json_config.scheduler_config.rooms]
     rm = click.prompt("Enter room name", type=click.Choice(room_ids), show_default=False)
-    room.delete_room(rm)
+    Room.del_room(json_config, rm)
     click.echo(f"{rm} deleted.")
     while click.confirm("Delete another?", default=False):
-        rm = click.prompt("Enter room name", type=click.choice(room_ids), show_default=False)
-        room.delete_room(json_config, rm)
+        rm = click.prompt("Enter room name", type=click.Choice(room_ids), show_default=False)
+        Room.del_room(json_config, rm)
         click.echo(f"{rm} deleted.")
 
 @rooms.command()
@@ -56,7 +55,7 @@ def modify(ctx: click.Context) -> None:
     """Modify a room."""
     json_config = get_json_config(ctx)
     room_ids = [room for room in json_config.scheduler_config.rooms]
-    rm = click.prompt("Enter room name to modify", type=click.choice(room_ids), show_default=False)
+    rm = click.prompt("Enter room name to modify", type=click.Choice(room_ids), show_default=False)
     rm2 = click.prompt("New room name", type=str)
-    room.modify_room(json_config, rm, rm2)
-    click.echo(f"{rm} is now {rm2}")
+    Room.mod_room(json_config, rm, rm2)
+    click.echo(f"{rm} is now {rm2}.")

@@ -1,6 +1,6 @@
 import click
 from click_shell import shell
-from scheduler import FacultyConfig
+from .faculty import Faculty
 from .base_cli import get_json_config, show
 from .json import JsonConfig
 
@@ -36,9 +36,10 @@ def normalize_range(r: str) -> str:
 
 def add_times(default: bool) -> dict[str, list[str]]:
     """Helper function to add available times for a faculty member."""
+    choices = ["MON", "TUE", "WED", "THU", "FRI"]
     times: dict[str, list[str]] = {}
-    while click.confirm("Add available time for a day? (MON, TUE, WED, THU, FRI)", default=default):
-        day = click.prompt("Day name", type=click.Choice(["MON", "TUE", "WED", "THU", "FRI"], case_sensitive=False), show_choices=True).upper()
+    while click.confirm("Add available time for a day?", default=default):
+        day = click.prompt("Day name", type=click.Choice(choices, case_sensitive=False), show_choices=True).upper()
         time_ranges_input = click.prompt("Time ranges for this day (e.g., 9-11, 13-15 or 09:00-11:00)")
         time_ranges = [normalize_range(r) for r in time_ranges_input.split(',') if r.strip()]
         times.setdefault(day, []).extend(time_ranges)
@@ -87,23 +88,21 @@ def add(ctx: click.Context) -> None:
     course_preferences = add_course_preferences(json_config, False)
     room_preferences = add_room_preferences(json_config, False)
     lab_preferences = add_lab_preferences(json_config, False)
-    faculty_config = FacultyConfig(name = name, maximum_credits = maximum_credits, minimum_credits = minimum_credits,
-                                  unique_course_limit = unique_course_limit, times = times, course_preferences = course_preferences,
-                                  room_preferences=room_preferences, lab_preferences=lab_preferences)
-    json_config.scheduler_config.faculty.append(faculty_config)
+    Faculty.add_faculty(json_config, name, maximum_credits, minimum_credits, unique_course_limit, times, course_preferences, room_preferences, lab_preferences)
     click.echo(f"Faculty '{name}' added.")
 
 @faculty.command()  # type: ignore
 @click.pass_context
 def delete(ctx: click.Context) -> None:
     """Delete a faculty member."""
-    faculty_list = get_json_config(ctx).scheduler_config.faculty
+    json_config = get_json_config(ctx)
+    faculty_list = json_config.scheduler_config.faculty
     name = click.prompt("Enter the name of the faculty to delete")
     faculty_obj = next((f for f in faculty_list if f.name == name), None)
     if not faculty_obj:
         click.echo(f"Faculty '{name}' not found.")
         return
-    faculty_list.remove(faculty_obj)
+    Faculty.del_faculty(json_config, name)
     click.echo(f"Faculty '{name}' deleted.")
 
 @faculty.command() # type: ignore
@@ -122,7 +121,7 @@ def modify(ctx: click.Context) -> None:
     minimum_credits = click.prompt("Minimum credit hours", type=int, default=faculty_obj.minimum_credits)
     unique_course_limit = click.prompt("Unique course limit", type=int, default=faculty_obj.unique_course_limit)
     times = faculty_obj.times
-    if click.confirm("Modify available times?", default=False):
+    if click.confirm("Modify available times? (you will create a new set from scratch)", default=False):
         times = add_times(True)
     course_preferences = faculty_obj.course_preferences.copy()
     if click.confirm("Modify course preferences? (you will create a new one from scratch)", default=False):
@@ -133,12 +132,5 @@ def modify(ctx: click.Context) -> None:
     lab_preferences = faculty_obj.lab_preferences.copy()
     if click.confirm("Modify lab preferences? (you will create a new one from scratch)", default=False):
         lab_preferences = add_lab_preferences(json_config, True)
-    faculty_config = FacultyConfig(name=new_name, maximum_credits=maximum_credits, minimum_credits=minimum_credits,
-                                   unique_course_limit=unique_course_limit, times=times,
-                                   course_preferences=course_preferences,
-                                   room_preferences=room_preferences, lab_preferences=lab_preferences)
-    for i, f in enumerate(faculty_list):
-        if f.name == name:
-            faculty_list[i] = faculty_config
-            break
+    Faculty.mod_faculty(json_config, new_name, maximum_credits, minimum_credits, unique_course_limit, times, course_preferences, room_preferences, lab_preferences)
     click.echo(f"Faculty '{name}' modified.")
