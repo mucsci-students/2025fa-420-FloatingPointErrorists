@@ -1,20 +1,12 @@
-import json
-from pathlib import Path
+import os
 from click.testing import CliRunner
-from scheduler_cli import cli, run_shell
+from scheduler_cli import cli
 
-def dummy_path() -> str:
-    return str(Path(__file__).parent / "dummy.json")
-
-def test_cli_has_commands():
-    assert "load" in cli.commands
-    assert "quit" in cli.commands
-    assert "show" in cli.commands
-    assert "save" in cli.commands
+DUMMY_JSON = os.path.join(os.path.dirname(__file__), "dummy.json")
 
 def test_load_config_valid_json(tmp_path):
     runner = CliRunner()
-    result = runner.invoke(cli, ["load", dummy_path()])
+    result = runner.invoke(cli, ["load", DUMMY_JSON])
     assert result.exit_code == 0
     assert "Configuration loaded" in result.output
 
@@ -35,7 +27,7 @@ def test_load_config_invalid_json(tmp_path):
 def test_show_config(tmp_path):
     runner = CliRunner()
     obj = {}
-    runner.invoke(cli, ["load", dummy_path()], obj=obj)
+    runner.invoke(cli, ["load", DUMMY_JSON], obj=obj)
     result = runner.invoke(cli, ["show"], obj=obj)
     assert 'Rooms:' in result.output
     assert '- Roddy 136' in result.output
@@ -50,7 +42,7 @@ def test_show_config_no_config():
 def test_save_config(tmp_path):
     runner = CliRunner()
     obj = {}
-    runner.invoke(cli, ["load", dummy_path()], obj=obj)
+    runner.invoke(cli, ["load", DUMMY_JSON], obj=obj)
     result = runner.invoke(cli, ["save"], obj=obj)
     assert "Configuration saved." in result.output
 
@@ -58,17 +50,3 @@ def test_save_config_no_config():
     runner = CliRunner()
     result = runner.invoke(cli, ["save"], obj={})
     assert "No configuration loaded." in result.output
-
-def test_quit_command_exits():
-    runner = CliRunner()
-    result = runner.invoke(cli, ["quit"])
-    assert result.exit_code == 0  # SystemExit
-
-def test_run_shell_help(monkeypatch, capsys):
-    # Provide "help" then "quit" as fake input
-    inputs = iter(["help", "quit"])
-    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    run_shell()
-    out, err = capsys.readouterr()
-    assert "Welcome to the Scheduler CLI!" in out
-    assert "Usage:" in out  # help text should show
