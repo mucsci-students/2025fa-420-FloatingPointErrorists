@@ -1,6 +1,6 @@
 import click
 from click_shell import shell
-from .base_cli import get_json_config, show
+from .base_cli import get_json_config, show, clear
 from .lab import Lab
 
 """
@@ -22,6 +22,7 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 def labs() -> None:
     """Manage rooms."""
     labs.add_command(show)
+    labs.add_command(clear)
 
 @labs.command()  # type: ignore
 @click.pass_context
@@ -40,7 +41,10 @@ def add(ctx: click.Context) -> None:
 def delete(ctx: click.Context) -> None:
     """Delete a lab."""
     json_config = get_json_config(ctx)
-    lab_ids = [lab for lab in json_config.scheduler_config.labs]
+    lab_ids = json_config.scheduler_config.labs
+    if len(lab_ids) == 0:
+        click.echo("No labs to delete.")
+        return
     lb = click.prompt("Enter lab name", type=click.Choice(lab_ids), show_choices=False)
     Lab.del_lab(json_config, lb)
     click.echo(f"{lb} deleted")
@@ -54,7 +58,10 @@ def delete(ctx: click.Context) -> None:
 def modify(ctx: click.Context) -> None:
     """Modify a lab."""
     json_config = get_json_config(ctx)
-    lab_ids = [lab for lab in json_config.scheduler_config.labs]
+    lab_ids = json_config.scheduler_config.labs
+    if len(lab_ids) == 0:
+        click.echo("No labs to modify.")
+        return
     lb = click.prompt("Enter lab name to modify", type=click.Choice(lab_ids), show_choices=False)
     lb2 = click.prompt("New lab name", type=str)
     Lab.mod_lab(json_config, lb, lb2)

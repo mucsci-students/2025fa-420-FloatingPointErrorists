@@ -4,7 +4,7 @@ from scheduler_cli import cli
 
 DUMMY_JSON = os.path.join(os.path.dirname(__file__), "dummy.json")
 
-def test_load_config_valid_json(tmp_path):
+def test_load_config_valid_json():
     runner = CliRunner()
     result = runner.invoke(cli, ["load", DUMMY_JSON])
     assert result.exit_code == 0
@@ -24,7 +24,7 @@ def test_load_config_invalid_json(tmp_path):
     assert result.exit_code != 0
     assert "Invalid JSON" in result.output
 
-def test_show_config(tmp_path):
+def test_show_config():
     runner = CliRunner()
     obj = {}
     runner.invoke(cli, ["load", DUMMY_JSON], obj=obj)
@@ -39,7 +39,7 @@ def test_show_config_no_config():
     result = runner.invoke(cli, ["show"])
     assert "No configuration loaded." in result.output
 
-def test_save_config(tmp_path):
+def test_save_config():
     runner = CliRunner()
     obj = {}
     runner.invoke(cli, ["load", DUMMY_JSON], obj=obj)

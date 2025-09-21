@@ -1,7 +1,7 @@
 import click
 from click_shell import shell
 from .faculty import Faculty
-from .base_cli import get_json_config, show
+from .base_cli import get_json_config, show, clear
 from .json import JsonConfig
 
 """
@@ -23,6 +23,7 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 def faculty() -> None:
     """Manage faculty"""
     faculty.add_command(show)
+    faculty.add_command(clear)
 
 def normalize_range(r: str) -> str:
     """
@@ -97,6 +98,9 @@ def delete(ctx: click.Context) -> None:
     """Delete a faculty member."""
     json_config = get_json_config(ctx)
     faculty_list = json_config.scheduler_config.faculty
+    if len(faculty_list) == 0:
+        click.echo("No faculty members to delete.")
+        return
     name = click.prompt("Enter the name of the faculty to delete")
     faculty_obj = next((f for f in faculty_list if f.name == name), None)
     if not faculty_obj:
@@ -111,6 +115,9 @@ def modify(ctx: click.Context) -> None:
     """Modify an existing faculty member."""
     json_config = get_json_config(ctx)
     faculty_list = json_config.scheduler_config.faculty
+    if len(faculty_list) == 0:
+        click.echo("No faculty members to modify.")
+        return
     name = click.prompt("Enter the name of the faculty to modify")
     faculty_obj = next((f for f in faculty_list if f.name == name), None)
     if not faculty_obj:

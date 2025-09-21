@@ -1,6 +1,6 @@
 import click
 from click_shell import shell
-from .base_cli import get_json_config, show
+from .base_cli import get_json_config, show, clear
 from .courses import Course
 from .json import JsonConfig
 
@@ -23,6 +23,7 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 def courses() -> None:
     """Manage courses."""
     courses.add_command(show)
+    courses.add_command(clear)
 
 def get_course_index(json_config: JsonConfig, prompt_text: str) -> int:
     """Helper function to get a valid course index from the user."""
@@ -84,11 +85,15 @@ def add(ctx: click.Context) -> None:
 def delete(ctx: click.Context) -> None:
     """Delete a course."""
     json_config = get_json_config(ctx)
+    if len(json_config.scheduler_config.courses) == 0:
+        click.echo("No courses to delete.")
+        return
     click.echo(Course.courses_string(json_config))
     index = get_course_index(json_config, "Enter the number of the course to delete")
     Course.del_course(index, json_config)
     click.echo(f"course number {index} deleted")
     while click.confirm("Delete another?", default=False):
+        click.echo(Course.courses_string(json_config))
         index = click.prompt("Enter the number course to delete", type=int)
         Course.del_course(index, json_config)
         click.echo(f"course number {index} deleted.")
@@ -99,6 +104,9 @@ def modify(ctx: click.Context) -> None:
     """Modify a course."""
     json_config = get_json_config(ctx)
     click.echo(Course.courses_string(json_config))
+    if len(json_config.scheduler_config.courses) == 0:
+        click.echo("No courses to modify.")
+        return
     index = get_course_index(json_config, "Enter the number of the course to modify")
     old_course = json_config.scheduler_config.courses[index]
     course_id = click.prompt("Enter course ID", type=str, default=old_course.course_id)

@@ -1,5 +1,6 @@
 import click
 import types
+import os
 from click_shell import shell
 from .json import JsonConfig
 
@@ -53,6 +54,11 @@ def enable_configuration_commands() -> None:
     cli.add_command(courses)  # Add courses sub-shell
     cli.add_command(rooms)  # Add rooms sub-shell
     cli.add_command(labs)  # Add labs sub-shell
+
+@cli.command() # type: ignore
+def clear() -> None:
+    """Clear the terminal screen."""
+    os.system("cls" if os.name == "nt" else "clear")
 
 # ====== JSON Commands ======
 @cli.command() # type: ignore

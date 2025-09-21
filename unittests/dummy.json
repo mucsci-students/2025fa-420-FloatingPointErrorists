@@ -739,16 +739,19 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "WED",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     }
@@ -761,11 +764,13 @@
                 "meetings": [
                     {
                         "day": "TUE",
+                        "start_time": null,
                         "duration": 75,
                         "lab": false
                     },
                     {
                         "day": "THU",
+                        "start_time": null,
                         "duration": 75,
                         "lab": false
                     }
@@ -778,11 +783,13 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     },
                     {
                         "day": "WED",
+                        "start_time": null,
                         "duration": 110,
                         "lab": false
                     }
@@ -795,11 +802,13 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 110,
                         "lab": false
                     }
@@ -812,11 +821,13 @@
                 "meetings": [
                     {
                         "day": "TUE",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     },
                     {
                         "day": "THU",
+                        "start_time": null,
                         "duration": 110,
                         "lab": false
                     }
@@ -829,11 +840,13 @@
                 "meetings": [
                     {
                         "day": "TUE",
+                        "start_time": null,
                         "duration": 110,
                         "lab": false
                     },
                     {
                         "day": "THU",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     }
@@ -846,16 +859,19 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "TUE",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     }
@@ -868,16 +884,19 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "WED",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     }
@@ -890,16 +909,19 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "THU",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     }
@@ -912,16 +934,19 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     },
                     {
                         "day": "TUE",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     }
@@ -934,16 +959,19 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     },
                     {
                         "day": "WED",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     }
@@ -956,16 +984,19 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     },
                     {
                         "day": "THU",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     }
@@ -978,16 +1009,19 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "TUE",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     }
@@ -1000,16 +1034,19 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "WED",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     }
@@ -1022,16 +1059,19 @@
                 "meetings": [
                     {
                         "day": "MON",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "THU",
+                        "start_time": null,
                         "duration": 50,
                         "lab": false
                     },
                     {
                         "day": "FRI",
+                        "start_time": null,
                         "duration": 110,
                         "lab": true
                     }
@@ -1039,7 +1079,9 @@
                 "disabled": true,
                 "start_time": null
             }
-        ]
+        ],
+        "max_time_gap": 30,
+        "min_time_overlap": 45
     },
     "limit": 100,
     "optimizer_flags": [
