@@ -23,7 +23,7 @@ def labs() -> None:
     """Manage rooms."""
     labs.add_command(show)
 
-@labs.command()
+@labs.command()  # type: ignore
 @click.pass_context
 def add(ctx: click.Context) -> None:
     """Add a lab."""
@@ -35,7 +35,7 @@ def add(ctx: click.Context) -> None:
         Lab.add_lab(json_config, lb)
     click.echo(f"Added {lab_list}.")
 
-@labs.command()
+@labs.command()  # type: ignore
 @click.pass_context
 def delete(ctx: click.Context) -> None:
     """Delete a lab."""
@@ -49,7 +49,7 @@ def delete(ctx: click.Context) -> None:
         Lab.del_lab(json_config, lb)
         click.echo(f"{lb} deleted.")
 
-@labs.command()
+@labs.command()  # type: ignore
 @click.pass_context
 def modify(ctx: click.Context) -> None:
     """Modify a lab."""

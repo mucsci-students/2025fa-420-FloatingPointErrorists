@@ -23,7 +23,7 @@ def rooms() -> None:
     """Manage rooms."""
     rooms.add_command(show)
 
-@rooms.command()
+@rooms.command() # type: ignore
 @click.pass_context
 def add(ctx: click.Context) -> None:
     """Add a room."""
@@ -35,7 +35,7 @@ def add(ctx: click.Context) -> None:
         Room.add_room(json_config, room)
     click.echo(f"{rms} added.")
 
-@rooms.command()
+@rooms.command() # type: ignore
 @click.pass_context
 def delete(ctx: click.Context) -> None:
     """Delete a room."""
@@ -49,7 +49,7 @@ def delete(ctx: click.Context) -> None:
         Room.del_room(json_config, rm)
         click.echo(f"{rm} deleted.")
 
-@rooms.command()
+@rooms.command() # type: ignore
 @click.pass_context
 def modify(ctx: click.Context) -> None:
     """Modify a room."""

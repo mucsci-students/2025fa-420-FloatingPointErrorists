@@ -28,7 +28,7 @@ def get_course_index(json_config: JsonConfig, prompt_text: str) -> int:
     """Helper function to get a valid course index from the user."""
     max_index = len(json_config.scheduler_config.courses) - 1
     while True:
-        index = click.prompt(prompt_text, type=int)
+        index: int = click.prompt(prompt_text, type=int)
         if 0 <= index <= max_index:
             return index
         click.echo(f"Invalid index. Please enter a number between 0 and {max_index}.")
@@ -79,7 +79,7 @@ def add(ctx: click.Context) -> None:
     Course.add_course(json_config, course_id, course_credits, room, lab, conflicts, faculty)
     click.echo(f"{course_id} added.")
 
-@courses.command()
+@courses.command()  # type: ignore
 @click.pass_context
 def delete(ctx: click.Context) -> None:
     """Delete a course."""
@@ -93,7 +93,7 @@ def delete(ctx: click.Context) -> None:
         Course.del_course(index, json_config)
         click.echo(f"course number {index} deleted.")
 
-@courses.command()
+@courses.command()  # type: ignore
 @click.pass_context
 def modify(ctx: click.Context) -> None:
     """Modify a course."""
