@@ -32,7 +32,11 @@ def add(ctx: click.Context) -> None:
     while click.confirm("Add another?", default=False):
         rms.append(click.prompt("Enter room name", type=str))
     for room in rms:
-        Room.add_room(json_config, room)
+        try:
+            Room.add_room(json_config, room)
+        except ValueError as e:
+            click.echo(f"{e}")
+            rms.remove(room)
     click.echo(f"{rms} added.")
 
 @rooms.command() # type: ignore
