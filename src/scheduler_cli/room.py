@@ -21,6 +21,9 @@ class Room:
             if course.room.count(room) == 1:
                 course.room[course.room.index(room)] = new_room
                 course.room.sort()
+        for faculty_member in json_config.scheduler_config.faculty:
+            if room in faculty_member.room_preferences:
+                faculty_member.room_preferences[new_room] = faculty_member.room_preferences.pop(room)
         json_config.scheduler_config.rooms.sort()
 
     @staticmethod
@@ -30,3 +33,6 @@ class Room:
         for course in json_config.scheduler_config.courses:
             if course.room.count(room) == 1:
                 course.room.remove(room)
+        for faculty_member in json_config.scheduler_config.faculty:
+            if room in faculty_member.room_preferences:
+                faculty_member.room_preferences.pop(room)

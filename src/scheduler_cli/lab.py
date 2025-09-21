@@ -21,6 +21,9 @@ class Lab:
             if course.lab.count(lab) == 1:
                 course.lab[course.lab.index(lab)] = new_lab
                 course.lab.sort()
+        for faculty_member in json_config.scheduler_config.faculty:
+            if lab in faculty_member.lab_preferences:
+                faculty_member.lab_preferences[new_lab] = faculty_member.labs_preferences.pop(lab)
         json_config.scheduler_config.labs.sort()
 
     @staticmethod
@@ -30,3 +33,6 @@ class Lab:
         for course in json_config.scheduler_config.courses:
             if course.lab.count(lab) == 1:
                 course.lab.remove(lab)
+        for faculty_member in json_config.scheduler_config.faculty:
+            if lab in faculty_member.lab_preferences:
+                faculty_member.lab_preferences.pop(lab)
