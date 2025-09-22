@@ -1,5 +1,6 @@
 import os
-from scheduler import load_config_from_file, CombinedConfig, SchedulerConfig, TimeSlotConfig
+from scheduler import load_config_from_file, CombinedConfig, SchedulerConfig, TimeSlotConfig, OptimizerFlags
+
 
 class JsonConfig:
     """
@@ -64,7 +65,8 @@ class JsonConfig:
 
     def set_optimization(self, to_optimize: bool) -> None:
         """Set the optimizer flags"""
-        self._combined_config.optimizer_flags = ["faculty_course", "faculty_room", "faculty_lab", "same_room", "same_lab", "pack_rooms"] if to_optimize else []
+        self._combined_config.optimizer_flags = [OptimizerFlags.FACULTY_COURSE, OptimizerFlags.FACULTY_ROOM, OptimizerFlags.FACULTY_LAB,
+                                                 OptimizerFlags.SAME_ROOM, OptimizerFlags.SAME_LAB, OptimizerFlags.PACK_ROOMS] if to_optimize else []
 
     def scheduler_str(self) -> str:
         """String representation of the scheduler configuration."""

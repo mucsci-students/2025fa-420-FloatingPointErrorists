@@ -42,7 +42,7 @@ def get_json_config(ctx: click.Context) -> JsonConfig:
     """Helper function to get the current JSON configuration."""
     config: JsonConfig = ctx.obj.get(CONFIG_KEY)
     if not config:
-        raise click.ClickException("No configuration loaded. Please do 'load <config.json>' first.")
+        raise click.ClickException("No configuration loaded. Please do 'load <configuration>' first.")
     return config
 
 def enable_configuration_commands() -> None:

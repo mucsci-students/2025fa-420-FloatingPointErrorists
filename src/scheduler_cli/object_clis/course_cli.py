@@ -38,30 +38,42 @@ def get_course_index(json_config: JsonConfig, prompt_text: str) -> int:
 
 def add_new_rooms(valid_rooms: list[str], default: bool) -> list[str]:
     """Helper function to add rooms to a course."""
-    rooms = []
-    while click.confirm("Add room(s)?", default=default):
-        rooms.append(click.prompt("Enter room name", type=click.Choice(valid_rooms), show_choices=False, show_default=False))
+    room = click.prompt("Enter room name", type=click.Choice(valid_rooms), show_choices=False)
+    rooms = [room]
+    valid_rooms.remove(room)
+    while click.confirm("Add more rooms?", default=default):
+        room = click.prompt("Enter room name", type=click.Choice(valid_rooms), show_choices=False)
+        rooms.append(room)
+        valid_rooms.remove(room)
     return rooms
 
 def add_new_labs(valid_labs: list[str], default: bool) -> list[str]:
     """Helper function to add labs to a course."""
     labs = []
     while click.confirm("Add labs(s)?", default=default):
-        labs.append(click.prompt("Enter lab name", type=click.Choice(valid_labs), show_choices=False, show_default=False))
+        lab = click.prompt("Enter lab name", type=click.Choice(valid_labs), show_choices=False)
+        labs.append(lab)
+        valid_labs.remove(lab)
     return labs
 
 def add_new_conflicts(valid_courses: list[str], default: bool) -> list[str]:
     """Helper function to add course conflicts to a course."""
     conflicts = []
     while click.confirm("Add conflict(s)?", default=default):
-        conflicts.append(click.prompt("Enter course conflict", type=click.Choice(valid_courses), show_choices=False, show_default=False))
+        conflict = click.prompt("Enter course conflict", type=click.Choice(valid_courses), show_choices=False)
+        conflicts.append(conflict)
+        valid_courses.remove(conflict)
     return conflicts
 
 def add_new_faculty(valid_faculty: list[str], default: bool) -> list[str]:
     """Helper function to add faculty to a course."""
-    faculty = []
-    while click.confirm("Add faculty?", default=default):
-        faculty.append(click.prompt("Enter faculty name", type=click.Choice(valid_faculty), show_choices=False, show_default=False))
+    new_faculty = click.prompt("Enter faculty name", type=click.Choice(valid_faculty), show_choices=False)
+    faculty = [new_faculty]
+    valid_faculty.remove(new_faculty)
+    while click.confirm("Add another faculty?", default=default):
+        new_faculty = click.prompt("Enter faculty name", type=click.Choice(valid_faculty), show_choices=False)
+        faculty.append(new_faculty)
+        valid_faculty.remove(new_faculty)
     return faculty
 
 @courses.command() # type: ignore
@@ -69,12 +81,12 @@ def add_new_faculty(valid_faculty: list[str], default: bool) -> list[str]:
 def add(ctx: click.Context) -> None:
     """Add a course."""
     json_config = get_json_config(ctx)
-    room_ids = json_config.scheduler_config.rooms
-    lab_ids = json_config.scheduler_config.labs
+    room_ids = json_config.scheduler_config.rooms.copy()
+    lab_ids = json_config.scheduler_config.labs.copy()
     course_ids = [c.course_id for c in json_config.scheduler_config.courses]
     faculty_names = [faculty.name for faculty in json_config.scheduler_config.faculty]
     course_id = click.prompt("Enter course ID", type=str)
-    course_credits = click.prompt("Enter course credits", type=int)
+    course_credits = click.prompt("Enter course credits", type=click.IntRange(min=1))
     room = add_new_rooms(room_ids, False)
     lab = add_new_labs(lab_ids, False)
     conflicts = add_new_conflicts(course_ids, False)
@@ -112,13 +124,14 @@ def modify(ctx: click.Context) -> None:
     index = get_course_index(json_config, "Enter the number of the course to modify")
     old_course = json_config.scheduler_config.courses[index]
     course_id = click.prompt("Enter course ID", type=str, default=old_course.course_id)
-    course_credits = click.prompt("Enter course credits", type=int, default=old_course.credits)
-    room = old_course.room
-    lab = old_course.lab
+    course_credits = click.prompt("Enter course credits", type=click.IntRange(min=1), default=old_course.credits)
+    room = old_course.room.copy()
+    lab = old_course.lab.copy()
     conflicts = old_course.conflicts
     faculty = old_course.faculty
     valid_faculty = [f.name for f in json_config.scheduler_config.faculty]
     valid_courses = [c.course_id for c in json_config.scheduler_config.courses]
+    valid_courses.remove(old_course.course_id)
     if click.confirm("Modify course rooms? (you will create a new set from scratch)", default=False):
         room = add_new_rooms(json_config.scheduler_config.rooms, True)
     if click.confirm("Modify course labs? (you will create a new set from scratch)", default=False):

@@ -17,6 +17,9 @@ class Course:
             conflicts=conflicts,
             faculty=faculty
         )
+        for faculty_member in json_config.scheduler_config.faculty:
+            if faculty_member.name in faculty:
+                faculty_member.course_preferences[course_id] = 5 # default preference score
         json_config.scheduler_config.courses.append(course_config)
 
     @staticmethod
@@ -24,6 +27,7 @@ class Course:
         """modifies a current course and updates their information"""
         old_course_id = json_config.scheduler_config.courses[index].course_id
         if old_course_id != course_id:
+            """ Update references in faculty and conflicts if the course ID has changed """
             for faculty_member in json_config.scheduler_config.faculty:
                 if old_course_id in faculty_member.course_preferences:
                     faculty_member.course_preferences[course_id] = faculty_member.course_preferences.pop(old_course_id)
@@ -31,6 +35,9 @@ class Course:
                 if old_course_id in other_course.conflicts:
                     other_course.conflicts.remove(old_course_id)
                     other_course.conflicts.append(course_id)
+        for faculty_member in json_config.scheduler_config.faculty:
+            if faculty_member.name in faculty and course_id not in faculty_member.course_preferences:
+                faculty_member.course_preferences[course_id] = 5  # default preference score
         course_config = CourseConfig(
             course_id=course_id,
             credits=course_credits,

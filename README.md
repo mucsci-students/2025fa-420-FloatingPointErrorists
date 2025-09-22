@@ -43,7 +43,7 @@ CLI for managing faculty, courses, rooms, and labs. It also interfaces with the 
     * `show` to display the current configuration.
     * `save` to save the current configuration to the loaded file.
     * `clear` to clear the terminal screen.
-    * `run` to run the scheduler on the current configuration.
+    * `run` to run the scheduler on the current configuration. (Generated schedules will be saved in the `schedules` directory.)
     * `faculty` to manage faculty members in the faculty shell.
     * `rooms` to manage rooms in the rooms shell.
     * `labs` to manage labs in the labs shell.
