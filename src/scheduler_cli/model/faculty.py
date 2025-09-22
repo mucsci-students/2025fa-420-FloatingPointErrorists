@@ -44,6 +44,11 @@ class Faculty:
             room_preferences=room_preferences,
             lab_preferences=lab_preferences
         )
+        for course in json_config.scheduler_config.courses:
+            if old_name in course.faculty and course.course_id not in course_preferences:
+                if len(course.faculty) == 1:
+                    raise ValueError(f"Cannot remove {course.course_id} from course preferences as {old_name} is the only faculty assigned to it.")
+                course.faculty.remove(old_name)
         """finds the faculty within the scheduler and replaces it with the updated one"""
         for i, faculty in enumerate(json_config.scheduler_config.faculty):
             if json_config.scheduler_config.faculty[i].name == old_name:

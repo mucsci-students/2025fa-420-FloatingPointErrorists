@@ -40,12 +40,16 @@ def normalize_range(r: str) -> str:
 def add_times(default: bool) -> dict[str, list[str]]:
     """Helper function to add available times for a faculty member."""
     choices = ["MON", "TUE", "WED", "THU", "FRI"]
-    times: dict[str, list[str]] = {}
-    while click.confirm("Add available time for a day?", default=default):
-        day = click.prompt("Day name", type=click.Choice(choices, case_sensitive=False), show_choices=True).upper()
+    times: dict[str, list[str]] = {"MON": [], "TUE": [], "WED": [], "THU": [], "FRI": []}
+    def add_day() -> None:
+        day = click.prompt("Add a day name", type=click.Choice(choices, case_sensitive=False),
+                           show_choices=True).upper()
         time_ranges_input = click.prompt("Time ranges for this day (e.g., 9-11, 13-15 or 09:00-11:00)")
         time_ranges = [normalize_range(r) for r in time_ranges_input.split(',') if r.strip()]
         times.setdefault(day, []).extend(time_ranges)
+    add_day()
+    while click.confirm("Add another available time for a day?", default=default):
+        add_day()
     return times
 
 def add_course_preferences(json_config: JsonConfig, default: bool) -> dict[str, int]:
@@ -93,7 +97,7 @@ def add(ctx: click.Context) -> None:
             if credit > maximum_credits:
                 credit_choices.remove(credit)
     minimum_credits = click.prompt("Minimum credit hours", type=click.Choice(credit_choices), default=maximum_credits)
-    unique_course_limit = click.prompt("Unique course limit", type=int)
+    unique_course_limit = click.prompt("Unique course limit", type=click.IntRange(min=1), show_choices=True)
     times = add_times(False)
     course_preferences = add_course_preferences(json_config, False)
     room_preferences = add_room_preferences(json_config, False)
@@ -144,7 +148,7 @@ def modify(ctx: click.Context) -> None:
                 credit_choices.remove(credit)
     minimum_credits = click.prompt("Minimum credit hours", type=click.Choice(credit_choices), show_choices=True,
                                    default=faculty_obj.minimum_credits if maximum_credits == faculty_obj.maximum_credits else maximum_credits)
-    unique_course_limit = click.prompt("Unique course limit", type=int, default=faculty_obj.unique_course_limit)
+    unique_course_limit = click.prompt("Unique course limit", type=click.IntRange(min=1), default=faculty_obj.unique_course_limit)
     times = faculty_obj.times
     if click.confirm("Modify available times? (you will create a new set from scratch)", default=False):
         times = add_times(True)
@@ -157,5 +161,9 @@ def modify(ctx: click.Context) -> None:
     lab_preferences = faculty_obj.lab_preferences.copy()
     if click.confirm("Modify lab preferences? (you will create a new one from scratch)", default=False):
         lab_preferences = add_lab_preferences(json_config, True)
-    Faculty.mod_faculty(json_config, name, new_name, maximum_credits, minimum_credits, unique_course_limit, times, course_preferences, room_preferences, lab_preferences)
+    try:
+        Faculty.mod_faculty(json_config, name, new_name, maximum_credits, minimum_credits, unique_course_limit, times, course_preferences, room_preferences, lab_preferences)
+    except ValueError as e:
+        click.echo(f"Error: {e}")
+        return
     click.echo(f"Faculty '{name}' modified.")
