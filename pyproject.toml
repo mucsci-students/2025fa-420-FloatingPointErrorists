@@ -1,0 +1,28 @@
+[project]
+name = "scheduler_cli"
+version = "0.1.0"
+description = "A CLI that allows for JSON config modification and schedule generation."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "course-constraint-scheduler",
+    "click",
+    "click-shell"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "mypy",
+    "ruff"
+]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[project.scripts]
+scheduler-cli = "scheduler_cli.main:main"
