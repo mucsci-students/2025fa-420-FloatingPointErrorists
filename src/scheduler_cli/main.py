@@ -1,4 +1,4 @@
-from .base_cli import cli, apply_signal_handlers
+from scheduler_cli.cli.base_cli import cli, apply_signal_handlers
 
 def main() -> None:
     apply_signal_handlers()
