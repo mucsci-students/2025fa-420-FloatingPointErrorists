@@ -4,7 +4,7 @@ import os
 import signal
 from click_shell import shell
 from scheduler_cli.model.json import JsonConfig
-from .run_scheduler import run_using_config, write_as_json, write_as_csv
+from scheduler_cli.model.run_scheduler import run_using_config, write_as_json, write_as_csv
 
 """
 This module implements a command-line interface (CLI) for managing JSON configuration files.
@@ -47,10 +47,10 @@ def get_json_config(ctx: click.Context) -> JsonConfig:
 
 def enable_configuration_commands() -> None:
     """Add all the sub-shells to the cli."""
-    from scheduler_cli.object_clis.faculty_cli import faculty
-    from scheduler_cli.object_clis.course_cli import courses
-    from scheduler_cli.object_clis.room_cli import rooms
-    from scheduler_cli.object_clis.lab_cli import labs
+    from scheduler_cli.cli.faculty_cli import faculty
+    from scheduler_cli.cli.course_cli import courses
+    from scheduler_cli.cli.room_cli import rooms
+    from scheduler_cli.cli.lab_cli import labs
     cli.add_command(faculty)  # Add faculty sub-shell
     cli.add_command(courses)  # Add courses sub-shell
     cli.add_command(rooms)  # Add rooms sub-shell

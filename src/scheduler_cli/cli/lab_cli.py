@@ -1,6 +1,6 @@
 import click
 from click_shell import shell
-from scheduler_cli.base_cli import get_json_config, show, clear, save, run
+from scheduler_cli.cli.base_cli import get_json_config, show, clear, save, run
 from scheduler_cli.model.lab import Lab
 
 """
