@@ -2,6 +2,9 @@ import sys
 from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButton, QVBoxLayout, QTabWidget, QMainWindow
 from PyQt6.QtGui import QGuiApplication
 
+sys.path.append('../controller')
+from test import ModClass
+
 """Simple Gui Window Initializer"""
 
 class SimpleGUI(QMainWindow):
@@ -83,6 +86,11 @@ class SimpleTabs(QWidget):
 
         self.editor_tab.layout.addWidget(self.editor_label)
         self.editor_tab.setLayout(self.editor_tab.layout)
+
+        self.button = QPushButton("Test button")
+        self.editor_tab.layout.addWidget(self.button)
+        
+        self.button.clicked.connect(self.handleButton)
 
         self.generator_tab.layout = QVBoxLayout(self)
         self.generator_label = QLabel()
@@ -191,3 +199,7 @@ class SimpleTabs(QWidget):
 
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
+
+    def handleButton(self):
+        self.modifier = ModClass(self)
+        self.modifier.test()
