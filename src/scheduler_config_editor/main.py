@@ -1,5 +1,5 @@
 import sys
-from .base_cli import cli, apply_signal_handlers
+from cli.base_cli import cli, apply_signal_handlers
 
 def main() -> None:
     is_cli_mode = False

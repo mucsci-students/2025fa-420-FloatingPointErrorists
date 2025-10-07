@@ -1,6 +1,6 @@
 import click
 from click_shell import shell
-from scheduler_config_editor.base_cli import get_json_config, show, clear, save, run
+from scheduler_config_editor.cli.base_cli import get_json_config, show, clear, save, run
 from scheduler_config_editor.model.courses import Course
 from scheduler_config_editor.model.json import JsonConfig
 
