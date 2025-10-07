@@ -1,7 +1,7 @@
 import click
 from click_shell import shell
-from scheduler_cli.cli.base_cli import get_json_config, show, clear, save, run
-from scheduler_cli.model.room import Room
+from .base_cli import get_json_config, show, clear, save, run
+from scheduler_config_editor.model.room import Room
 
 """
 This module implements a command-line interface (CLI) for managing rooms in the configuration file.

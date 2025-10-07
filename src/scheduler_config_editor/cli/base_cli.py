@@ -3,8 +3,8 @@ import types
 import os
 import signal
 from click_shell import shell
-from scheduler_cli.model.json import JsonConfig
-from scheduler_cli.model.run_scheduler import run_using_config, write_as_json, write_as_csv
+from scheduler_config_editor.model.json import JsonConfig
+from scheduler_config_editor.model.run_scheduler import run_using_config, write_as_json, write_as_csv
 
 """
 This module implements a command-line interface (CLI) for managing JSON configuration files.
@@ -19,8 +19,6 @@ To utilize it for a command:
 
 To read up on how to use click, visit: https://click.palletsprojects.com/en/stable/
 """
-
-CONFIG_KEY: str = "config"
 
 # ====== CLI Definition & General functions ======
 @shell(prompt="scheduler> ", intro="Welcome to the Scheduler CLI!\nType 'help' to see available commands, 'quit' to exit.\n") # type: ignore
@@ -40,17 +38,17 @@ def apply_signal_handlers() -> None:
 
 def get_json_config(ctx: click.Context) -> JsonConfig:
     """Helper function to get the current JSON configuration."""
-    config: JsonConfig = ctx.obj.get(CONFIG_KEY)
+    config: JsonConfig = ctx.obj.get("config")
     if not config:
         raise click.ClickException("No configuration loaded. Please do 'load <configuration>' first.")
     return config
 
 def enable_configuration_commands() -> None:
     """Add all the sub-shells to the cli."""
-    from scheduler_cli.cli.faculty_cli import faculty
-    from scheduler_cli.cli.course_cli import courses
-    from scheduler_cli.cli.room_cli import rooms
-    from scheduler_cli.cli.lab_cli import labs
+    from .faculty_cli import faculty
+    from .course_cli import courses
+    from .room_cli import rooms
+    from .lab_cli import labs
     cli.add_command(faculty)  # Add faculty sub-shell
     cli.add_command(courses)  # Add courses sub-shell
     cli.add_command(rooms)  # Add rooms sub-shell
@@ -82,7 +80,7 @@ def load(ctx: click.Context, file_path: str) -> None:
     import json
     try:
         config = JsonConfig(file_path)
-        ctx.obj[CONFIG_KEY] = config
+        ctx.obj["config"] = config
         enable_configuration_commands()
         click.echo("Configuration loaded")
     except json.JSONDecodeError as e:

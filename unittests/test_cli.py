@@ -1,6 +1,6 @@
 import os
 from click.testing import CliRunner
-from scheduler_cli import cli
+from scheduler_config_editor import cli
 
 DUMMY_JSON = os.path.join(os.path.dirname(__file__), "dummy.json")
 
