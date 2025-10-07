@@ -31,8 +31,10 @@ CLI for managing faculty, courses, rooms, and labs. It also interfaces with the 
 
 ### Executing + Using the Program
 
-* To run the program, use the command:
+* To run the program in gui mode, use the command:
 ```sce``` (scheduler-config-editor)
+* To run it in cli mode, add an argument:
+```sce -cli```
 * To load a specific configuration file, use:
 ```load <path-to-file>```
 * To create a new configuration file, use:
