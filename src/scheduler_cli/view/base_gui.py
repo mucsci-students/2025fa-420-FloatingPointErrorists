@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButto
 from PyQt6.QtGui import QGuiApplication
 
 sys.path.append('../controller')
-from test import ModClass
+from scheduler_cli.controller.testing import ModClass
 
 """Simple Gui Window Initializer"""
 
