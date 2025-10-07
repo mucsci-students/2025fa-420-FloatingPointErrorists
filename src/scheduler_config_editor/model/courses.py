@@ -1,4 +1,4 @@
-from scheduler_config_editor.model.json import JsonConfig
+from .json import JsonConfig
 from scheduler import CourseConfig
 
 class Course:
