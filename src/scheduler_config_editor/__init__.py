@@ -1,8 +1,8 @@
-from cli.base_cli import cli
-from model.courses import Course
-from model.faculty import Faculty
-from model.room import Room
-from model.lab import Lab
-from model.json import JsonConfig
+from .cli import cli
+from .model import Course
+from .model import Faculty
+from .model import Room
+from .model import Lab
+from .model import JsonConfig
 
 __all__ = ["cli", "Course", "Faculty", "Room", "Lab", "JsonConfig"]

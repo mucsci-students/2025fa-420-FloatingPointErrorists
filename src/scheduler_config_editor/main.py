@@ -1,5 +1,6 @@
 import sys
-from cli.base_cli import cli, apply_signal_handlers
+from .cli import cli, apply_signal_handlers
+from .view import view
 
 def main() -> None:
     is_cli_mode = False
@@ -14,7 +15,7 @@ def main() -> None:
         apply_signal_handlers()
         cli()
     else:
-        print("Not Yet Implemented")
+        view()
 
 if __name__ == "__main__":
     main()
