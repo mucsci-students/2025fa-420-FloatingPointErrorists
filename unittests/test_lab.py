@@ -1,6 +1,6 @@
 from pathlib import Path
 from click.testing import CliRunner
-from scheduler_cli import cli, Lab
+from scheduler_config_editor import cli, Lab
 
 CONFIG_KEY = "config"
 

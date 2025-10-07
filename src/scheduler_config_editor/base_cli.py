@@ -3,7 +3,7 @@ import types
 import os
 import signal
 from click_shell import shell
-from scheduler_cli.model.json import JsonConfig
+from scheduler_config_editor.model.json import JsonConfig
 from .run_scheduler import run_using_config, write_as_json, write_as_csv
 
 """
@@ -47,10 +47,10 @@ def get_json_config(ctx: click.Context) -> JsonConfig:
 
 def enable_configuration_commands() -> None:
     """Add all the sub-shells to the cli."""
-    from scheduler_cli.object_clis.faculty_cli import faculty
-    from scheduler_cli.object_clis.course_cli import courses
-    from scheduler_cli.object_clis.room_cli import rooms
-    from scheduler_cli.object_clis.lab_cli import labs
+    from scheduler_config_editor.object_clis.faculty_cli import faculty
+    from scheduler_config_editor.object_clis.course_cli import courses
+    from scheduler_config_editor.object_clis.room_cli import rooms
+    from scheduler_config_editor.object_clis.lab_cli import labs
     cli.add_command(faculty)  # Add faculty sub-shell
     cli.add_command(courses)  # Add courses sub-shell
     cli.add_command(rooms)  # Add rooms sub-shell

@@ -1,6 +1,6 @@
 from _ast import Gt
 from typing import Dict, List, Annotated
-from scheduler_cli.model.json import JsonConfig
+from scheduler_config_editor.model.json import JsonConfig
 from scheduler import FacultyConfig
 
 

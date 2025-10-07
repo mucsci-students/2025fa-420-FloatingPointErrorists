@@ -1,4 +1,4 @@
-from scheduler_cli.model.json import JsonConfig
+from scheduler_config_editor.model.json import JsonConfig
 
 class Lab:
     """

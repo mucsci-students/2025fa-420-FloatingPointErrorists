@@ -1,8 +1,8 @@
 import click
 from click_shell import shell
-from scheduler_cli.model.faculty import Faculty
-from scheduler_cli.base_cli import get_json_config, show, clear, run, save
-from scheduler_cli.model.json import JsonConfig
+from scheduler_config_editor.model.faculty import Faculty
+from scheduler_config_editor.base_cli import get_json_config, show, clear, run, save
+from scheduler_config_editor.model.json import JsonConfig
 
 """
 This module implements a command-line interface (CLI) for managing faculty in the configuration file.
@@ -87,9 +87,9 @@ def add(ctx: click.Context) -> None:
     """Add a new faculty member."""
     json_config = get_json_config(ctx)
     name = click.prompt("Faculty member's name")
-    maximum_credits = click.prompt("Maximum credit hours", type=click.IntRange(min=0, max=20))
+    maximum_credits = click.prompt("Maximum credit hours", type=click.IntRange(min=0))
     minimum_credits = click.prompt("Minimum credit hours", type=click.IntRange(min=0, max=maximum_credits), default=maximum_credits)
-    unique_course_limit = click.prompt("Unique course limit", type=click.IntRange(min=1, max=5))
+    unique_course_limit = click.prompt("Unique course limit", type=click.IntRange(min=1))
     times = add_times(False)
     course_preferences = add_course_preferences(json_config, False)
     room_preferences = add_room_preferences(json_config, False)
@@ -129,10 +129,10 @@ def modify(ctx: click.Context) -> None:
         click.echo(f"Faculty '{name}' not found.")
         return
     new_name = click.prompt("Faculty member's name", type=str, default=faculty_obj.name)
-    maximum_credits = click.prompt("Maximum credit hours", type=click.IntRange(min=0, max=10), default=faculty_obj.maximum_credits)
+    maximum_credits = click.prompt("Maximum credit hours", type=click.IntRange(min=0), default=faculty_obj.maximum_credits)
     minimum_credits = click.prompt("Minimum credit hours", type=click.IntRange(min=0, max=maximum_credits),
                                    default=faculty_obj.minimum_credits if maximum_credits == faculty_obj.maximum_credits else maximum_credits)
-    unique_course_limit = click.prompt("Unique course limit", type=click.IntRange(min=1, max=5), default=faculty_obj.unique_course_limit)
+    unique_course_limit = click.prompt("Unique course limit", type=click.IntRange(min=1), default=faculty_obj.unique_course_limit)
     times = faculty_obj.times
     if click.confirm("Modify available times? (you will create a new set from scratch)", default=False):
         times = add_times(True)

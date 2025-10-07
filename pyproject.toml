@@ -1,5 +1,5 @@
 [project]
-name = "scheduler_cli"
+name = "scheduler_config_editor"
 version = "0.1.0"
 description = "A CLI that allows for JSON config modification and schedule generation."
 readme = "README.md"
@@ -18,9 +18,6 @@ dev = [
     "ruff"
 ]
 
-[tool.uv]
-package = true
-
 [tool.mypy]
 python_version = "3.13"
 strict = true
@@ -28,4 +25,4 @@ disallow_untyped_defs = true
 ignore_missing_imports = true
 
 [project.scripts]
-scheduler-cli = "scheduler_cli.main:main"
+sce = "scheduler_config_editor.main:main"
