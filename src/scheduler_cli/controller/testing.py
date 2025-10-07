@@ -3,10 +3,10 @@ from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButto
 from PyQt6.QtGui import QGuiApplication
 
 class ModClass:
-    def __init__ (self, target_widget):
+    def __init__ (self, target_widget) -> None:
         self.target_widget = target_widget
 
-    def test(self):
+    def test(self) -> None:
         self.target_widget.editor_label.setText("""
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡯⠟⠛⠋⠉⠉⠉⠉⠉⠙⠛⠓⠿⠿⣟⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡯⠞⠋⢁⡀⠤⠀⠒⠀⠀⠀⠐⠒⠠⢀⠢⠀⠀⠀⠉⠛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿

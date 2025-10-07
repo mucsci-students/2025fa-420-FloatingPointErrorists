@@ -3,13 +3,13 @@ from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButto
 from PyQt6.QtGui import QGuiApplication
 
 sys.path.append('../controller')
-from test import ModClass
+from scheduler_cli.controller.testing import ModClass
 
 """Simple Gui Window Initializer"""
 
 class SimpleGUI(QMainWindow):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         # Grabbing dimensions of user's primary screen
@@ -31,7 +31,7 @@ class SimpleGUI(QMainWindow):
 
 class SimpleTabs(QWidget):
 
-    def __init__(self, parent):
+    def __init__(self, parent) -> None:
 
         super(QWidget, self).__init__(parent)
 
@@ -200,6 +200,6 @@ class SimpleTabs(QWidget):
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
 
-    def handleButton(self):
+    def handleButton(self) -> None:
         self.modifier = ModClass(self)
         self.modifier.test()
