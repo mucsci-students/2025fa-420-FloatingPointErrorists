@@ -3,6 +3,7 @@ import types
 import os
 import signal
 from click_shell import shell
+from scheduler_config_editor.model.schedule_handler import ScheduleHandler
 from scheduler_config_editor.model.json import JsonConfig
 from scheduler_config_editor.model.run_scheduler import run_using_config, write_as_json, write_as_csv
 
@@ -75,7 +76,7 @@ def clear() -> None:
 @cli.command() # type: ignore
 @click.argument("file_path", type=click.Path())
 @click.pass_context
-def load(ctx: click.Context, file_path: str) -> None:
+def load_config(ctx: click.Context, file_path: str) -> None:
     """Load a JSON configuration file."""
     import json
     try:
@@ -105,6 +106,27 @@ def save(ctx: click.Context) -> None:
         raise click.ClickException(f"Permission error: {e}")
 
 @cli.command() # type: ignore
+@click.argument("file_path", type=click.Path())
+@click.pass_context
+def load_schedules(ctx: click.Context, file_path: str) -> None:
+    """Load schedules from a JSON or CSV file."""
+    try:
+        schedule_handler = ScheduleHandler()
+        schedule_handler.import_schedules(file_path)
+        schedules = schedule_handler.schedules
+        if not schedules:
+            click.echo("No schedules found in the file.")
+            return
+        ctx.obj["schedule_handler"] = schedule_handler
+        from .schedule_viewer import schedule_viewer
+        cli.add_command(schedule_viewer)
+        schedule_viewer.main(standalone_mode=False, obj=ctx.obj)
+    except FileNotFoundError as e:
+        raise click.ClickException(f"{e}")
+    except ValueError as e:
+        raise click.ClickException(f"{e}")
+
+@cli.command() # type: ignore
 @click.pass_context
 def run(ctx: click.Context) -> None:
     """Run the scheduler with the current configuration."""
@@ -114,11 +136,16 @@ def run(ctx: click.Context) -> None:
     config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1, max=100), default=1) ) # Ensure limits are set)
     click.echo("Running scheduler, please give it up to a minute...")
     schedule_list = run_using_config(config.combined_config)
-    for schedule in schedule_list:
-        click.echo("Schedule:")
-        for course in schedule:
-            click.echo(f"{course.as_csv()}")
-    typing = click.prompt("\nDo you want to save the program as a Json, CSV, both or none?", type=click.Choice(['json', 'csv', 'both', 'none']), default="csv")
+    schedule_handler = ScheduleHandler()
+    schedule_handler.load_schedules(schedule_list)
+    ctx.obj["schedule_handler"] = schedule_handler
+    from .schedule_viewer import schedule_viewer
+    cli.add_command(schedule_viewer)
+    try:
+        schedule_viewer.main(standalone_mode=False, obj=ctx.obj)
+    except SystemExit:
+        pass  # Continue after shell exit
+    typing = click.prompt("\nDo you want to save the schedule(s) as a Json, CSV, both or none?", type=click.Choice(['json', 'csv', 'both', 'none']), default="csv")
     if typing == 'none':
         click.echo("Not saving the file.")
     else:

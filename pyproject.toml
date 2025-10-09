@@ -8,7 +8,8 @@ dependencies = [
     "course-constraint-scheduler",
     "click",
     "click-shell",
-    "PyQt6"
+    "PyQt6",
+    "tabulate"
 ]
 
 [project.optional-dependencies]
