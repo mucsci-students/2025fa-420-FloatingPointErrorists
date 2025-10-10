@@ -1,15 +1,17 @@
 import click
 from enum import Enum
 from click_shell import shell
-from .base_cli import clear
+from .base_cli import clear, HANDLER_KEY
 from ..model import ScheduleHandler
 
 class DisplayMode(Enum):
+    """ Modes for displaying schedules. """
     DEFAULT = "default"
     FACULTY = "faculty"
     ROOM = "room"
 
 def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> None:
+    """Navigate through schedules interactively."""
     schedules = schedule_handler.schedules
     idx = 0
     while 0 <= idx < len(schedules):
@@ -44,12 +46,12 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
 
 def get_schedule_handler(ctx: click.Context) -> ScheduleHandler:
     """Retrieve the ScheduleHandler from the context."""
-    schedule_handler: ScheduleHandler = ctx.obj.get("schedule_handler")
+    schedule_handler: ScheduleHandler = ctx.obj.get(HANDLER_KEY)
     if not schedule_handler:
         raise click.ClickException("No schedules loaded. Please do 'load_schedules <file_path>' first.")
     return schedule_handler
 
-@shell(prompt="schedule-viewer> ", intro="Welcome to the Schedule Viewer!") # type: ignore
+@shell(prompt="schedule-viewer> ", intro="You may now view the schedules.\n Type 'help' to see available commands, 'quit' to exit.\n") # type: ignore
 @click.pass_context
 def schedule_viewer(ctx: click.Context) -> None:
     """Manage rooms."""
@@ -59,17 +61,20 @@ def schedule_viewer(ctx: click.Context) -> None:
 @schedule_viewer.command() # type: ignore
 @click.pass_context
 def show(ctx: click.Context) -> None:
+    """Show schedules in default mode."""
     schedule_handler = get_schedule_handler(ctx)
     navigate_schedules(schedule_handler, DisplayMode.DEFAULT)
 
 @schedule_viewer.command() # type: ignore
 @click.pass_context
 def show_rooms(ctx: click.Context) -> None:
+    """Show schedules by room."""
     schedule_handler = get_schedule_handler(ctx)
     navigate_schedules(schedule_handler, DisplayMode.ROOM)
 
 @schedule_viewer.command() # type: ignore
 @click.pass_context
 def show_faculty(ctx: click.Context) -> None:
+    """Show schedules by faculty."""
     schedule_handler = get_schedule_handler(ctx)
     navigate_schedules(schedule_handler, DisplayMode.FACULTY)

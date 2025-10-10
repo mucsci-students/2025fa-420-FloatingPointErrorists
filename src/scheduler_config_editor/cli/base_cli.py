@@ -21,6 +21,8 @@ To utilize it for a command:
 To read up on how to use click, visit: https://click.palletsprojects.com/en/stable/
 """
 
+HANDLER_KEY = "SCHEDULER_CLI_HANDLER"
+
 # ====== CLI Definition & General functions ======
 @shell(prompt="scheduler> ", intro="Welcome to the Scheduler CLI!\nType 'help' to see available commands, 'quit' to exit.\n") # type: ignore
 @click.pass_context
@@ -117,13 +119,11 @@ def load_schedules(ctx: click.Context, file_path: str) -> None:
         if not schedules:
             click.echo("No schedules found in the file.")
             return
-        ctx.obj["schedule_handler"] = schedule_handler
+        ctx.obj[HANDLER_KEY] = schedule_handler
         from .schedule_viewer import schedule_viewer
         cli.add_command(schedule_viewer)
         schedule_viewer.main(standalone_mode=False, obj=ctx.obj)
     except FileNotFoundError as e:
-        raise click.ClickException(f"{e}")
-    except ValueError as e:
         raise click.ClickException(f"{e}")
 
 @cli.command() # type: ignore
@@ -138,7 +138,7 @@ def run(ctx: click.Context) -> None:
     schedule_list = run_using_config(config.combined_config)
     schedule_handler = ScheduleHandler()
     schedule_handler.load_schedules(schedule_list)
-    ctx.obj["schedule_handler"] = schedule_handler
+    ctx.obj[HANDLER_KEY] = schedule_handler
     from .schedule_viewer import schedule_viewer
     cli.add_command(schedule_viewer)
     try:

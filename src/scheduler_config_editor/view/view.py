@@ -7,7 +7,3 @@ def view() -> None:
     window = SimpleGUI()
     window.show()
     sys.exit(app.exec())
-
-if __name__ == "__main__":
-    view()
-    
