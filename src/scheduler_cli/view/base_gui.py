@@ -1,6 +1,7 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButton, QVBoxLayout, QTabWidget, QMainWindow
+from PyQt6.QtWidgets import QComboBox, QApplication, QLabel, QWidget, QLineEdit, QPushButton, QGridLayout, QHBoxLayout, QVBoxLayout, QTabWidget, QMainWindow
 from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtCore import Qt
 
 sys.path.append('../controller')
 from test import ModClass
@@ -41,7 +42,6 @@ class SimpleTabs(QWidget):
         screen_width = screen_geometry.width()
         screen_height = screen_geometry.height()
 
-
         self.layout = QVBoxLayout(self)
 
         # Initialize Tabs
@@ -64,9 +64,11 @@ class SimpleTabs(QWidget):
         self.tabs.addTab(self.schedule_viewer_tab, "Schedules")
 
         # Temporary labels for each tab to show that they work lmao
-        self.editor_tab.layout = QVBoxLayout(self)
-        self.editor_label = QLabel()
-        self.editor_label.setText("""
+        self.editor_tab.layout = QGridLayout(self)
+        self.editor_tab.setLayout(self.editor_tab.layout)
+
+        #self.editor_label = QLabel()
+        """self.editor_label.setText(
  ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠒⢒⡶⠒⠈⠐⠂⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⢚⡟⢁⠔⠁⠀⣀⠔⠊⠉⠉⠺⡦⡀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⡜⠁⠋⡰⠃⠀⢀⠜⠁⠀⠀⠀⠀⠀⣉⣉⡙⢦⡀⠀⠀⠀
@@ -82,20 +84,33 @@ class SimpleTabs(QWidget):
 ⢸⠀⠘⢦⠈⠁⢰⣜⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠇⢸⠀⠀⢀⣀⡤⠞⠁⡧
 ⠈⠢⡀⠀⠙⠦⢌⣁⣀⣀⠀⠀⠀⢀⣀⣀⣀⠤⠖⢉⡠⠋⠉⠉⠉⠀⠀⣀⠔⠁
 ⠀⠀⠈⠙⠒⠢⠤⠤⠤⠭⠭⠭⠭⠥⠤⠤⠤⠔⠚⠁⠈⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀
-        """)
+        )
+        """
 
-        self.editor_tab.layout.addWidget(self.editor_label)
-        self.editor_tab.setLayout(self.editor_tab.layout)
+        #self.editor_tab.layout.addWidget(self.editor_label)
+        #self.editor_tab.setLayout(self.editor_tab.layout)
 
-        self.button = QPushButton("Test button")
-        self.editor_tab.layout.addWidget(self.button)
+        # Dropdown code
+        # self.editor_combo_box.layout = QVBoxLayout(self)
+        self.editor_combo_box = QComboBox()
+
+        self.editor_combo_box.addItems(['Course', 'Room', 'Lab', 'Faculty'])
+
+        self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+
+
+        # Code for testing testing.py with a button
+        # self.button = QPushButton("Test button")
+        # self.editor_tab.layout.addWidget(self.button)
         
-        self.button.clicked.connect(self.handleButton)
+        # self.button.clicked.connect(self.handleButton)
 
+
+        # Generator Tab
         self.generator_tab.layout = QVBoxLayout(self)
         self.generator_label = QLabel()
         self.generator_label.setText("""
- ⠀⠀⬜⬜⬜⬜⬜⬜⬜⬜⬛⬛⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜
+⬜⬜⬜⬜⬜⬜⬜⬜⬛⬛⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜
 ⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜
 ⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜
 ⬜⬜⬜⬜⬜⬜⬜⬛⬜⬛⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜
