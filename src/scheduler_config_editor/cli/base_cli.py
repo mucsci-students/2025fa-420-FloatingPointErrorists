@@ -3,6 +3,9 @@ import types
 import os
 import signal
 from click_shell import shell
+from scheduler.json_types import CourseInstanceJSON
+
+from scheduler_config_editor.model.schedule_handler import ScheduleHandler
 from scheduler_config_editor.model.json import JsonConfig
 from scheduler_config_editor.model.run_scheduler import run_using_config, write_as_json, write_as_csv
 
@@ -19,6 +22,8 @@ To utilize it for a command:
 
 To read up on how to use click, visit: https://click.palletsprojects.com/en/stable/
 """
+
+HANDLER_KEY = "SCHEDULER_CLI_HANDLER"
 
 # ====== CLI Definition & General functions ======
 @shell(prompt="scheduler> ", intro="Welcome to the Scheduler CLI!\nType 'help' to see available commands, 'quit' to exit.\n") # type: ignore
@@ -75,7 +80,7 @@ def clear() -> None:
 @cli.command() # type: ignore
 @click.argument("file_path", type=click.Path())
 @click.pass_context
-def load(ctx: click.Context, file_path: str) -> None:
+def load_config(ctx: click.Context, file_path: str) -> None:
     """Load a JSON configuration file."""
     import json
     try:
@@ -105,34 +110,75 @@ def save(ctx: click.Context) -> None:
         raise click.ClickException(f"Permission error: {e}")
 
 @cli.command() # type: ignore
+@click.argument("file_path", type=click.Path())
+@click.pass_context
+def load_schedules(ctx: click.Context, file_path: str) -> None:
+    """Load schedules from a JSON or CSV file."""
+    try:
+        schedule_handler = ScheduleHandler()
+        schedule_handler.import_schedules(file_path)
+        schedules = schedule_handler.schedules
+        if not schedules:
+            click.echo("No schedules found in the file.")
+            return
+        ctx.obj[HANDLER_KEY] = schedule_handler
+        from .schedule_viewer import schedule_viewer
+        cli.add_command(schedule_viewer)
+        schedule_viewer.main(standalone_mode=False, obj=ctx.obj)
+    except FileNotFoundError as e:
+        raise click.ClickException(f"{e}")
+
+@cli.command() # type: ignore
 @click.pass_context
 def run(ctx: click.Context) -> None:
     """Run the scheduler with the current configuration."""
     config = get_json_config(ctx)
     check_valid_config(config)
-    config.set_optimization(click.confirm("Do you want to optimize the schedules?", default=True))  # Ensure optimizations are set
-    config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1, max=100), default=1) ) # Ensure limits are set)
+    _set_scheduler_options(config)
     click.echo("Running scheduler, please give it up to a minute...")
     schedule_list = run_using_config(config.combined_config)
-    for schedule in schedule_list:
-        click.echo("Schedule:")
-        for course in schedule:
-            click.echo(f"{course.as_csv()}")
-    typing = click.prompt("\nDo you want to save the program as a Json, CSV, both or none?", type=click.Choice(['json', 'csv', 'both', 'none']), default="csv")
+    schedule_handler = ScheduleHandler()
+    schedule_handler.load_schedules(schedule_list)
+    ctx.obj[HANDLER_KEY] = schedule_handler
+    _show_schedule_viewer(ctx)
+    _handle_schedule_saving(schedule_list)
+
+def _set_scheduler_options(config: JsonConfig) -> None:
+    """Set scheduler options interactively."""
+    config.set_optimization(click.confirm("Do you want to optimize the schedules?", default=True))
+    config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1, max=100), default=1))
+
+def _show_schedule_viewer(ctx: click.Context) -> None:
+    """Show the schedule viewer."""
+    from .schedule_viewer import schedule_viewer
+    cli.add_command(schedule_viewer)
+    try:
+        schedule_viewer.main(standalone_mode=False, obj=ctx.obj)
+    except SystemExit:
+        pass
+
+def _handle_schedule_saving(schedule_list: list[list[CourseInstanceJSON]]) -> None:
+    """Handle saving the generated schedules."""
+    typing = click.prompt(
+        "\nDo you want to save the schedule(s) as a Json, CSV, both or none?",
+        type=click.Choice(['json', 'csv', 'both', 'none']),
+        default="csv"
+    )
     if typing == 'none':
         click.echo("Not saving the file.")
-    else:
-        name = click.prompt("Enter the filename (without extension)", default="schedules")
-        if typing == 'json' or typing == 'both':
-            try:
-                write_as_json(schedule_list, name)
-                click.echo(f"Schedules saved as {name}.json")
-            except Exception as e:
-                click.echo(f"An error occurred while writing JSON: {e}")
-        if typing == 'csv' or typing == 'both':
-            try:
-                write_as_csv(schedule_list, name)
-                click.echo(f"Schedules saved as {name}.csv")
-            except Exception as e:
-                click.echo(f"An error occurred while writing CSV: {e}")
+        click.echo("Run complete.")
+        return
+    name = click.prompt("Enter the filename (without extension)", default="schedules")
+    if typing in ('json', 'both'):
+        try:
+            write_as_json(schedule_list, name)
+            click.echo(f"Schedules saved as {name}.json")
+        except Exception as e:
+            click.echo(f"An error occurred while writing JSON: {e}")
+    if typing in ('csv', 'both'):
+        try:
+            write_as_csv(schedule_list, name)
+            click.echo(f"Schedules saved as {name}.csv")
+        except Exception as e:
+            click.echo(f"An error occurred while writing CSV: {e}")
     click.echo("Run complete.")
