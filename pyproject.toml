@@ -9,7 +9,8 @@ dependencies = [
     "click",
     "click-shell",
     "PyQt6",
-    "tabulate"
+    "tabulate",
+    "types-tabulate"
 ]
 
 [project.optional-dependencies]

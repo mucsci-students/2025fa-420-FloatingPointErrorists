@@ -18,7 +18,7 @@ class ScheduleHandler:
     Attributes:
         schedules (list[list[CourseInstanceJSON]]): The loaded schedules.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self._schedules: list[list[CourseInstanceJSON]] = []
 
     @property
@@ -80,7 +80,8 @@ class ScheduleHandler:
     @staticmethod
     def _split_blocks(lines: list[str]) -> list[list[str]]:
         """Split lines into blocks separated by empty lines."""
-        blocks, current_block = [], []
+        blocks: list[list[str]] = []
+        current_block: list[str] = []
         for line in lines:
             if line.strip() == "":
                 if current_block:
@@ -150,7 +151,7 @@ class ScheduleHandler:
         days = ["MON", "TUE", "WED", "THU", "FRI"]
         courses = sorted({course["course"] for course in schedule})
         # Build mapping: course -> day -> list of info
-        course_day_map = {c: {day: [] for day in days} for c in courses}
+        course_day_map: dict[str, dict[str, list[str]]] = {c: {day: [] for day in days} for c in courses}
         for course in schedule:
             course_name = course["course"]
             faculty = course.get("faculty", "")
@@ -158,7 +159,7 @@ class ScheduleHandler:
             lab = course.get("lab", "")
             lab_index = course.get("lab_index", "")
             for idx, t in enumerate(course["times"]):
-                day = INDEX_TO_DAY.get(t["day"])
+                day = INDEX_TO_DAY[t["day"]]
                 time_str = ScheduleHandler._format_time_instance(t)
                 location = lab if lab_index is not None and idx == lab_index else room
                 info = f"{faculty}, {location}, {time_str}"
@@ -180,7 +181,7 @@ class ScheduleHandler:
         days = ["MON", "TUE", "WED", "THU", "FRI"]
         faculty_list = sorted({course.get("faculty", "") for course in schedule})
         # Build mapping: faculty -> day -> list of (start_time, info)
-        faculty_day_map = {f: {day: [] for day in days} for f in faculty_list}
+        faculty_day_map: dict[str, dict[str, list[tuple[int, str]]]] = {f: {day: [] for day in days} for f in faculty_list}
         for course in schedule:
             faculty = course.get("faculty", "")
             course_name = course["course"]
@@ -188,7 +189,7 @@ class ScheduleHandler:
             lab = course.get("lab", "")
             lab_index = course.get("lab_index", "")
             for idx, t in enumerate(course["times"]):
-                day = INDEX_TO_DAY.get(t["day"])
+                day = INDEX_TO_DAY[t["day"]]
                 time_str = ScheduleHandler._format_time_instance(t)
                 location = lab if lab_index is not None and idx == lab_index else room
                 info = f"{course_name}, {location}, {time_str}"
@@ -209,15 +210,15 @@ class ScheduleHandler:
         """Format schedule with rooms/labs as rows and days as columns, showing course, faculty, and time in cells. Sorted by earliest time first."""
         days = ["MON", "TUE", "WED", "THU", "FRI"]
         # Collect all unique rooms and labs
-        locations = set()
+        locations: set[str] = set()
         for course in schedule:
             if course.get("room"):
                 locations.add(course["room"])
             if course.get("lab"):
                 locations.add(course["lab"])
-        locations = sorted(loc for loc in locations if loc and loc != "None")
+        sorted_locations: list[str] = sorted(loc for loc in locations if loc and loc != "None")
         # Build mapping: location -> day -> list of (start_time, info)
-        location_day_map = {loc: {day: [] for day in days} for loc in locations}
+        location_day_map: dict[str, dict[str, list[tuple[int, str]]]] = {loc: {day: [] for day in days} for loc in sorted_locations}
         for course in schedule:
             course_name = course["course"]
             faculty = course.get("faculty", "")
@@ -225,7 +226,7 @@ class ScheduleHandler:
             lab = course.get("lab", "")
             lab_index = course.get("lab_index", None)
             for idx, t in enumerate(course["times"]):
-                day = INDEX_TO_DAY.get(t["day"])
+                day = INDEX_TO_DAY[t["day"]]
                 location = lab if lab_index is not None and idx == lab_index else room
                 if location and location != "None":
                     time_str = ScheduleHandler._format_time_instance(t)
@@ -234,7 +235,7 @@ class ScheduleHandler:
         # Build table rows
         headers = ["Room/Lab"] + days
         rows = []
-        for loc in locations:
+        for loc in sorted_locations:
             row = [loc]
             for day in days:
                 entries = sorted(location_day_map[loc][day], key=lambda x: x[0])
