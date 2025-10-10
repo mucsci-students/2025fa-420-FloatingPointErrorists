@@ -4,8 +4,7 @@ from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 
 sys.path.append('../controller')
-from Tomtest import ModClass
-from viewer_controller import viewerClass
+from scheduler_cli.controller.viewer_controller import viewerClass
 
 """Simple Gui Window Initializer"""
 
@@ -147,7 +146,7 @@ class SimpleTabs(QWidget):
 
 
 # Schedule Viewer Tab #########################################################################################
-        def set_schedule_label(text):
+        def set_schedule_label(text: str) -> None:
             self.schedule_viewer_label.setText(text)
 
         #main layout
@@ -157,7 +156,7 @@ class SimpleTabs(QWidget):
         view_top_layout = QHBoxLayout()
 
         #add view_by_courses button
-        def view_by_courses():
+        def view_by_courses() -> None:
             self.modifier = viewerClass(self)
             self.modifier.change_schedule('Courses') #temp code GET COURSE SCHEDULE HERE
 
@@ -167,7 +166,7 @@ class SimpleTabs(QWidget):
         view_top_layout.addWidget(self.schedule_viewer_button)  
 
         #add view_by_faulty button
-        def view_by_faulty():
+        def view_by_faulty() -> None:
             self.modifier = viewerClass(self)
             self.modifier.change_schedule('Faculty') #temp code GET FAULTY SCHEDULE HERE
 
@@ -177,7 +176,7 @@ class SimpleTabs(QWidget):
         view_top_layout.addWidget(self.schedule_viewer_button)  
 
         #add view_by_room button
-        def view_by_room():
+        def view_by_room() -> None:
             self.modifier = viewerClass(self)
             self.modifier.change_schedule('Rooms') #temp code GET ROOM SCHEDULE HERE
 
@@ -206,7 +205,7 @@ Schedule
         view_bot_layout.addStretch()
 
         #add prev_schedule button
-        def schedule_back():
+        def schedule_back() -> None:
             self.modifier = viewerClass(self)
             self.modifier.change_schedule('<==') #temp code GET PREV SCHEDULE HERE
 
@@ -221,12 +220,12 @@ Schedule
         view_bot_layout.addWidget(self.schedule_viewer_label_static)
 
         #add index box
-        def schedule_index_change(i):
+        def schedule_index_change(i: str) -> None:
             self.modifier = viewerClass(self)
             self.modifier.change_schedule(i) #temp code GET SCHEDULE BY INDEX HERE
         
         self.schedule_viewer_index = QLineEdit()
-        self.schedule_viewer_index.setPlaceholderText("x")
+        self.schedule_viewer_index.setPlaceholderText("0")
         self.schedule_viewer_index.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.schedule_viewer_index.setFixedSize(30, 30)  # width, height in pixels CURRENTLY NOT RELATIVE
         
@@ -239,7 +238,7 @@ Schedule
         view_bot_layout.addWidget(self.schedule_viewer_label_static2)
 
         #add next_schedule button
-        def schedule_forward():
+        def schedule_forward() -> None:
             self.modifier = viewerClass(self)
             self.modifier.change_schedule('==>') #temp code GET NEXT SCHEDULE HERE
 
@@ -262,7 +261,7 @@ Schedule
         view_bot_right_layout.addWidget(checkbox2)
 
         # Save button for Schedule Viewer Tab
-        def save_button():
+        def save_button() -> None:
             r = ""
             if checkbox1.isChecked():
                 #INSERT SAVE JSON FUNCTION HERE
@@ -278,7 +277,7 @@ Schedule
         view_bot_right_layout.addWidget(self.schedule_viewer_button)
 
         # Load button
-        def load_button():
+        def load_button() -> None:
             self.modifier = viewerClass(self)
             self.schedule_viewer_label.setText("load_button") #temp code LOAD SCHEDULE HERE
         
@@ -300,7 +299,3 @@ Schedule
        
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
-
-    def handleButton(self):
-        self.modifier = ModClass(self)
-        self.modifier.test()

@@ -3,8 +3,8 @@ from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButto
 from PyQt6.QtGui import QGuiApplication
 
 class viewerClass:
-    def __init__ (self, target_widget):
+    def __init__ (self, target_widget) -> None:
         self.target_widget = target_widget
 
-    def change_schedule(self, schedule):
+    def change_schedule(self, schedule) -> None:
         self.target_widget.schedule_viewer_label.setText(schedule)
