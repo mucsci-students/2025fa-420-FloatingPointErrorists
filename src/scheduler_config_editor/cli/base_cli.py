@@ -132,34 +132,51 @@ def run(ctx: click.Context) -> None:
     """Run the scheduler with the current configuration."""
     config = get_json_config(ctx)
     check_valid_config(config)
-    config.set_optimization(click.confirm("Do you want to optimize the schedules?", default=True))  # Ensure optimizations are set
-    config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1, max=100), default=1) ) # Ensure limits are set)
+    _set_scheduler_options(config)
     click.echo("Running scheduler, please give it up to a minute...")
     schedule_list = run_using_config(config.combined_config)
     schedule_handler = ScheduleHandler()
     schedule_handler.load_schedules(schedule_list)
     ctx.obj[HANDLER_KEY] = schedule_handler
+    _show_schedule_viewer(ctx)
+    _handle_schedule_saving(schedule_list)
+
+def _set_scheduler_options(config):
+    """Set scheduler options interactively."""
+    config.set_optimization(click.confirm("Do you want to optimize the schedules?", default=True))
+    config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1, max=100), default=1))
+
+def _show_schedule_viewer(ctx):
+    """Show the schedule viewer."""
     from .schedule_viewer import schedule_viewer
     cli.add_command(schedule_viewer)
     try:
         schedule_viewer.main(standalone_mode=False, obj=ctx.obj)
     except SystemExit:
-        pass  # Continue after shell exit
-    typing = click.prompt("\nDo you want to save the schedule(s) as a Json, CSV, both or none?", type=click.Choice(['json', 'csv', 'both', 'none']), default="csv")
+        pass
+
+def _handle_schedule_saving(schedule_list):
+    """Handle saving the generated schedules."""
+    typing = click.prompt(
+        "\nDo you want to save the schedule(s) as a Json, CSV, both or none?",
+        type=click.Choice(['json', 'csv', 'both', 'none']),
+        default="csv"
+    )
     if typing == 'none':
         click.echo("Not saving the file.")
-    else:
-        name = click.prompt("Enter the filename (without extension)", default="schedules")
-        if typing == 'json' or typing == 'both':
-            try:
-                write_as_json(schedule_list, name)
-                click.echo(f"Schedules saved as {name}.json")
-            except Exception as e:
-                click.echo(f"An error occurred while writing JSON: {e}")
-        if typing == 'csv' or typing == 'both':
-            try:
-                write_as_csv(schedule_list, name)
-                click.echo(f"Schedules saved as {name}.csv")
-            except Exception as e:
-                click.echo(f"An error occurred while writing CSV: {e}")
+        click.echo("Run complete.")
+        return
+    name = click.prompt("Enter the filename (without extension)", default="schedules")
+    if typing in ('json', 'both'):
+        try:
+            write_as_json(schedule_list, name)
+            click.echo(f"Schedules saved as {name}.json")
+        except Exception as e:
+            click.echo(f"An error occurred while writing JSON: {e}")
+    if typing in ('csv', 'both'):
+        try:
+            write_as_csv(schedule_list, name)
+            click.echo(f"Schedules saved as {name}.csv")
+        except Exception as e:
+            click.echo(f"An error occurred while writing CSV: {e}")
     click.echo("Run complete.")
