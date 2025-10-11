@@ -5,6 +5,8 @@ import signal
 from click_shell import shell
 from scheduler import OptimizerFlags
 from scheduler.json_types import CourseInstanceJSON
+from scheduler.models import CourseInstance
+
 from ..model.schedule_handler import ScheduleHandler
 from ..model.json import JsonConfig
 from ..model.run_scheduler import run_using_config, write_as_json, write_as_csv
@@ -171,7 +173,7 @@ def show_schedule_viewer(ctx: click.Context) -> None:
     except SystemExit:
         pass
 
-def handle_schedule_saving(schedule_list: list[list[CourseInstanceJSON]]) -> None:
+def handle_schedule_saving(schedule_list: list[list[CourseInstance]]) -> None:
     """Handle saving the generated schedules."""
     typing = click.prompt(
         "\nDo you want to save the schedule(s) as a Json, CSV, both or none?",
