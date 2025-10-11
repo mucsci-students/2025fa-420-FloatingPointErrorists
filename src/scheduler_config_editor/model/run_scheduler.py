@@ -1,7 +1,7 @@
+import os
 from scheduler import (
     CombinedConfig,
     Scheduler,
-    load_config_from_file,
 )
 from scheduler.writers import JSONWriter, CSVWriter
 from scheduler.models import CourseInstance
@@ -23,8 +23,8 @@ def write_as_json(slist: list[list["CourseInstance"]], name: str) -> None:
 
     #make new file 
     path = 'schedules/' + name + '.json'
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     file = open(path, 'w')
-
     #writing for json
     with JSONWriter(path) as writer:
         for schedule in slist:
@@ -36,8 +36,8 @@ def write_as_csv(slist: list[list["CourseInstance"]], name: str) -> None:
 
     #make new file 
     path = 'schedules/' + name + '.csv'
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     file = open(path, 'w')
-
     #writing for csv
     with CSVWriter(path) as writer:
         for schedule in slist:

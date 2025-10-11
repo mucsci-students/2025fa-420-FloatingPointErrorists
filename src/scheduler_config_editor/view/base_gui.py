@@ -6,12 +6,13 @@ from PyQt6.QtCore import Qt
 sys.path.append('../controller')
 from scheduler_cli.controller.Tomtest import ModClass
 from scheduler_cli.controller.viewer_controller import viewerClass
+from scheduler_config_editor.controller.testing import ModClass
 
 """Simple Gui Window Initializer"""
 
 class SimpleGUI(QMainWindow):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         # Grabbing dimensions of user's primary screen
@@ -34,7 +35,7 @@ class SimpleGUI(QMainWindow):
 class SimpleTabs(QWidget):
     my_layout: QVBoxLayout
 
-    def __init__(self, parent):
+    def __init__(self, parent) -> None:
 
         super(QWidget, self).__init__(parent)
 
@@ -305,6 +306,6 @@ Schedule
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
 
-    def handleButton(self):
+    def handleButton(self) -> None:
         self.modifier = ModClass(self)
         self.modifier.test()

@@ -1,5 +1,5 @@
 [project]
-name = "scheduler_cli"
+name = "scheduler_config_editor"
 version = "0.1.0"
 description = "A CLI that allows for JSON config modification and schedule generation."
 readme = "README.md"
@@ -7,7 +7,10 @@ requires-python = ">=3.13"
 dependencies = [
     "course-constraint-scheduler",
     "click",
-    "click-shell"
+    "click-shell",
+    "PyQt6",
+    "tabulate",
+    "types-tabulate"
 ]
 
 [project.optional-dependencies]
@@ -25,4 +28,4 @@ disallow_untyped_defs = true
 ignore_missing_imports = true
 
 [project.scripts]
-scheduler-cli = "scheduler_cli.main:main"
+sce = "scheduler_config_editor.main:main"

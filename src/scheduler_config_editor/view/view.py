@@ -1,10 +1,9 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout
-from base_gui import SimpleGUI
+from scheduler_config_editor.view.base_gui import SimpleGUI
 
-if __name__ == "__main__":
+def view() -> None:
     app = QApplication(sys.argv)
     window = SimpleGUI()
     window.show()
     sys.exit(app.exec())
-    
