@@ -63,10 +63,9 @@ class JsonConfig:
             raise ValueError("Limit must be a positive integer.")
         self._combined_config.limit = limit
 
-    def set_optimization(self, to_optimize: bool) -> None:
+    def set_optimization(self, optimizer_list: list[OptimizerFlags]) -> None:
         """Set the optimizer flags"""
-        self._combined_config.optimizer_flags = [OptimizerFlags.FACULTY_COURSE, OptimizerFlags.FACULTY_ROOM, OptimizerFlags.FACULTY_LAB,
-                                                 OptimizerFlags.SAME_ROOM, OptimizerFlags.SAME_LAB, OptimizerFlags.PACK_ROOMS] if to_optimize else []
+        self._combined_config.optimizer_flags = optimizer_list
 
     def scheduler_str(self) -> str:
         """String representation of the scheduler configuration."""
