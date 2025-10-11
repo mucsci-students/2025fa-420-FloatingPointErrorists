@@ -1,12 +1,13 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QTabWidget, QMainWindow, QCheckBox, QComboBox
+from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QTabWidget, QMainWindow, QCheckBox, QComboBox, QFileDialog
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 
 sys.path.append('../controller')
-from scheduler_cli.controller.Tomtest import ModClass
-from scheduler_cli.controller.viewer_controller import viewerClass
 from scheduler_config_editor.controller.testing import ModClass
+from scheduler_config_editor.controller.schedule_controller import SchedulerController 
+from scheduler_config_editor.model.schedule_handler import ScheduleHandler
+from scheduler_config_editor.view.schedule_window import newWindow 
 
 """Simple Gui Window Initializer"""
 
@@ -33,7 +34,6 @@ class SimpleGUI(QMainWindow):
 """Simple Tabs Initializer"""
 
 class SimpleTabs(QWidget):
-    my_layout: QVBoxLayout
 
     def __init__(self, parent) -> None:
 
@@ -55,9 +55,6 @@ class SimpleTabs(QWidget):
         self.schedule_viewer_tab = QWidget()
         self.tabs.resize(int(screen_width * 0.25), int(screen_height * 0.25))
 
-        #type checking tabs
-        self.schedule_viewer_tab.my_layout = QVBoxLayout()
-
         # TabBar Stylesheet
         self.setStyleSheet('''
         QTabWidget::tab-bar {
@@ -65,6 +62,7 @@ class SimpleTabs(QWidget):
         }'''
         '''QTabBar::tab { height: 100px; width: 500px; }'''
         )
+
         # Adding the tabs
         self.tabs.addTab(self.editor_tab, "Editor")
         self.tabs.addTab(self.generator_tab, "Generator")
@@ -152,8 +150,14 @@ class SimpleTabs(QWidget):
 
 
 # Schedule Viewer Tab #########################################################################################
+        
+        sc = SchedulerController()
+
         def set_schedule_label(text: str) -> None:
             self.schedule_viewer_label.setText(text)
+
+        def set_len_label(text: str) -> None:
+            self.schedule_viewer_label_len.setText(text)
 
         #main layout
         self.schedule_viewer_tab.my_layout = QVBoxLayout()
@@ -163,8 +167,11 @@ class SimpleTabs(QWidget):
 
         #add view_by_courses button
         def view_by_courses() -> None:
-            self.modifier = viewerClass(self)
-            self.modifier.change_schedule('Courses') #temp code GET COURSE SCHEDULE HERE
+            try:
+                sc.mode = 0
+                self.schedule_viewer_label.setText(sc.get_format())
+            except:
+                self.schedule_viewer_label.setText("""Schedule by course will be shown here""")    
 
         self.schedule_viewer_button = QPushButton("Courses")
         self.schedule_viewer_button.setFixedSize(80, 30)  # width, height in pixels CURRENTLY NOT RELATIVE
@@ -173,8 +180,11 @@ class SimpleTabs(QWidget):
 
         #add view_by_faulty button
         def view_by_faulty() -> None:
-            self.modifier = viewerClass(self)
-            self.modifier.change_schedule('Faculty') #temp code GET FAULTY SCHEDULE HERE
+            try:
+                sc.mode = 1
+                self.schedule_viewer_label.setText(sc.get_format())
+            except:
+                set_schedule_label("""Schedule by faculty will be shown here""")    
 
         self.schedule_viewer_button = QPushButton("Faculty")
         self.schedule_viewer_button.setFixedSize(80, 30)  # width, height in pixels CURRENTLY NOT RELATIVE
@@ -183,13 +193,30 @@ class SimpleTabs(QWidget):
 
         #add view_by_room button
         def view_by_room() -> None:
-            self.modifier = viewerClass(self)
-            self.modifier.change_schedule('Rooms') #temp code GET ROOM SCHEDULE HERE
+            try:
+                sc.mode = 2
+                self.schedule_viewer_label.setText(sc.get_format())
+            except:
+                set_schedule_label("""Schedule by room will be shown here""")    
 
         self.schedule_viewer_button = QPushButton("Room")
         self.schedule_viewer_button.setFixedSize(80, 30)  # width, height in pixels CURRENTLY NOT RELATIVE
         self.schedule_viewer_button.clicked.connect(view_by_room)
         view_top_layout.addWidget(self.schedule_viewer_button)  
+
+        #add pop out button
+        self.nw = newWindow()
+        def popoutwindow() -> None:
+            self.nw.show()
+            try:
+                self.nw.widget.schedule.setText(sc.get_format())
+            except:
+                self.nw.widget.schedule.setText("""Schedule Not Selected""")    
+
+        self.schedule_viewer_button = QPushButton("Popout Window")
+        self.schedule_viewer_button.setFixedSize(100, 30)  # width, height in pixels CURRENTLY NOT RELATIVE
+        self.schedule_viewer_button.clicked.connect(popoutwindow)
+        view_top_layout.addWidget(self.schedule_viewer_button) 
 
         #end top layout
         view_top_layout.addStretch()
@@ -197,10 +224,7 @@ class SimpleTabs(QWidget):
 
         # text for Schedule Viewer Tab
         self.schedule_viewer_label = QLabel()
-        set_schedule_label("""
-Schedule
-        """)
-        
+        set_schedule_label("""Schedule by course will be shown here""")    
         self.schedule_viewer_tab.my_layout.addWidget(self.schedule_viewer_label)
 
         #push next widgets to bottom
@@ -212,8 +236,9 @@ Schedule
 
         #add prev_schedule button
         def schedule_back() -> None:
-            self.modifier = viewerClass(self)
-            self.modifier.change_schedule('<==') #temp code GET PREV SCHEDULE HERE
+            sc.previous_schedule()
+            self.schedule_viewer_label.setText(sc.get_format())
+            self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
 
         self.schedule_viewer_button = QPushButton("<--")
         self.schedule_viewer_button.setFixedSize(40, 30)  # width, height in pixels CURRENTLY NOT RELATIVE
@@ -227,26 +252,39 @@ Schedule
 
         #add index box
         def schedule_index_change(i: str) -> None:
-            self.modifier = viewerClass(self)
-            self.modifier.change_schedule(i) #temp code GET SCHEDULE BY INDEX HERE
-        
+            try:
+                i = int(i)
+                if i < 1:
+                    sc.index = 0
+                elif i > sc.length:
+                    sc.index = sc.length - 1
+                else:
+                    sc.index = i - 1
+
+                self.schedule_viewer_label.setText(sc.get_format())
+                self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+
+            except:
+                pass
+                    
         self.schedule_viewer_index = QLineEdit()
-        self.schedule_viewer_index.setPlaceholderText("0")
+        self.schedule_viewer_index.setPlaceholderText("x")
         self.schedule_viewer_index.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.schedule_viewer_index.setFixedSize(30, 30)  # width, height in pixels CURRENTLY NOT RELATIVE
         
         self.schedule_viewer_index.returnPressed.connect(lambda: schedule_index_change(self.schedule_viewer_index.text()))
         view_bot_layout.addWidget(self.schedule_viewer_index)
 
-        #add label static suffix
-        self.schedule_viewer_label_static2 = QLabel()
-        self.schedule_viewer_label_static2.setText("/" + "n") #temp code ADD TOTAL NUMBER OF SCHEDULES HERE
-        view_bot_layout.addWidget(self.schedule_viewer_label_static2)
+        #add label suffix
+        self.schedule_viewer_label_len = QLabel()
+        self.schedule_viewer_label_len.setText("/Len")
+        view_bot_layout.addWidget(self.schedule_viewer_label_len)
 
         #add next_schedule button
         def schedule_forward() -> None:
-            self.modifier = viewerClass(self)
-            self.modifier.change_schedule('==>') #temp code GET NEXT SCHEDULE HERE
+            sc.next_schedule()
+            self.schedule_viewer_label.setText(sc.get_format())
+            self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
 
         self.schedule_viewer_button = QPushButton("-->")
         self.schedule_viewer_button.setFixedSize(40, 30)  # width, height in pixels CURRENTLY NOT RELATIVE
@@ -268,14 +306,10 @@ Schedule
 
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
-            r = ""
             if checkbox1.isChecked():
-                #INSERT SAVE JSON FUNCTION HERE
-                r = "json" #temp code
+                pass # SAVE AS JSON HERE
             if checkbox2.isChecked():
-                #INSERT SAVE CSV FUNCTION HERE
-                r = r + " csv" #temp code
-            self.schedule_viewer_label.setText(r)
+                pass # SAVE AS CSV HERE
 
         self.schedule_viewer_button = QPushButton("Save")
         self.schedule_viewer_button.setFixedSize(80, 30)  # width, height in pixels CURRENTLY NOT RELATIVE
@@ -284,8 +318,23 @@ Schedule
 
         # Load button
         def load_button() -> None:
-            self.modifier = viewerClass(self)
-            self.schedule_viewer_label.setText("load_button") #temp code LOAD SCHEDULE HERE
+
+            #open a file dialog to select file
+            try:
+                test = QFileDialog.getOpenFileName(
+                    self,
+                    'Open file',
+                    'schedules',
+                    'All Files (*);; JSON files (*.json);; CSV files (*.csv)')
+                sc.cur_schedules.import_schedules(test[0])
+                sc.length = len(sc.cur_schedules.schedules)
+
+                #show first schedule
+                self.schedule_viewer_label.setText(sc.get_format())
+                self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+                self.schedule_viewer_label_len.setText("/" + str(sc.length))
+            except:
+                pass
         
         self.schedule_viewer_button = QPushButton("Load")
         self.schedule_viewer_button.setFixedSize(80, 30)  # width, height in pixels CURRENTLY NOT RELATIVE
