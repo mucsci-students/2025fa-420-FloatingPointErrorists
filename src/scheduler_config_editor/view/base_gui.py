@@ -89,7 +89,6 @@ class SimpleTabs(QWidget):
 
         self.button = QPushButton("Test button")
         self.editor_tab.layout.addWidget(self.button)
-        
         self.button.clicked.connect(self.handleButton)
 
         self.generator_tab.layout = QVBoxLayout(self)
