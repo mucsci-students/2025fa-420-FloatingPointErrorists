@@ -9,7 +9,3 @@ def view() -> None:
     setup_generator_tab(window.tab_widget)
     window.show()
     sys.exit(app.exec())
-
-if __name__ == "__main__":
-    view()
-    

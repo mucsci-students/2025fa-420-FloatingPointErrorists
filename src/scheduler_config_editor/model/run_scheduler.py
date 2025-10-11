@@ -1,9 +1,7 @@
 import os
-
 from scheduler import (
     CombinedConfig,
     Scheduler,
-    load_config_from_file,
 )
 from scheduler.writers import JSONWriter, CSVWriter
 from scheduler.models import CourseInstance
