@@ -4,6 +4,7 @@ from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 
 sys.path.append('../controller')
+from scheduler_cli.controller.Tomtest import ModClass
 from scheduler_cli.controller.viewer_controller import viewerClass
 
 """Simple Gui Window Initializer"""
@@ -31,6 +32,7 @@ class SimpleGUI(QMainWindow):
 """Simple Tabs Initializer"""
 
 class SimpleTabs(QWidget):
+    my_layout: QVBoxLayout
 
     def __init__(self, parent):
 
@@ -51,6 +53,9 @@ class SimpleTabs(QWidget):
         self.generator_tab = QWidget()
         self.schedule_viewer_tab = QWidget()
         self.tabs.resize(int(screen_width * 0.25), int(screen_height * 0.25))
+
+        #type checking tabs
+        self.schedule_viewer_tab.my_layout = QVBoxLayout()
 
         # TabBar Stylesheet
         self.setStyleSheet('''
@@ -150,10 +155,10 @@ class SimpleTabs(QWidget):
             self.schedule_viewer_label.setText(text)
 
         #main layout
-        self.schedule_viewer_tab.layout = QVBoxLayout(self)
+        self.schedule_viewer_tab.my_layout = QVBoxLayout()
 
         #add top layout
-        view_top_layout = QHBoxLayout()
+        view_top_layout = QHBoxLayout(self)
 
         #add view_by_courses button
         def view_by_courses() -> None:
@@ -187,7 +192,7 @@ class SimpleTabs(QWidget):
 
         #end top layout
         view_top_layout.addStretch()
-        self.schedule_viewer_tab.layout.addLayout(view_top_layout) 
+        self.schedule_viewer_tab.my_layout.addLayout(view_top_layout) 
 
         # text for Schedule Viewer Tab
         self.schedule_viewer_label = QLabel()
@@ -195,10 +200,10 @@ class SimpleTabs(QWidget):
 Schedule
         """)
         
-        self.schedule_viewer_tab.layout.addWidget(self.schedule_viewer_label)
+        self.schedule_viewer_tab.my_layout.addWidget(self.schedule_viewer_label)
 
         #push next widgets to bottom
-        self.schedule_viewer_tab.layout.addStretch(1)
+        self.schedule_viewer_tab.my_layout.addStretch(1)
 
         #add bot layout
         view_bot_layout = QHBoxLayout()
@@ -291,11 +296,15 @@ Schedule
         view_bot_layout.addLayout(view_bot_right_layout)
 
         #end bot layout
-        self.schedule_viewer_tab.layout.addLayout(view_bot_layout)
+        self.schedule_viewer_tab.my_layout.addLayout(view_bot_layout)
 
         # Set final layout
 
-        self.schedule_viewer_tab.setLayout(self.schedule_viewer_tab.layout)   
+        self.schedule_viewer_tab.setLayout(self.schedule_viewer_tab.my_layout)   
        
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
+
+    def handleButton(self):
+        self.modifier = ModClass(self)
+        self.modifier.test()
