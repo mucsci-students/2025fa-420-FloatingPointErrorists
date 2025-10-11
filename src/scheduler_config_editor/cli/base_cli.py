@@ -127,6 +127,8 @@ def load_schedules(ctx: click.Context, file_path: str) -> None:
         view_schedules.main(standalone_mode=False, obj=ctx.obj)
     except FileNotFoundError as e:
         raise click.ClickException(f"{e}") from e
+    except ValueError as e:
+        raise click.ClickException(f"{e}") from e
 
 @base_cli.command() # type: ignore
 @click.pass_context
