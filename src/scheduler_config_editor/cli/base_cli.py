@@ -3,8 +3,8 @@ import types
 import os
 import signal
 from click_shell import shell
+from scheduler import OptimizerFlags
 from scheduler.json_types import CourseInstanceJSON
-
 from scheduler_config_editor.model.schedule_handler import ScheduleHandler
 from scheduler_config_editor.model.json import JsonConfig
 from scheduler_config_editor.model.run_scheduler import run_using_config, write_as_json, write_as_csv
@@ -134,21 +134,35 @@ def run(ctx: click.Context) -> None:
     """Run the scheduler with the current configuration."""
     config = get_json_config(ctx)
     check_valid_config(config)
-    _set_scheduler_options(config)
+    set_scheduler_options(config)
     click.echo("Running scheduler, please give it up to a minute...")
     schedule_list = run_using_config(config.combined_config)
     schedule_handler = ScheduleHandler()
     schedule_handler.load_schedules(schedule_list)
     ctx.obj[HANDLER_KEY] = schedule_handler
-    _show_schedule_viewer(ctx)
-    _handle_schedule_saving(schedule_list)
+    show_schedule_viewer(ctx)
+    handle_schedule_saving(schedule_list)
 
-def _set_scheduler_options(config: JsonConfig) -> None:
+def set_scheduler_options(config: JsonConfig) -> None:
     """Set scheduler options interactively."""
-    config.set_optimization(click.confirm("Do you want to optimize the schedules?", default=True))
+    if click.confirm("Do you want to overwrite the config optimizations?", default=False):
+        config.set_optimization(select_optimizations())
     config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1, max=100), default=1))
 
-def _show_schedule_viewer(ctx: click.Context) -> None:
+def select_optimizations() -> list[OptimizerFlags]:
+    """Prompt the user to select optimization flags."""
+    optimizations = [
+        OptimizerFlags.FACULTY_COURSE,
+        OptimizerFlags.FACULTY_ROOM,
+        OptimizerFlags.FACULTY_LAB,
+        OptimizerFlags.SAME_ROOM,
+        OptimizerFlags.SAME_LAB,
+        OptimizerFlags.PACK_ROOMS,
+    ]
+    selected = [flag for flag in optimizations if click.confirm(f"Optimize by {flag}?", default=True)]
+    return selected
+
+def show_schedule_viewer(ctx: click.Context) -> None:
     """Show the schedule viewer."""
     from .schedule_viewer import schedule_viewer
     cli.add_command(schedule_viewer)
@@ -157,7 +171,7 @@ def _show_schedule_viewer(ctx: click.Context) -> None:
     except SystemExit:
         pass
 
-def _handle_schedule_saving(schedule_list: list[list[CourseInstanceJSON]]) -> None:
+def handle_schedule_saving(schedule_list: list[list[CourseInstanceJSON]]) -> None:
     """Handle saving the generated schedules."""
     typing = click.prompt(
         "\nDo you want to save the schedule(s) as a Json, CSV, both or none?",
