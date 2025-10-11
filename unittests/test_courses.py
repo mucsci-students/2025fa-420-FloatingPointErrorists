@@ -1,6 +1,6 @@
 import os
 import pytest
-from scheduler_config_editor import Course, JsonConfig
+from scheduler_config_editor.model import Course, JsonConfig
 
 @pytest.fixture()
 def json_config():

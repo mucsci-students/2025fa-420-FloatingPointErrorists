@@ -1,6 +1,7 @@
 from pathlib import Path
 from click.testing import CliRunner
-from scheduler_config_editor import cli, Room
+from scheduler_config_editor.cli import cli
+from scheduler_config_editor.model import Room
 
 CONFIG_KEY = "config"
 LOAD_COMMAND = "load-config"

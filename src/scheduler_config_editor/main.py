@@ -1,6 +1,8 @@
 import sys
-from .cli import cli, apply_signal_handlers
+
+from .cli import apply_signal_handlers, cli
 from .view import view
+
 
 def main() -> None:
     is_cli_mode = False

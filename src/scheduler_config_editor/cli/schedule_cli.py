@@ -1,8 +1,11 @@
-import click
 from enum import Enum
+
+import click
 from click_shell import shell
-from .base_cli import clear, HANDLER_KEY
+
 from ..model import ScheduleHandler
+from .base_cli import HANDLER_KEY, clear
+
 
 class DisplayMode(Enum):
     """ Modes for displaying schedules. """
@@ -14,8 +17,7 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
     """Navigate through schedules interactively."""
     schedules = schedule_handler.schedules
     idx = 0
-    while 0 <= idx < len(schedules):
-        quit_loop = False
+    while True:
         match mode:
             case DisplayMode.ROOM:
                 click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.room_schedule(schedules[idx])}")
@@ -23,26 +25,21 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
                 click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.faculty_schedule(schedules[idx])}")
             case _:
                 click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.format_schedule(schedules[idx])}")
-        while True:
-            user_input = click.prompt("Type 'n' for next, 'p' for previous, 'q' to quit", default='n',
-                                      type=click.Choice(['n', 'p', 'q']), show_choices=False).lower()
-            match user_input:
-                case 'n':
-                    if idx < len(schedules) - 1:
-                        idx += 1
-                        break
-                    else:
-                        click.echo("Already at the last schedule.")
-                case 'p':
-                    if idx > 0:
-                        idx -= 1
-                        break
-                    else:
-                        click.echo("Already at the first schedule.")
-                case _:
-                    quit_loop = True
-                    break
-        if quit_loop: break
+        user_input = click.prompt("Type 'n' for next, 'p' for previous, 'q' to quit", default='n',
+                                  type=click.Choice(['n', 'p', 'q']), show_choices=False).lower()
+        match user_input:
+            case 'n':
+                if idx < len(schedules) - 1:
+                    idx += 1
+                else:
+                    idx = 0
+            case 'p':
+                if idx > 0:
+                    idx -= 1
+                else:
+                    idx = len(schedules) - 1
+            case _:
+                break
 
 def get_schedule_handler(ctx: click.Context) -> ScheduleHandler:
     """Retrieve the ScheduleHandler from the context."""

@@ -1,7 +1,9 @@
 from _ast import Gt
-from typing import Dict, List, Annotated
-from .json import JsonConfig
+from typing import Annotated
+
 from scheduler import FacultyConfig
+
+from .json import JsonConfig
 
 
 class Faculty:
@@ -12,8 +14,8 @@ class Faculty:
     @staticmethod
     def add_faculty(json_config: JsonConfig, name: str, maximum_credits: int, minimum_credits: int,
                     unique_course_limit: Annotated[int, Gt()],
-                    times: Dict[str, List[str]] = {}, course_preferences: Dict[str, int] = {},
-                    room_preferences: Dict[str, int] = {}, lab_preferences: Dict[str, int] = {}) -> None:
+                    times: dict[str, list[str]] = {}, course_preferences: dict[str, int] = {},
+                    room_preferences: dict[str, int] = {}, lab_preferences: dict[str, int] = {}) -> None:
         """adds a new faculty member to the config file"""
         faculty_config = FacultyConfig(
             name=name,
@@ -31,8 +33,8 @@ class Faculty:
     @staticmethod
     def mod_faculty(json_config: JsonConfig, old_name: str,  new_name: str, maximum_credits: int, minimum_credits: int,
                     unique_course_limit: Annotated[int, Gt()],
-                    times: Dict[str, List[str]] = {}, course_preferences: Dict[str, int] = {},
-                    room_preferences: Dict[str, int] = {}, lab_preferences: Dict[str, int] = {}) -> None:
+                    times: dict[str, list[str]] = {}, course_preferences: dict[str, int] = {},
+                    room_preferences: dict[str, int] = {}, lab_preferences: dict[str, int] = {}) -> None:
         """modifies a current faculty member and updates their information"""
         faculty_config = FacultyConfig(
             name=new_name,

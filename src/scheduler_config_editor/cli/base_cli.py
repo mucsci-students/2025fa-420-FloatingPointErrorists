@@ -1,15 +1,15 @@
-import click
-import types
 import os
 import signal
+import types
+
+import click
 from click_shell import shell
 from scheduler import OptimizerFlags
-from scheduler.json_types import CourseInstanceJSON
 from scheduler.models import CourseInstance
 
-from ..model.schedule_handler import ScheduleHandler
 from ..model.json import JsonConfig
-from ..model.run_scheduler import run_using_config, write_as_json, write_as_csv
+from ..model.run_scheduler import run_using_config, write_as_csv, write_as_json
+from ..model.schedule_handler import ScheduleHandler
 
 """
 This module implements a command-line interface (CLI) for managing JSON configuration files.
@@ -52,10 +52,10 @@ def get_json_config(ctx: click.Context) -> JsonConfig:
 
 def enable_configuration_commands() -> None:
     """Add all the sub-shells to the cli."""
-    from .faculty_cli import faculty
     from .course_cli import courses
-    from .room_cli import rooms
+    from .faculty_cli import faculty
     from .lab_cli import labs
+    from .room_cli import rooms
     cli.add_command(faculty)  # Add faculty sub-shell
     cli.add_command(courses)  # Add courses sub-shell
     cli.add_command(rooms)  # Add rooms sub-shell
@@ -124,7 +124,7 @@ def load_schedules(ctx: click.Context, file_path: str) -> None:
             click.echo("No schedules found in the file.")
             return
         ctx.obj[HANDLER_KEY] = schedule_handler
-        from .schedule_viewer import schedule_viewer
+        from .schedule_cli import schedule_viewer
         cli.add_command(schedule_viewer)
         schedule_viewer.main(standalone_mode=False, obj=ctx.obj)
     except FileNotFoundError as e:
@@ -166,7 +166,7 @@ def select_optimizations() -> list[OptimizerFlags]:
 
 def show_schedule_viewer(ctx: click.Context) -> None:
     """Show the schedule viewer."""
-    from .schedule_viewer import schedule_viewer
+    from .schedule_cli import schedule_viewer
     cli.add_command(schedule_viewer)
     try:
         schedule_viewer.main(standalone_mode=False, obj=ctx.obj)

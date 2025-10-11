@@ -1,6 +1,14 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButton, QVBoxLayout, QTabWidget, QMainWindow
+
 from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtWidgets import (
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 sys.path.append('../controller')
 from scheduler_config_editor.controller.testing import ModClass

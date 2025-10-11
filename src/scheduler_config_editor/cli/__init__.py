@@ -1,3 +1,3 @@
-from .base_cli import cli, apply_signal_handlers
+from .base_cli import apply_signal_handlers, cli
 
 __all__ = ["cli", "apply_signal_handlers"]
