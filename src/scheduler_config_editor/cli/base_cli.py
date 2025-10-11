@@ -91,7 +91,7 @@ def load_config(ctx: click.Context, file_path: str) -> None:
         enable_configuration_commands()
         click.echo("Configuration loaded")
     except json.JSONDecodeError as e:
-        raise click.ClickException(f"Invalid JSON: {e}")
+        raise click.ClickException(f"Invalid JSON: {e}") from e
 
 @cli.command() # type: ignore
 @click.pass_context
@@ -109,7 +109,7 @@ def save(ctx: click.Context) -> None:
         config.save()
         click.echo("Configuration saved.")
     except PermissionError as e:
-        raise click.ClickException(f"Permission error: {e}")
+        raise click.ClickException(f"Permission error: {e}") from e
 
 @cli.command() # type: ignore
 @click.argument("file_path", type=click.Path())
@@ -128,7 +128,7 @@ def load_schedules(ctx: click.Context, file_path: str) -> None:
         cli.add_command(schedule_viewer)
         schedule_viewer.main(standalone_mode=False, obj=ctx.obj)
     except FileNotFoundError as e:
-        raise click.ClickException(f"{e}")
+        raise click.ClickException(f"{e}") from e
 
 @cli.command() # type: ignore
 @click.pass_context

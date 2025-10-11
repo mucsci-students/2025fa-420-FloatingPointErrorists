@@ -66,7 +66,7 @@ class ScheduleHandler:
                     raise ValueError("JSON file does not match expected schedule format.")
                 self._schedules = data
         except (json.JSONDecodeError, ValueError) as e:
-            raise ValueError(f"Invalid JSON format in {file_path}: {e}")
+            raise ValueError(f"Invalid JSON format in {file_path}: {e}") from e
 
     def _load_csv_schedules(self, file_path: str) -> None:
         """Load schedules from a CSV file."""
@@ -77,7 +77,7 @@ class ScheduleHandler:
             schedules = [ScheduleHandler._parse_block(block) for block in blocks]
             self._schedules = schedules
         except Exception as e:
-            raise ValueError(f"Invalid CSV format in {file_path}: {e}")
+            raise ValueError(f"Invalid CSV format in {file_path}: {e}") from e
 
     @staticmethod
     def _split_blocks(lines: list[str]) -> list[list[str]]:
