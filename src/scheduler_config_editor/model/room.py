@@ -1,6 +1,5 @@
 from .json import JsonConfig
 
-
 class Room:
     """
     Module for handling Rooms in the config files

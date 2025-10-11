@@ -1,11 +1,8 @@
-from enum import Enum
-
 import click
+from enum import Enum
 from click_shell import shell
-
 from ..model import ScheduleHandler
 from .base_cli import HANDLER_KEY, clear
-
 
 class DisplayMode(Enum):
     """ Modes for displaying schedules. """
@@ -50,26 +47,26 @@ def get_schedule_handler(ctx: click.Context) -> ScheduleHandler:
 
 @shell(prompt="schedule-viewer> ", intro="You may now view the schedules.\n Type 'help' to see available commands, 'quit' to exit.\n") # type: ignore
 @click.pass_context
-def schedule_viewer(ctx: click.Context) -> None:
-    """Manage rooms."""
+def view_schedules(ctx: click.Context) -> None:
+    """Shell to view schedules."""
     ctx.ensure_object(dict)
-    schedule_viewer.add_command(clear)
+    view_schedules.add_command(clear)
 
-@schedule_viewer.command() # type: ignore
+@view_schedules.command() # type: ignore
 @click.pass_context
 def show(ctx: click.Context) -> None:
-    """Show schedules in default mode."""
+    """Show schedules in a tabular format."""
     schedule_handler = get_schedule_handler(ctx)
     navigate_schedules(schedule_handler, DisplayMode.DEFAULT)
 
-@schedule_viewer.command() # type: ignore
+@view_schedules.command() # type: ignore
 @click.pass_context
 def show_rooms(ctx: click.Context) -> None:
     """Show schedules by room."""
     schedule_handler = get_schedule_handler(ctx)
     navigate_schedules(schedule_handler, DisplayMode.ROOM)
 
-@schedule_viewer.command() # type: ignore
+@view_schedules.command() # type: ignore
 @click.pass_context
 def show_faculty(ctx: click.Context) -> None:
     """Show schedules by faculty."""

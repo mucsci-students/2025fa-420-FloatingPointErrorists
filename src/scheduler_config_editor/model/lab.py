@@ -1,6 +1,5 @@
 from .json import JsonConfig
 
-
 class Lab:
     """
     Module for handling Labs in the config files

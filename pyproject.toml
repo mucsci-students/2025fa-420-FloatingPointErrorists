@@ -1,7 +1,7 @@
 [project]
 name = "scheduler_config_editor"
 version = "0.1.1"
-description = "A CLI that allows for JSON config modification and schedule generation."
+description = "A program that allows for JSON config modification and schedule generation."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -33,14 +33,11 @@ ignore_missing_imports = true
 [tool.ruff]
 target-version = "py313"
 lint.select = [
-    "E",  # pycodestyle errors
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # bugbear
-    "UP", # pyupgrade
-]
-lint.ignore = [
-    "E501", # line too long (handled by formatter)
+    "E",
+    "F",
+    "I",
+    "B",
+    "UP",
 ]
 src = ["src"]
 fix = true

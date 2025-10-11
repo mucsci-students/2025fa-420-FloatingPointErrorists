@@ -1,12 +1,10 @@
 import os
-
 from scheduler import (
     CombinedConfig,
     Scheduler,
 )
 from scheduler.models import CourseInstance
 from scheduler.writers import CSVWriter, JSONWriter
-
 
 def run_using_config(usr_config: CombinedConfig) -> list[list["CourseInstance"]]:
     # Create scheduler

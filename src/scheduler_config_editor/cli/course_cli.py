@@ -1,9 +1,7 @@
 import click
 from click_shell import shell
-
-from scheduler_config_editor.model.courses import Course
-from scheduler_config_editor.model.json import JsonConfig
-
+from ..model.courses import Course
+from ..model.json import JsonConfig
 from .base_cli import clear, get_json_config, run, save, show
 
 """

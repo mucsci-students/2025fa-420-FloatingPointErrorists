@@ -1,6 +1,6 @@
 from pathlib import Path
 from click.testing import CliRunner
-from scheduler_config_editor.cli import cli
+from scheduler_config_editor.cli import base_cli
 from scheduler_config_editor.model import Room
 
 CONFIG_KEY = "config"
@@ -13,7 +13,7 @@ def dummy_path() -> str:
 def test_room_add():
     runner = CliRunner()
     obj = {}
-    runner.invoke(cli, [LOAD_COMMAND, dummy_path()], obj=obj)
+    runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
     jsonObj = obj[CONFIG_KEY]
     Room.add_room(jsonObj, "Test Room")
     assert jsonObj.scheduler_config.rooms.count("Test Room") == 1
@@ -21,7 +21,7 @@ def test_room_add():
 def test_room_add_dupe():
     runner = CliRunner()
     obj = {}
-    runner.invoke(cli, [LOAD_COMMAND, dummy_path()], obj=obj)
+    runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
     jsonObj = obj[CONFIG_KEY]
     Room.add_room(jsonObj, "Test Room")
     try:
@@ -32,7 +32,7 @@ def test_room_add_dupe():
 def test_room_del():
     runner = CliRunner()
     obj = {}
-    runner.invoke(cli, [LOAD_COMMAND, dummy_path()], obj=obj)
+    runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
     jsonObj = obj[CONFIG_KEY]
     Room.add_room(jsonObj, "Test Room")
     Room.del_room(jsonObj, "Test Room")
@@ -41,7 +41,7 @@ def test_room_del():
 def test_room_del_ne():
     runner = CliRunner()
     obj = {}
-    runner.invoke(cli, [LOAD_COMMAND, dummy_path()], obj=obj)
+    runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
     jsonObj = obj[CONFIG_KEY]
     try:
         Room.del_room(jsonObj, "Test Room")
@@ -52,7 +52,7 @@ def test_room_del_ne():
 def test_room_mod():
     runner = CliRunner()
     obj = {}
-    runner.invoke(cli, [LOAD_COMMAND, dummy_path()], obj=obj)
+    runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
     jsonObj = obj[CONFIG_KEY]
     Room.add_room(jsonObj, "Test Room")
     Room.mod_room(jsonObj, "Test Room", "New Room")
@@ -61,7 +61,7 @@ def test_room_mod():
 def test_room_mod_ne():
     runner = CliRunner()
     obj = {}
-    runner.invoke(cli, [LOAD_COMMAND, dummy_path()], obj=obj)
+    runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
     jsonObj = obj[CONFIG_KEY]
     try:
         Room.mod_room(jsonObj, "Test Room", "New Room")

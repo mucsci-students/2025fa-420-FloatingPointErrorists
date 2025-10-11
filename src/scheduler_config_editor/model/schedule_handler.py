@@ -3,7 +3,6 @@ import json
 import os
 import re
 from collections import defaultdict
-
 from scheduler.json_types import CourseInstanceJSON, TimeInstanceJSON
 from scheduler.models import CourseInstance
 from tabulate import tabulate
