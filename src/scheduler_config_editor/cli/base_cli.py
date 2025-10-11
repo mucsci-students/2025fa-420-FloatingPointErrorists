@@ -147,7 +147,7 @@ def set_scheduler_options(config: JsonConfig) -> None:
     """Set scheduler options interactively."""
     if click.confirm("Do you want to overwrite the config optimizations?", default=False):
         config.set_optimization(select_optimizations())
-    config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1, max=100), default=1))
+    config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1), default=1))
 
 def select_optimizations() -> list[OptimizerFlags]:
     """Prompt the user to select optimization flags."""
