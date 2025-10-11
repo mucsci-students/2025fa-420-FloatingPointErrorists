@@ -1,5 +1,4 @@
 import os
-
 from scheduler import (
     CombinedConfig,
     OptimizerFlags,
@@ -7,7 +6,6 @@ from scheduler import (
     TimeSlotConfig,
     load_config_from_file,
 )
-
 
 class JsonConfig:
     """
@@ -33,7 +31,7 @@ class JsonConfig:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         # Check if file exists and is empty. If it is empty, populate it with default.json. If it doesn't exist, create it and populate it with default.json
         if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
-            with open('data/default.json', encoding='utf-8') as default_config:
+            with open("data/default.json", 'r', encoding='utf-8') as default_config:
                 default_data = default_config.read()
             with open(file_path, 'w', encoding='utf-8') as target_file:
                 target_file.write(default_data)

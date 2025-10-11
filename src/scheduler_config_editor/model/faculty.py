@@ -1,10 +1,7 @@
 from _ast import Gt
 from typing import Annotated
-
 from scheduler import FacultyConfig
-
 from .json import JsonConfig
-
 
 class Faculty:
     """
