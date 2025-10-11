@@ -1,8 +1,8 @@
 import click
 from enum import Enum
 from click_shell import shell
-from .base_cli import clear, HANDLER_KEY
 from ..model import ScheduleHandler
+from .base_cli import HANDLER_KEY, clear
 
 class DisplayMode(Enum):
     """ Modes for displaying schedules. """
@@ -14,8 +14,7 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
     """Navigate through schedules interactively."""
     schedules = schedule_handler.schedules
     idx = 0
-    while 0 <= idx < len(schedules):
-        quit_loop = False
+    while True:
         match mode:
             case DisplayMode.ROOM:
                 click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.room_schedule(schedules[idx])}")
@@ -23,26 +22,21 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
                 click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.faculty_schedule(schedules[idx])}")
             case _:
                 click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.format_schedule(schedules[idx])}")
-        while True:
-            user_input = click.prompt("Type 'n' for next, 'p' for previous, 'q' to quit", default='n',
-                                      type=click.Choice(['n', 'p', 'q']), show_choices=False).lower()
-            match user_input:
-                case 'n':
-                    if idx < len(schedules) - 1:
-                        idx += 1
-                        break
-                    else:
-                        click.echo("Already at the last schedule.")
-                case 'p':
-                    if idx > 0:
-                        idx -= 1
-                        break
-                    else:
-                        click.echo("Already at the first schedule.")
-                case _:
-                    quit_loop = True
-                    break
-        if quit_loop: break
+        user_input = click.prompt("Type 'n' for next, 'p' for previous, 'q' to quit", default='n',
+                                  type=click.Choice(['n', 'p', 'q']), show_choices=False).lower()
+        match user_input:
+            case 'n':
+                if idx < len(schedules) - 1:
+                    idx += 1
+                else:
+                    idx = 0
+            case 'p':
+                if idx > 0:
+                    idx -= 1
+                else:
+                    idx = len(schedules) - 1
+            case _:
+                break
 
 def get_schedule_handler(ctx: click.Context) -> ScheduleHandler:
     """Retrieve the ScheduleHandler from the context."""
@@ -53,26 +47,26 @@ def get_schedule_handler(ctx: click.Context) -> ScheduleHandler:
 
 @shell(prompt="schedule-viewer> ", intro="You may now view the schedules.\n Type 'help' to see available commands, 'quit' to exit.\n") # type: ignore
 @click.pass_context
-def schedule_viewer(ctx: click.Context) -> None:
-    """Manage rooms."""
+def view_schedules(ctx: click.Context) -> None:
+    """Shell to view schedules."""
     ctx.ensure_object(dict)
-    schedule_viewer.add_command(clear)
+    view_schedules.add_command(clear)
 
-@schedule_viewer.command() # type: ignore
+@view_schedules.command() # type: ignore
 @click.pass_context
 def show(ctx: click.Context) -> None:
-    """Show schedules in default mode."""
+    """Show schedules in a tabular format."""
     schedule_handler = get_schedule_handler(ctx)
     navigate_schedules(schedule_handler, DisplayMode.DEFAULT)
 
-@schedule_viewer.command() # type: ignore
+@view_schedules.command() # type: ignore
 @click.pass_context
 def show_rooms(ctx: click.Context) -> None:
     """Show schedules by room."""
     schedule_handler = get_schedule_handler(ctx)
     navigate_schedules(schedule_handler, DisplayMode.ROOM)
 
-@schedule_viewer.command() # type: ignore
+@view_schedules.command() # type: ignore
 @click.pass_context
 def show_faculty(ctx: click.Context) -> None:
     """Show schedules by faculty."""
