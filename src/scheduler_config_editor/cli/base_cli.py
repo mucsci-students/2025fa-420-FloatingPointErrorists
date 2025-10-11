@@ -1,13 +1,13 @@
-import click
-import types
 import os
 import signal
+import types
+import click
 from click_shell import shell
 from scheduler import OptimizerFlags
-from scheduler.json_types import CourseInstanceJSON
-from scheduler_config_editor.model.schedule_handler import ScheduleHandler
-from scheduler_config_editor.model.json import JsonConfig
-from scheduler_config_editor.model.run_scheduler import run_using_config, write_as_json, write_as_csv
+from scheduler.models import CourseInstance
+from ..model.json import JsonConfig
+from ..model.run_scheduler import run_using_config, write_as_csv, write_as_json
+from ..model.schedule_handler import ScheduleHandler
 
 """
 This module implements a command-line interface (CLI) for managing JSON configuration files.
@@ -28,7 +28,7 @@ HANDLER_KEY = "SCHEDULER_CLI_HANDLER"
 # ====== CLI Definition & General functions ======
 @shell(prompt="scheduler> ", intro="Welcome to the Scheduler CLI!\nType 'help' to see available commands, 'quit' to exit.\n") # type: ignore
 @click.pass_context
-def cli(ctx: click.Context) -> None:
+def base_cli(ctx: click.Context) -> None:
     """Scheduler CLI — interactive shell."""
     ctx.ensure_object(dict)
 
@@ -50,14 +50,14 @@ def get_json_config(ctx: click.Context) -> JsonConfig:
 
 def enable_configuration_commands() -> None:
     """Add all the sub-shells to the cli."""
-    from .faculty_cli import faculty
     from .course_cli import courses
-    from .room_cli import rooms
+    from .faculty_cli import faculty
     from .lab_cli import labs
-    cli.add_command(faculty)  # Add faculty sub-shell
-    cli.add_command(courses)  # Add courses sub-shell
-    cli.add_command(rooms)  # Add rooms sub-shell
-    cli.add_command(labs)  # Add labs sub-shell
+    from .room_cli import rooms
+    base_cli.add_command(faculty)  # Add faculty sub-shell
+    base_cli.add_command(courses)  # Add courses sub-shell
+    base_cli.add_command(rooms)  # Add rooms sub-shell
+    base_cli.add_command(labs)  # Add labs sub-shell
 
 def check_valid_config(json_config: JsonConfig) -> None:
     """Check if a valid configuration is loaded."""
@@ -71,13 +71,13 @@ def check_valid_config(json_config: JsonConfig) -> None:
     if len(config.courses) == 0:
         raise click.ClickException("No courses defined in the configuration.")
 
-@cli.command() # type: ignore
+@base_cli.command() # type: ignore
 def clear() -> None:
     """Clear the terminal screen."""
     os.system("cls" if os.name == "nt" else "clear")
 
 # ====== JSON Commands ======
-@cli.command() # type: ignore
+@base_cli.command() # type: ignore
 @click.argument("file_path", type=click.Path())
 @click.pass_context
 def load_config(ctx: click.Context, file_path: str) -> None:
@@ -89,16 +89,16 @@ def load_config(ctx: click.Context, file_path: str) -> None:
         enable_configuration_commands()
         click.echo("Configuration loaded")
     except json.JSONDecodeError as e:
-        raise click.ClickException(f"Invalid JSON: {e}")
+        raise click.ClickException(f"Invalid JSON: {e}") from e
 
-@cli.command() # type: ignore
+@base_cli.command() # type: ignore
 @click.pass_context
 def show(ctx: click.Context) -> None:
     """Show the loaded configuration."""
     config = get_json_config(ctx)
     click.echo(config)
 
-@cli.command() # type: ignore
+@base_cli.command() # type: ignore
 @click.pass_context
 def save(ctx: click.Context) -> None:
     """Save the current configuration back to the file."""
@@ -107,9 +107,9 @@ def save(ctx: click.Context) -> None:
         config.save()
         click.echo("Configuration saved.")
     except PermissionError as e:
-        raise click.ClickException(f"Permission error: {e}")
+        raise click.ClickException(f"Permission error: {e}") from e
 
-@cli.command() # type: ignore
+@base_cli.command() # type: ignore
 @click.argument("file_path", type=click.Path())
 @click.pass_context
 def load_schedules(ctx: click.Context, file_path: str) -> None:
@@ -122,13 +122,13 @@ def load_schedules(ctx: click.Context, file_path: str) -> None:
             click.echo("No schedules found in the file.")
             return
         ctx.obj[HANDLER_KEY] = schedule_handler
-        from .schedule_viewer import schedule_viewer
-        cli.add_command(schedule_viewer)
-        schedule_viewer.main(standalone_mode=False, obj=ctx.obj)
+        from .schedule_cli import view_schedules
+        base_cli.add_command(view_schedules)
+        view_schedules.main(standalone_mode=False, obj=ctx.obj)
     except FileNotFoundError as e:
-        raise click.ClickException(f"{e}")
+        raise click.ClickException(f"{e}") from e
 
-@cli.command() # type: ignore
+@base_cli.command() # type: ignore
 @click.pass_context
 def run(ctx: click.Context) -> None:
     """Run the scheduler with the current configuration."""
@@ -147,7 +147,7 @@ def set_scheduler_options(config: JsonConfig) -> None:
     """Set scheduler options interactively."""
     if click.confirm("Do you want to overwrite the config optimizations?", default=False):
         config.set_optimization(select_optimizations())
-    config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1, max=100), default=1))
+    config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1), default=1))
 
 def select_optimizations() -> list[OptimizerFlags]:
     """Prompt the user to select optimization flags."""
@@ -164,14 +164,14 @@ def select_optimizations() -> list[OptimizerFlags]:
 
 def show_schedule_viewer(ctx: click.Context) -> None:
     """Show the schedule viewer."""
-    from .schedule_viewer import schedule_viewer
-    cli.add_command(schedule_viewer)
+    from .schedule_cli import view_schedules
+    base_cli.add_command(view_schedules)
     try:
-        schedule_viewer.main(standalone_mode=False, obj=ctx.obj)
+        view_schedules.main(standalone_mode=False, obj=ctx.obj)
     except SystemExit:
         pass
 
-def handle_schedule_saving(schedule_list: list[list[CourseInstanceJSON]]) -> None:
+def handle_schedule_saving(schedule_list: list[list[CourseInstance]]) -> None:
     """Handle saving the generated schedules."""
     typing = click.prompt(
         "\nDo you want to save the schedule(s) as a Json, CSV, both or none?",
