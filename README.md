@@ -8,26 +8,27 @@ CLI for managing faculty, courses, rooms, and labs. It also interfaces with the 
 
 1. Ensure you have Python 3.13 or higher installed. To check your version, run:
 ```python --version```
-2. Make sure to set up a virtual environment using:
-```python -m venv venv```
-3. Activate the virtual environment:
+2. Check if git is installed by running: 
+```git --version```. If it is not installed, download it from: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+3. Make sure to have uv installed:
+https://docs.astral.sh/uv/getting-started/installation/. You can check your version with:
+```uv --version```
+
+### Installing
+
+* Clone the repository using:
+```git clone https://github.com/mucsci/Scheduler.git```, and navigate to the project directory.
+* Install dependencies and create a virtual environment by running:
+```uv sync```
+* Activate the virtual environment:
    - On Windows:
    ```.\venv\Scripts\activate```
    - On macOS/Linux:
    ```source venv/bin/activate```
-4. If you want to deactivate the virtual environment later, simply run:
+* If you want to deactivate the virtual environment later, simply run:
 ```deactivate```
-
-### Installing
-
-* Check if git is installed by running:
-```git --version```
-* Clone the repository using:
-```git clone https://github.com/mucsci/Scheduler.git```
-* To install the required packages, run:
-```pip install -e .```
 * To install development packages, run:
-```pip install -e .[dev]```
+```uv pip install -e ".[dev]"```
 
 ### Executing + Using the Program
 
