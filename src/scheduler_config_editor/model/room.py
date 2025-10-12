@@ -11,7 +11,7 @@ class Room:
             json_config.scheduler_config.rooms.append(new_room)
             json_config.scheduler_config.rooms.sort()
         else:
-            raise ValueError(f"Room {new_room} already exists.")
+            raise Room.RoomExistsError(f"Room {new_room} already exists.")
 
     @staticmethod
     def mod_room(json_config: JsonConfig, room: str, new_room: str) -> None:
@@ -29,10 +29,21 @@ class Room:
     @staticmethod
     def del_room(json_config: JsonConfig, room: str) -> None:
         """Deletes a specified room from the config"""
-        json_config.scheduler_config.rooms.remove(room)
-        for course in json_config.scheduler_config.courses:
-            if course.room.count(room) == 1:
-                course.room.remove(room)
-        for faculty_member in json_config.scheduler_config.faculty:
-            if room in faculty_member.room_preferences:
-                faculty_member.room_preferences.pop(room)
+        if json_config.scheduler_config.rooms.count(room) == 1:
+            json_config.scheduler_config.rooms.remove(room)
+            for course in json_config.scheduler_config.courses:
+                if course.room.count(room) == 1:
+                    course.room.remove(room)
+            for faculty_member in json_config.scheduler_config.faculty:
+                if room in faculty_member.room_preferences:
+                    faculty_member.room_preferences.pop(room)
+        else:
+            raise Room.RoomMissingError(f"Room {room} does not exist.")
+    
+    class RoomExistsError(Exception):
+        # Exception for when a room already exists in the JSON
+        pass
+
+    class RoomMissingError(Exception):
+        # Exception for when a room does not exist in the JSON
+        pass
