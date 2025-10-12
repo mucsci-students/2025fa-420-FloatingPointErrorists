@@ -45,7 +45,7 @@ def get_json_config(ctx: click.Context) -> JsonConfig:
     """Helper function to get the current JSON configuration."""
     config: JsonConfig = ctx.obj.get("config")
     if not config:
-        raise click.ClickException("No configuration loaded. Please do 'load <configuration>' first.")
+        raise click.ClickException("No configuration loaded. Please do 'load-config <configuration>' first.")
     return config
 
 def enable_configuration_commands() -> None:
@@ -127,6 +127,8 @@ def load_schedules(ctx: click.Context, file_path: str) -> None:
         view_schedules.main(standalone_mode=False, obj=ctx.obj)
     except FileNotFoundError as e:
         raise click.ClickException(f"{e}") from e
+    except ValueError as e:
+        raise click.ClickException(f"{e}") from e
 
 @base_cli.command() # type: ignore
 @click.pass_context
@@ -147,7 +149,7 @@ def set_scheduler_options(config: JsonConfig) -> None:
     """Set scheduler options interactively."""
     if click.confirm("Do you want to overwrite the config optimizations?", default=False):
         config.set_optimization(select_optimizations())
-    config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1), default=1))
+    config.set_limit(click.prompt("Enter the maximum number of schedules to generate", type=click.IntRange(min=1), default=config.combined_config.limit))
 
 def select_optimizations() -> list[OptimizerFlags]:
     """Prompt the user to select optimization flags."""
