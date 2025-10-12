@@ -1,9 +1,9 @@
 import sys
 from typing import Callable
 
-from scheduler import OptimizerFlags, Scheduler
+from scheduler import OptimizerFlags
 from scheduler_config_editor.model.json import JsonConfig
-from PyQt6.QtWidgets import QCheckBox, QLineEdit, QMessageBox
+from PyQt6.QtWidgets import QMessageBox
 from scheduler.models import CourseInstance
 from scheduler_config_editor.model.run_scheduler import run_using_config
 from scheduler_config_editor.view.generator_gui import GeneratorGui
@@ -24,28 +24,18 @@ class GeneratorController:
         if self.config is None:
             raise ConfigMissingError("No config provided.")
 
-        selected_flags: list[OptimizerFlags] = []
+        selected_flags = []
+        # Finding which optimizations to set
+        for fg, cbox in zip(OptimizerFlags, self.view.get_checks()):
+            is_checked = cbox.isChecked()
 
-        optimizations = [
-            OptimizerFlags.FACULTY_COURSE,
-            OptimizerFlags.FACULTY_ROOM,
-            OptimizerFlags.FACULTY_LAB,
-            OptimizerFlags.SAME_ROOM,
-            OptimizerFlags.SAME_LAB,
-            OptimizerFlags.PACK_ROOMS,
-            OptimizerFlags.PACK_LABS,
-        ]
-
-        check_list = self.view.get_checks()
-        for i in range(7):
-            if check_list[i].isChecked():
-                selected_flags.append(optimizations[i])
+            if is_checked:
+                selected_flags.append(fg)
 
         # Getting limit
         limit_value = self.view.get_limit()
 
         self.config.set_optimization(selected_flags)
-        # self.config.combined_config.optimizer_flags = selected_flags
         self.config.set_limit(int(limit_value))
 
         schedules = run_using_config(self.config.combined_config)

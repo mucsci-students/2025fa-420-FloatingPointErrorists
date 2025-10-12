@@ -1,14 +1,12 @@
 import sys
-from typing import Callable
 
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QLabel, QCheckBox,
-    QLineEdit, QPushButton, QMessageBox, QGroupBox, QMainWindow, QTabWidget, QWidget
+    QLineEdit, QPushButton, QGroupBox, QWidget
 )
 from PyQt6.QtGui import QIntValidator
 from scheduler import OptimizerFlags
 from scheduler_config_editor.model.json import JsonConfig
-from scheduler.models import CourseInstance
 
 sys.path.append('../controller')
 
