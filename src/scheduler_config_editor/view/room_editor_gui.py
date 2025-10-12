@@ -14,7 +14,6 @@ class RoomEditorGui(QMainWindow):
         super().__init__()
         self.json_config = json_config
 
-
         # Layout Stuff
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -28,11 +27,9 @@ class RoomEditorGui(QMainWindow):
             screen_height = screen_geometry.height()
             self.resize(int(screen_width * 0.5), int(screen_height * 0.5))
         
-
         # Changes title
         self.title = QLabel("Room and Lab Editor")
         self.my_layout.addWidget(self.title, alignment=Qt.AlignmentFlag.AlignTop)
-
 
         # Room Group Box
         room_group_box = QGroupBox("Rooms")
@@ -43,11 +40,10 @@ class RoomEditorGui(QMainWindow):
         room_layout.addWidget(self.room_list)
 
         room_add_button = QPushButton("Add Room")
-        room_add_button.clicked.connect(lambda item: self.show_editor_wrapper(item, RoomEditorGui.ROOM))
+        room_add_button.clicked.connect(lambda item: self.show_editor(item, RoomEditorGui.ROOM))
         room_layout.addWidget(room_add_button)
 
-        self.room_list.itemClicked.connect(lambda item: self.show_editor_wrapper(item, RoomEditorGui.ROOM))
-
+        self.room_list.itemClicked.connect(lambda item: self.show_editor(item, RoomEditorGui.ROOM))
 
         # Labs Group Box
         lab_group_box = QGroupBox("Labs")
@@ -58,16 +54,17 @@ class RoomEditorGui(QMainWindow):
         lab_layout.addWidget(self.lab_list)
 
         lab_add_button = QPushButton("Add Lab")
-        lab_add_button.clicked.connect(lambda item: self.show_editor_wrapper(item, RoomEditorGui.LAB))
+        lab_add_button.clicked.connect(lambda item: self.show_editor(item, RoomEditorGui.LAB))
         lab_layout.addWidget(lab_add_button)
 
-        self.lab_list.itemClicked.connect(lambda item: self.show_editor_wrapper(item, RoomEditorGui.LAB))
+        self.lab_list.itemClicked.connect(lambda item: self.show_editor(item, RoomEditorGui.LAB))
 
         self.populate_lists()
 
         self.my_layout.addWidget(room_group_box)
         self.my_layout.addWidget(lab_group_box)
     
+
     def populate_lists(self) -> None:
         self.room_list.clear()
         self.lab_list.clear()
@@ -77,7 +74,8 @@ class RoomEditorGui(QMainWindow):
         for i, lab in enumerate (self.json_config.scheduler_config.labs):
             self.lab_list.addItem(self.json_config.scheduler_config.labs[i])
 
-    def show_editor_wrapper(self, item: QListWidgetItem, group: str) -> None:
+
+    def show_editor(self, item: QListWidgetItem, group: str) -> None:
         editor_box = self.get_editor(item, group)
         if self.my_layout.count() != 4:
             self.my_layout.addWidget(editor_box)
@@ -163,7 +161,6 @@ class RoomEditorGui(QMainWindow):
         #self.my_layout.addWidget(editor_box)
         return editor_box
         
-
         
     def write_out(self, name: str, oName: str, group: str) -> None:
         if group == RoomEditorGui.ROOM:
@@ -183,6 +180,7 @@ class RoomEditorGui(QMainWindow):
                 except Lab.LabExistsError as e:
                     self.show_error(group, e)
 
+
     def show_error(self, group: str, error: Exception) -> None:
         error_box = QMessageBox()
         error_box.setWindowTitle(f"{group} Error")
@@ -190,6 +188,7 @@ class RoomEditorGui(QMainWindow):
         error_box.setIcon(QMessageBox.Icon.Critical)
         error_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         error_box.exec()
+
 
 #Test initaliser for when I call the file directly
 #Code in here is for testing purposes with the dummy json
