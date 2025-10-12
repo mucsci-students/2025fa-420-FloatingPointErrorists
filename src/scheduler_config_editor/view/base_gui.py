@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
     QApplication, QLabel, QWidget, QLineEdit, QPushButton,
     QVBoxLayout, QHBoxLayout, QTabWidget, QMainWindow,
     QCheckBox, QComboBox, QFileDialog, QGridLayout,
-    QScrollArea
+    QScrollArea, QTableWidget
 )
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
@@ -139,9 +139,12 @@ class SimpleTabs(QWidget):
         def view_by_courses() -> None:
             try:
                 sc.mode = 0
-                self.schedule_viewer_label.setText(sc.get_format())
+                sc.set_table()
+                self.schedule_table = sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
             except:
-                self.schedule_viewer_label.setText("""Schedule by course will be shown here""")    
+                self.schedule_viewer_label.setText("""Schedule by course will be shown here""")
+                self.my_scroll.setWidget(self.schedule_viewer_label)
 
         self.schedule_viewer_button = QPushButton("Courses")
         self.schedule_viewer_button.clicked.connect(view_by_courses)
@@ -151,9 +154,12 @@ class SimpleTabs(QWidget):
         def view_by_faulty() -> None:
             try:
                 sc.mode = 1
-                self.schedule_viewer_label.setText(sc.get_format())
+                sc.set_table()
+                self.schedule_table = sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
             except:
-                set_schedule_label("""Schedule by faculty will be shown here""")    
+                set_schedule_label("""Schedule by faculty will be shown here""")
+                self.my_scroll.setWidget(self.schedule_viewer_label) 
 
         self.schedule_viewer_button = QPushButton("Faculty")
         self.schedule_viewer_button.clicked.connect(view_by_faulty)
@@ -163,9 +169,12 @@ class SimpleTabs(QWidget):
         def view_by_room() -> None:
             try:
                 sc.mode = 2
-                self.schedule_viewer_label.setText(sc.get_format())
+                sc.set_table()
+                self.schedule_table = sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
             except:
-                set_schedule_label("""Schedule by room will be shown here""")    
+                set_schedule_label("""Schedule by room will be shown here""")
+                self.my_scroll.setWidget(self.schedule_viewer_label)
 
         self.schedule_viewer_button = QPushButton("Room")
         self.schedule_viewer_button.clicked.connect(view_by_room)
@@ -176,9 +185,22 @@ class SimpleTabs(QWidget):
         def popoutwindow() -> None:
             self.nw.show()
             try:
-                self.nw.widget.schedule.setText(sc.get_format())
+                #Copies schedule_table into new window's my_table
+                new_table = QTableWidget()
+                new_table.setRowCount(self.schedule_table.rowCount())
+                new_table.setColumnCount(self.schedule_table.columnCount())
+
+                for i in range(self.schedule_table.rowCount()):
+                    for j in range(self.schedule_table.columnCount()):
+                        item = self.schedule_table.item(i, j)
+                        if item:
+                            new_table.setItem(i, j, item.clone())
+
+                self.nw.widget.my_table = new_table
+                self.nw.widget.scroll_area_w.setWidget(new_table)
+
             except:
-                self.nw.widget.schedule.setText("""Schedule Not Selected""")    
+                pass  
 
         self.schedule_viewer_button = QPushButton("Popout Window")
         self.schedule_viewer_button.clicked.connect(popoutwindow)
@@ -201,15 +223,24 @@ class SimpleTabs(QWidget):
         set_schedule_label("""Schedule by course will be shown here""")    
         self.my_scroll.setWidget(self.schedule_viewer_label)
 
+        #table
+        self.schedule_table = QTableWidget()
+
         #add bot layout
         view_bot_layout = QHBoxLayout()
         view_bot_layout.addStretch()
 
         #add prev_schedule button
         def schedule_back() -> None:
-            sc.previous_schedule()
-            self.schedule_viewer_label.setText(sc.get_format())
-            self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+            try:
+                sc.previous_schedule()
+                sc.set_table()
+                self.schedule_table = sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
+                self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+            except:
+                pass
+
 
         self.schedule_viewer_button = QPushButton("<--")
         self.schedule_viewer_button.clicked.connect(schedule_back)
@@ -231,7 +262,9 @@ class SimpleTabs(QWidget):
                 else:
                     sc.index = newIndex - 1
 
-                self.schedule_viewer_label.setText(sc.get_format())
+                sc.set_table()
+                self.schedule_table = sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
 
             except:
@@ -252,9 +285,14 @@ class SimpleTabs(QWidget):
 
         #add next_schedule button
         def schedule_forward() -> None:
-            sc.next_schedule()
-            self.schedule_viewer_label.setText(sc.get_format())
-            self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+            try:
+                sc.next_schedule()
+                sc.set_table()
+                self.schedule_table = sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
+                self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+            except:
+                pass
 
         self.schedule_viewer_button = QPushButton("-->")
         self.schedule_viewer_button.clicked.connect(schedule_forward)
@@ -298,7 +336,9 @@ class SimpleTabs(QWidget):
                 sc.length = len(sc.cur_schedules.schedules)
 
                 #show first schedule
-                self.schedule_viewer_label.setText(sc.get_format())
+                sc.set_table()
+                self.schedule_table = sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
                 self.schedule_viewer_label_len.setText("/" + str(sc.length))
             except:

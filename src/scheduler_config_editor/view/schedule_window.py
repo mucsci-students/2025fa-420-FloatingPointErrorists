@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QLabel, QWidget,  QVBoxLayout, QMainWindow, QScrollArea
+from PyQt6.QtWidgets import QLabel, QWidget,  QVBoxLayout, QMainWindow, QScrollArea, QTableWidget
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 
@@ -29,13 +29,10 @@ class newWidget(QWidget):
         super(QWidget, self).__init__(parent)
 
         self.my_widget = QWidget()
-        self.schedule = QLabel()
-        self.schedule.setText("Please Wait up to a minute.")
-
-        #scroll area for schedule
+        self.my_table = QTableWidget()
         self.scroll_area_w = QScrollArea()
+    
         self.scroll_area_w.setWidgetResizable(True)
-        self.scroll_area_w.setWidget(self.schedule)
 
         self.my_layout = QVBoxLayout()
         self.my_layout.addWidget(self.scroll_area_w)
