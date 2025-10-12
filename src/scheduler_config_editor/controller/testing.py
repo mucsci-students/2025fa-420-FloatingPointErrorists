@@ -1,6 +1,3 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButton, QVBoxLayout, QTabWidget, QMainWindow
-from PyQt6.QtGui import QGuiApplication
 
 class ModClass:
     def __init__ (self, target_widget) -> None:

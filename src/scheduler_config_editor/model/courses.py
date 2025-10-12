@@ -1,5 +1,5 @@
-from .json import JsonConfig
 from scheduler import CourseConfig
+from .json import JsonConfig
 
 class Course:
     """
