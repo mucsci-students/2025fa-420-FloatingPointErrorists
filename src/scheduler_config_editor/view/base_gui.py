@@ -9,6 +9,9 @@ from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 from scheduler.models import CourseInstance
 
+from scheduler_config_editor.controller.generator_controller import GeneratorController
+from scheduler_config_editor.view.generator_gui import GeneratorGui
+
 sys.path.append('../controller')
 from scheduler_config_editor.controller.testing import ModClass
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
@@ -51,10 +54,7 @@ class SimpleGUI(QMainWindow):
 """Simple Tabs Initializer"""
 
 class SimpleTabs(QWidget):
-
     def __init__(self, parent) -> None:
-        from scheduler_config_editor.view.generator_gui import setup_generator_tab
-
         super(QWidget, self).__init__(parent)
 
         # Grabbing dimensions of user's primary screen
@@ -62,7 +62,6 @@ class SimpleTabs(QWidget):
         screen_geometry = screen.availableGeometry()
         screen_width = screen_geometry.width()
         screen_height = screen_geometry.height()
-
 
         self.layout = QVBoxLayout(self)
 
@@ -74,7 +73,8 @@ class SimpleTabs(QWidget):
         self.tabs.resize(int(screen_width * 0.25), int(screen_height * 0.25))
 
         # Config
-        self.config = None # change this when we figure it out
+        self.config: JsonConfig = None
+        self.schedules: list[list[CourseInstance]]
 
         # TabBar Stylesheet
         self.setStyleSheet('''
@@ -92,6 +92,9 @@ class SimpleTabs(QWidget):
         self.editor_tab.layout = QGridLayout()
         self.editor_tab.setLayout(self.editor_tab.layout)
 
+        self.generator_tab.layout = QVBoxLayout()
+        self.generator_tab.setLayout(self.generator_tab.layout)
+
         # Dropdown code
         self.editor_combo_box = QComboBox()
         self.editor_combo_box.addItems(['Course', 'Room', 'Lab', 'Faculty'])
@@ -107,6 +110,15 @@ class SimpleTabs(QWidget):
         self.faculty_controller = None
         self.faculty_gui = None
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        # Generator placeholders
+        self.generator_controller = GeneratorController(self.config)
+        self.generator_gui = self.generator_controller.view
+
+        self.generator_controller.on_schedules_generated = self.handle_schedules_generated
+
+        # Add the generator_gui into the generator_tab's layout
+        self.generator_tab.layout.addWidget(self.generator_gui)
 
         # When dropdown changes
         def on_editor_selection_change() -> None:
@@ -394,13 +406,6 @@ class SimpleTabs(QWidget):
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
 
-        def handle_generated_schedules(schedules: list[list[CourseInstance]]) -> None:
-            pass # REPLACE WITH WHATEVER METHOD UPDATES VIEWER
-
-        # GENERATOR
-        setup_generator_tab(self, handle_generated_schedules)
-        # GENERATOR END
-
     def handleButton(self) -> None:
         self.modifier = ModClass(self)
         self.modifier.test()
@@ -418,6 +423,8 @@ class SimpleTabs(QWidget):
             self.config = JsonConfig(config_path)
             QMessageBox.information(self, "Config Loaded", "Successfully loaded config")
             self.faculty_controller = FacultyEditorController(self.config)
+            self.generator_controller.update_config(self.config)
+            self.generator_gui.update_config(self.config)
 
             # Enables save button
             self.save_config_button.setEnabled(True)
@@ -431,6 +438,7 @@ class SimpleTabs(QWidget):
                         widget.deleteLater()
                 self.faculty_gui = FacultyEditorGui(self.faculty_controller)
                 self.editor_content_area.addWidget(self.faculty_gui)
+
         except Exception as error:
                 QMessageBox.warning(self, "Load Error", error)
 
@@ -441,6 +449,11 @@ class SimpleTabs(QWidget):
                 return
         try:
             self.config.save()
+            self.generator_gui.update_config(self.config)
+            self.generator_controller.update_config(self.config)
             QMessageBox.information(self, "Config Saved", "Config saved successfully")
         except Exception as error:
             QMessageBox.warning(self, "Save Error", error)
+
+    def handle_schedules_generated(self, schedules: list[list[CourseInstance]]) -> None:
+        self.schedules = schedules
