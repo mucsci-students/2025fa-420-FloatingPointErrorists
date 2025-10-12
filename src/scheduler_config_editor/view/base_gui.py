@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt
 
 sys.path.append('../controller')
 from scheduler_config_editor.controller.testing import ModClass
+from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
 
 """Simple Gui Window Initializer"""
 
@@ -97,8 +98,11 @@ class SimpleTabs(QWidget):
 
         self.editor_combo_box.addItems(['Course', 'Room', 'Lab', 'Faculty'])
 
+        self.course_editor_window = CourseEditorGUI()
+
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
+        self.editor_combo_box.activated.connect(self.open_editor_gui)
 
         # Code for testing testing.py with a button
         # self.button = QPushButton("Test button")
@@ -219,3 +223,7 @@ class SimpleTabs(QWidget):
     def handleButton(self) -> None:
         self.modifier = ModClass(self)
         self.modifier.test()
+
+    
+    def open_editor_gui(self):
+        self.course_editor_window.show()
