@@ -2,7 +2,7 @@ from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QMessageBox, QListWidget, QListWidgetItem, QWidget
 from scheduler import TimeRange
 
-from scheduler_config_editor import Faculty,JsonConfig
+from scheduler_config_editor.model import Faculty,JsonConfig
 from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui, EditFacultyWindow
 
 class FacultyEditorController:

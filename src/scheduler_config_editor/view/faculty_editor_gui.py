@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButto
     QHBoxLayout, QListWidget, QListWidgetItem, QSpinBox, QFormLayout, QMessageBox, QGroupBox, QGridLayout, QTimeEdit
 from PyQt6.QtGui import QGuiApplication, QIntValidator
 from scheduler import TimeRange
-from scheduler_config_editor import Faculty, JsonConfig
+from scheduler_config_editor.model import Faculty, JsonConfig
 
 sys.path.append('../controller')
 

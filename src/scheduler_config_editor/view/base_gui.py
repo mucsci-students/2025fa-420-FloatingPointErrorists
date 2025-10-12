@@ -11,9 +11,11 @@ from scheduler.models import CourseInstance
 
 sys.path.append('../controller')
 from scheduler_config_editor.controller.testing import ModClass
-from scheduler_config_editor.controller.schedule_controller import SchedulerController 
+from scheduler_config_editor.controller.schedule_controller import SchedulerController
+from scheduler_config_editor.controller.faculty_controller import FacultyEditorController
 from scheduler_config_editor.model.schedule_handler import ScheduleHandler
-from scheduler_config_editor.view.schedule_window import newWindow 
+from scheduler_config_editor.view.schedule_window import newWindow
+from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
 
 """Simple Gui Window Initializer"""
 
@@ -108,12 +110,40 @@ class SimpleTabs(QWidget):
         # Dropdown code
         # self.editor_combo_box.layout = QVBoxLayout(self)
         self.editor_combo_box = QComboBox()
-
         self.editor_combo_box.addItems(['Course', 'Room', 'Lab', 'Faculty'])
-
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
+        # Creates a container for the editor content
+        self.editor_content_area = QVBoxLayout(self)
+        self.editor_tab.layout.addLayout(self.editor_content_area, 1, 0, 1, 2)
 
+        # Faculty placeholders
+        self.faculty_controller = FacultyEditorController()
+        self.faculty_gui = None
+
+        # When dropdown changes
+        def on_editor_selection_change() -> None:
+            while self.editor_content_area.count():
+                item = self.editor_content_area.takeAt(0)
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+            selected = self.editor_combo_box.currentText()
+
+            if selected == 'Course':
+                label = QLabel('Course Editor Placeholder')
+                self.editor_content_area.addWidget(label)
+            elif selected == 'Room':
+                label = QLabel('Room Editor Placeholder')
+                self.editor_content_area.addWidget(label)
+            elif selected == 'Lab':
+                label = QLabel('Lab Editor Placeholder')
+                self.editor_content_area.addWidget(label)
+            elif selected == 'Faculty':
+                self.faculty_gui = FacultyEditorGui(self.faculty_controller)
+                self.editor_content_area.addWidget(self.faculty_gui)
+
+        self.editor_combo_box.currentTextChanged.connect(on_editor_selection_change())
         # Code for testing testing.py with a button
         # self.button = QPushButton("Test button")
         # self.editor_tab.layout.addWidget(self.button)
