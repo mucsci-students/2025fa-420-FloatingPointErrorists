@@ -17,11 +17,11 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
     while True:
         match mode:
             case DisplayMode.ROOM:
-                click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.room_schedule(schedules[idx])}")
+                click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.room_schedule_str(schedules[idx])}")
             case DisplayMode.FACULTY:
-                click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.faculty_schedule(schedules[idx])}")
+                click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.faculty_schedule_str(schedules[idx])}")
             case _:
-                click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.format_schedule(schedules[idx])}")
+                click.echo (f"Schedule {idx + 1}:\n{ScheduleHandler.format_schedule_str(schedules[idx])}")
         user_input = click.prompt("Type 'n' for next, 'p' for previous, 'q' to quit", default='n',
                                   type=click.Choice(['n', 'p', 'q']), show_choices=False).lower()
         match user_input:

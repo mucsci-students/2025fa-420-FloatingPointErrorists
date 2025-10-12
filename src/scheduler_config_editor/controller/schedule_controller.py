@@ -13,11 +13,11 @@ class SchedulerController:
 
     def get_format(self) -> str:
         if self.mode == 0:
-            return ScheduleHandler.format_schedule(self.cur_schedules.schedules[self.index])
+            return ScheduleHandler.format_schedule_str(self.cur_schedules.schedules[self.index])
         elif self.mode == 1:
-            return ScheduleHandler.faculty_schedule(self.cur_schedules.schedules[self.index])
+            return ScheduleHandler.faculty_schedule_str(self.cur_schedules.schedules[self.index])
         elif self.mode == 2:
-            return ScheduleHandler.room_schedule(self.cur_schedules.schedules[self.index])
+            return ScheduleHandler.room_schedule_str(self.cur_schedules.schedules[self.index])
         else:
             return "Unexpected error"
     
