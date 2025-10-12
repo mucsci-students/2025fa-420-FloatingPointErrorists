@@ -392,7 +392,7 @@ class SimpleTabs(QWidget):
                 self.faculty_gui = FacultyEditorGui(self.faculty_controller)
                 self.editor_content_area.addWidget(self.faculty_gui)
         except Exception as error:
-                QMessageBox.warning(self, "Load Error", error)
+            QMessageBox.critical(self, "Load Error", str(error))
 
     # Saves config file
     def save_config(self) -> None:
@@ -403,4 +403,4 @@ class SimpleTabs(QWidget):
             self.config.save()
             QMessageBox.information(self, "Config Saved", "Config saved successfully")
         except Exception as error:
-            QMessageBox.warning(self, "Save Error", error)
+            QMessageBox.critical(self, "Save Error", str(error))
