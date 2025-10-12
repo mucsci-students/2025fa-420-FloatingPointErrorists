@@ -1,12 +1,11 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButton, QVBoxLayout, QTabWidget, QMainWindow, \
-    QHBoxLayout, QListWidget, QAbstractItemView, QListWidgetItem, QSpinBox, QFormLayout, QMessageBox
-from PyQt6.QtGui import QGuiApplication, QIntValidator
-from scheduler.models import course
 
-import scheduler_config_editor
+from PyQt6.QtCore import QTimer, QTime
+from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButton, QVBoxLayout, QMainWindow, \
+    QHBoxLayout, QListWidget, QListWidgetItem, QSpinBox, QFormLayout, QMessageBox, QGroupBox, QGridLayout, QTimeEdit
+from PyQt6.QtGui import QGuiApplication, QIntValidator
+from scheduler import TimeRange
 from scheduler_config_editor import Faculty, JsonConfig
-from scheduler_config_editor.model import room, lab
 
 sys.path.append('../controller')
 
@@ -18,87 +17,105 @@ class FacultyEditorGui(QMainWindow):
     faculty members. Users can also delete faculty members in this editable view as well.
     """
 
-    def __init__(self, json_config) -> None:
+    def __init__(self, controller) -> None:
         super().__init__()
-        self.json_config = json_config
-        self.open_editing_window = []
+        self.controller = controller
+        self.json_config = controller.json_config
+        self.open_editing_window: list[QWidget] = []
 
         # Layout Stuff
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        self.layout = QVBoxLayout()
-        central_widget.setLayout(self.layout)
+        self.main_layout = QVBoxLayout()
+        central_widget.setLayout(self.main_layout)
 
-        # Grabbing dimensions of user's primary screen
+        # Grabbing dimensions of user's primary scree
         screen = QGuiApplication.primaryScreen()
-        screen_geometry = screen.availableGeometry()
-        screen_width = screen_geometry.width()
-        screen_height = screen_geometry.height()
+        if screen is not None:
+            screen_geometry = screen.availableGeometry()
+            screen_width = screen_geometry.width()
+            screen_height = screen_geometry.height()
+        else:
+            screen_width = 1920
+            screen_height = 1080
         self.resize(int(screen_width * 0.5), int(screen_height * 0.5))
 
         # Changes title
         self.title = QLabel("Faculty Editor")
-        self.layout.addWidget(self.title)
+        self.main_layout.addWidget(self.title)
 
         # Makes and places add button in the top right
         button_layout = QHBoxLayout()
         button_layout.addStretch()
         self.add_button = QPushButton("Add Faculty")
         button_layout.addWidget(self.add_button)
-        self.layout.addLayout(button_layout)
+        self.main_layout.addLayout(button_layout)
 
         # Creating list of clickable faculty
         self.list = QListWidget(self)
-        self.layout.addWidget(self.list)
+        self.main_layout.addWidget(self.list)
 
         # Populates list of faculty
         for i, faculty in enumerate (self.json_config.scheduler_config.faculty):
             self.list.addItem(self.json_config.scheduler_config.faculty[i].name)
 
         # Connecting Buttons
-     #   self.add_button.clicked.connect(self.add_faculty_window)
-        self.list.itemClicked.connect(self.open_edit_faculty_window)
-
-    def open_edit_faculty_window(self, item) -> None:
-        name = item.text()
-        edit_window = EditFacultyWindow(name, self.json_config)
-        edit_window.show()
-        self.open_editing_window.append(edit_window)
+        self.add_button.clicked.connect(self.controller.open_add_faculty_window)
+        self.list.itemClicked.connect(self.controller.open_edit_faculty_window)
 
 class EditFacultyWindow(QMainWindow):
-    def __init__(self, name, json_config) -> None:
+    def __init__(self, controller, faculty_data=None, parent_gui=None) -> None:
         super().__init__()
-        self.setWindowTitle("Edit Faculty: " + name)
-        self.json_config = json_config
-        self.old_name = name
-        self.lab_preference_input = {}
-        self.room_preference_input = {}
-        self.course_preference_input = {}
+        self.controller = controller
+        self.json_config = controller.json_config
+        self.faculty_data = faculty_data
+        self.parent_gui = parent_gui
+
+        if getattr(self.faculty_data,"name", None):
+            self.setWindowTitle("Edit Faculty: " + self.faculty_data.name)
+            for i, faculty in enumerate(self.json_config.scheduler_config.faculty):
+                if self.json_config.scheduler_config.faculty[i].name == self.faculty_data.name:
+                    index = i
+                    break
+            self.faculty_data = self.json_config.scheduler_config.faculty[index]
+            self.name = self.faculty_data.name
+        else:
+            self.setWindowTitle("Add New Faculty")
+            self.faculty_data = None
+            self.name = "Name"
+
+        self.lab_preference_input: dict[str, QSpinBox] = {}
+        self.room_preference_input: dict[str, QSpinBox] = {}
+        self.course_preference_input: dict[str, QSpinBox] = {}
+        self.time_availability: dict[str, list[tuple[QTimeEdit, QTimeEdit, QPushButton]]] = {}
+        self.parent_gui = parent_gui
 
         # Grabbing dimensions of user's primary screen
         screen = QGuiApplication.primaryScreen()
-        screen_geometry = screen.availableGeometry()
-        screen_width = screen_geometry.width()
-        screen_height = screen_geometry.height()
+        if screen is not None:
+            screen_geometry = screen.availableGeometry()
+            screen_width = screen_geometry.width()
+            screen_height = screen_geometry.height()
+        else:
+            screen_width = 1920
+            screen_height = 1080
         self.resize(int(screen_width * 0.5), int(screen_height * 0.5))
 
         # Layout
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
-        self.layout = QVBoxLayout()
-        centralWidget.setLayout(self.layout)
-
-        # Saving faculty index based on name
-        for i, faculty in enumerate(self.json_config.scheduler_config.faculty):
-            if json_config.scheduler_config.faculty[i].name == name:
-                index = i
-                break
+        self.main_layout = QVBoxLayout()
+        centralWidget.setLayout(self.main_layout)
 
         # Space to edit name
         self.name_edit = QLineEdit(self)
-        self.layout.addWidget(QLabel("Name:"))
-        self.name_edit.setText(name)
-        self.layout.addWidget(self.name_edit)
+        self.main_layout.addWidget(QLabel("Name:"))
+        if self.faculty_data:
+            self.name_edit.setText(self.name)
+        else:
+            self.name_edit.setPlaceholderText("Name")
+        self.main_layout.addWidget(self.name_edit)
+        self.name_edit.setFocus()
 
         # Credit layout stuff
         self.credit_layout = QHBoxLayout()
@@ -109,7 +126,10 @@ class EditFacultyWindow(QMainWindow):
         self.max_credits_edit = QLineEdit(self)
         self.max_credits_edit.setValidator(self.creds_validator)
         self.max_creds_layout.addWidget(QLabel("Max Credits:"))
-        self.max_credits_edit.setText(str(json_config.scheduler_config.faculty[index].maximum_credits))
+        if self.faculty_data:
+            self.max_credits_edit.setText(str(self.faculty_data.maximum_credits))
+        else:
+            self.max_credits_edit.setPlaceholderText("Maximum Credits")
         self.max_creds_layout.addWidget(self.max_credits_edit)
         self.credit_layout.addLayout(self.max_creds_layout)
 
@@ -118,7 +138,10 @@ class EditFacultyWindow(QMainWindow):
         self.min_credits_edit = QLineEdit(self)
         self.min_credits_edit.setValidator(self.creds_validator)
         self.min_creds_layout.addWidget(QLabel("Min Credits:"))
-        self.min_credits_edit.setText(str(json_config.scheduler_config.faculty[index].minimum_credits))
+        if self.faculty_data:
+            self.min_credits_edit.setText(str(self.faculty_data.minimum_credits))
+        else:
+            self.min_credits_edit.setPlaceholderText("Minimum Credits")
         self.min_creds_layout.addWidget(self.min_credits_edit)
         self.credit_layout.addLayout(self.min_creds_layout)
 
@@ -128,12 +151,45 @@ class EditFacultyWindow(QMainWindow):
         self.course_limit_edit = QLineEdit(self)
         self.course_limit_edit.setValidator(self.course_validator)
         self.course_limit_layout.addWidget(QLabel("Course Limit:"))
-        self.course_limit_edit.setText(str(json_config.scheduler_config.faculty[index].unique_course_limit))
+        if self.faculty_data:
+            self.course_limit_edit.setText(str(self.faculty_data.unique_course_limit))
+        else:
+            self.course_limit_edit.setPlaceholderText("Course Limit")
         self.course_limit_layout.addWidget(self.course_limit_edit)
         self.credit_layout.addLayout(self.course_limit_layout)
-        self.layout.addLayout(self.credit_layout)
+        self.main_layout.addLayout(self.credit_layout)
 
         # Space to edit time availability
+        self.time_label = QLabel("Time Availability")
+        self.main_layout.addWidget(self.time_label)
+        self.time_layout = QGridLayout()
+        self.main_layout.addLayout(self.time_layout)
+        self.days = ["MON", "TUE", "WED", "THU", "FRI"]
+        self.day_interval_widgets: dict[str, dict[str, list[tuple[QTimeEdit, QTimeEdit, QPushButton]]]] = {}
+
+        for i, day in enumerate(self.days):
+            self.day_layout = QVBoxLayout()
+            self.day_label = QLabel(day)
+            self.add_interval_button = QPushButton(f"Add Time Range")
+            # Adds interval for each specific day
+            self.add_interval_button.clicked.connect(lambda _, d=day:self.add_interval(d))
+
+            self.day_layout.addWidget(self.day_label)
+            self.day_layout.addWidget(self.add_interval_button)
+
+            self.intervals_container = QVBoxLayout()
+            self.day_layout.addLayout(self.intervals_container)
+            self.day_interval_widgets[day] = {
+                "container": self.intervals_container,
+                "intervals": []
+            }
+            self.time_layout.addLayout(self.day_layout, 0 ,i)
+
+        # Loading previous availabilities
+        if self.faculty_data and self.faculty_data.times:
+            for day, intervals in self.faculty_data.times.items():
+                for interval in intervals:
+                    self.add_interval(day, interval.start, interval.end)
 
         # Preference list options for labs/rooms/courses
         self.pref_list_layout = QHBoxLayout()
@@ -144,7 +200,7 @@ class EditFacultyWindow(QMainWindow):
         self.room_list = QListWidget(self)
         self.room_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
         for i, rooms in enumerate (self.json_config.scheduler_config.rooms):
-            room = QListWidgetItem(json_config.scheduler_config.rooms[i])
+            room = QListWidgetItem(self.json_config.scheduler_config.rooms[i])
             self.room_list.addItem(room)
         self.room_layout.addWidget(self.room_list)
         self.pref_list_layout.addLayout(self.room_layout)
@@ -156,7 +212,7 @@ class EditFacultyWindow(QMainWindow):
         self.course_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
         seen_courses_list = set()
         for i, courses in enumerate(self.json_config.scheduler_config.courses):
-            course_id = json_config.scheduler_config.courses[i].course_id
+            course_id = self.json_config.scheduler_config.courses[i].course_id
             if course_id not in seen_courses_list:
                 seen_courses_list.add(course_id)
                 course = QListWidgetItem(course_id)
@@ -171,15 +227,15 @@ class EditFacultyWindow(QMainWindow):
         self.lab_list = QListWidget(self)
         self.lab_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
         for i, labs in enumerate(self.json_config.scheduler_config.labs):
-            lab = QListWidgetItem(json_config.scheduler_config.labs[i])
+            lab = QListWidgetItem(self.json_config.scheduler_config.labs[i])
             self.lab_list.addItem(lab)
         self.lab_layout.addWidget(self.lab_list)
         self.pref_list_layout.addLayout(self.lab_layout)
 
         # Preference values layout
-        self.layout.addLayout(self.pref_list_layout)
+        self.main_layout.addLayout(self.pref_list_layout)
         self.pref_layout = QHBoxLayout()
-        self.layout.addLayout(self.pref_layout)
+        self.main_layout.addLayout(self.pref_layout)
         self.room_pref_layout = QFormLayout()
         self.course_pref_layout = QFormLayout()
         self.lab_pref_layout = QFormLayout()
@@ -187,120 +243,138 @@ class EditFacultyWindow(QMainWindow):
         self.pref_layout.addLayout(self.course_pref_layout)
         self.pref_layout.addLayout(self.lab_pref_layout)
 
+        # Preselecting preference values if editing
+        if self.faculty_data:
+            self.preselect_items(
+                self.room_list,
+                self.faculty_data.room_preferences,
+                self.room_pref_layout,
+                self.room_preference_input
+            )
+            self.preselect_items(
+                self.course_list,
+                self.faculty_data.course_preferences,
+                self.course_pref_layout,
+                self.course_preference_input
+            )
+            self.preselect_items(
+                self.lab_list,
+                self.faculty_data.lab_preferences,
+                self.lab_pref_layout,
+                self.lab_preference_input
+            )
+
         # When changes are made, show preference boxes
-        self.room_list.itemSelectionChanged.connect(self.update_room_preferences)
-        self.course_list.itemSelectionChanged.connect(self.update_course_preferences)
-        self.lab_list.itemSelectionChanged.connect(self.update_lab_preferences)
+        self.room_list.itemSelectionChanged.connect(lambda: self.generic_update_preferences(
+            self.room_list, self.room_pref_layout, self.room_preference_input))
+        self.course_list.itemSelectionChanged.connect(lambda: self.generic_update_preferences(
+            self.course_list, self.course_pref_layout, self.course_preference_input))
+        self.lab_list.itemSelectionChanged.connect(lambda: self.generic_update_preferences(
+            self.lab_list, self.lab_pref_layout, self.lab_preference_input))
 
         # Delete button in bottom left and save in bottom right
-        self.layout.addStretch()
+        self.main_layout.addStretch()
         bottom_buttons_layout = QHBoxLayout()
-        delete_button = QPushButton("Delete")
-        # delete_button.clicked.connect(self.delete_faculty)
-        bottom_buttons_layout.addWidget(delete_button)
+        if self.faculty_data:
+            delete_button = QPushButton("Delete")
+            delete_button.clicked.connect(lambda: self.controller.delete_faculty(self))
+            bottom_buttons_layout.addWidget(delete_button)
         bottom_buttons_layout.addStretch()
         save_button = QPushButton("Save")
-        save_button.clicked.connect(self.save_faculty)
+        save_button.clicked.connect(lambda: self.controller.save_faculty(self))
         bottom_buttons_layout.addWidget(save_button)
-        self.layout.addLayout(bottom_buttons_layout)
+        self.main_layout.addLayout(bottom_buttons_layout)
 
-    # Selecting room preference values
-    def update_room_preferences(self) -> None:
+    def add_interval(self, day: str, start_time_str: str |None = None, end_time_str: str | None = None) -> None:
+        container = self.day_interval_widgets[day]["container"]
+
+        interval_widget = QWidget()
+        interval_layout = QHBoxLayout()
+        interval_layout.setContentsMargins(4, 2, 4, 2)
+        interval_layout.setSpacing(8)
+        interval_widget.setLayout(interval_layout)
+
+        #Formatting time stuff
+        start_time = QTimeEdit()
+        start_time.setDisplayFormat("HH:mm")
+        start_time.setMaximumWidth(70)
+        if start_time_str:
+            h, m = map(int, start_time_str.split(":"))
+            start_time.setTime(QTime(h, m))
+        else:
+            start_time.setTime(start_time.time().currentTime())
+        end_time = QTimeEdit()
+        end_time.setDisplayFormat("HH:mm")
+        end_time.setMaximumWidth(70)
+        if end_time_str:
+            h, m = map(int, end_time_str.split(":"))
+            end_time.setTime(QTime(h, m))
+        else:
+            end_time.setTime(end_time.time().currentTime())
+
+        remove_button = QPushButton("🗑️")
+        remove_button.setMaximumWidth(70)
+        interval_tuple = start_time, end_time, remove_button
+
+        def remove_interval() -> None:
+            container.removeWidget(interval_widget)
+            interval_widget.deleteLater()
+            self.day_interval_widgets[day]["intervals"].remove((start_time, end_time, remove_button))
+
+        remove_button.clicked.connect(remove_interval)
+
+        interval_layout.addWidget(QLabel("Start:"))
+        interval_layout.addWidget(start_time)
+        interval_layout.addWidget(QLabel("End:"))
+        interval_layout.addWidget(end_time)
+        interval_layout.addWidget(remove_button)
+
+        container.addWidget(interval_widget)
+        self.day_interval_widgets[day]["intervals"].append((start_time, end_time, remove_button))
+
+
+    # Pre-selecting preferences with data already in config
+    def preselect_items(self, list_widget: QListWidget, keys: dict[str, int], layout: QFormLayout,
+                        input: dict[str, QSpinBox]) -> None:
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            if item is None:
+                continue
+            self.name = item.text()
+            if self.name in keys:
+                item.setSelected(True)
+                spin = QSpinBox(self)
+                spin.setRange(0,10)
+                spin.setValue(keys[self.name])
+                layout.addRow(f"{self.name} preference:", spin)
+                input[self.name] = spin
+
+    # Selecting preference values
+    def generic_update_preferences(self, list_widget: QListWidget, layout: QFormLayout,
+                                   input_preferences: dict[str, QSpinBox]) -> None:
         # Clearing the previous preferences if changes made after first selections
-        while self.room_pref_layout.rowCount():
-            self.room_pref_layout.removeRow(0)
-        self.room_preference_input.clear()
+        current_values = {
+            name: spin.value()
+            for name, spin in input_preferences.items()
+        }
 
-        for i in self.room_list.selectedItems():
-            room_name = i.text()
-            if room_name in self.room_preference_input:
-                    return
-            spin = QSpinBox(self)
-            spin.setRange(0,10)
-            spin.setValue(0)
-            self.room_pref_layout.addRow(f"{room_name} preference:", spin)
-            self.room_preference_input[room_name] = spin
+        already_selected = {i.text() for i in list_widget.selectedItems()}
+        for name in list(input_preferences.keys()):
+            if name not in already_selected:
+                for i in range(layout.rowCount()):
+                    label = layout.itemAt(i, QFormLayout.ItemRole.LabelRole)
+                    if label is not None:
+                        if isinstance(label.widget(), QLabel):
+                            if label.widget().text() == f"{name} preference:":
+                                layout.removeRow(i)
+                            break
+                del input_preferences[name]
 
-    # Selecting course preference values
-    def update_course_preferences(self) -> None:
-        # Clearing the previous preferences if changes made after first selections
-        while self.course_pref_layout.rowCount():
-            self.course_pref_layout.removeRow(0)
-        self.course_preference_input.clear()
-
-        for i in self.course_list.selectedItems():
-            course_name = i.text()
-            if course_name in self.course_preference_input:
-                    return
-            spin = QSpinBox(self)
-            spin.setRange(0,10)
-            spin.setValue(0)
-            self.course_pref_layout.addRow(f"{course_name} preference:", spin)
-            self.course_preference_input[course_name] = spin
-
-    # Selecting lab preference values
-    def update_lab_preferences(self) -> None:
-        # Clearing the previous preferences if changes made after first selections
-        while self.lab_pref_layout.rowCount():
-            self.lab_pref_layout.removeRow(0)
-        self.lab_preference_input.clear()
-
-        for i in self.lab_list.selectedItems():
-            lab_name = i.text()
-            if lab_name in self.lab_preference_input:
-                    return
-            spin = QSpinBox(self)
-            spin.setRange(0, 10)
-            spin.setValue(0)
-            self.lab_pref_layout.addRow(f"{lab_name} preference:", spin)
-            self.lab_preference_input[lab_name] = spin
-
-    def save_faculty (self) -> None:
-        try:
-            self.minimum_creds = int(self.min_credits_edit.text())
-            self.maximum_creds = int(self.max_credits_edit.text())
-            self.course_limit = int(self.course_limit_edit.text())
-
-            if 0 > self.minimum_creds or self.minimum_creds > 21:
-                raise ValueError("Minimum credits must be between 0 and 21 credits.")
-            if 0 > self.maximum_creds or self.maximum_creds > 21:
-                raise ValueError("Maximum credits must be between 0 and 21 credits.")
-            if 0 > self.course_limit or self.course_limit > 21:
-                raise ValueError("Course limit must be between 0 and 21 courses.")
-            if self.minimum_creds > self.maximum_creds:
-                raise ValueError("Minimum credits must be less than maximum credits.")
-            self.room_preferences = {
-                room: self.room_preference_input[room].value()
-                for room in self.room_preference_input
-            }
-
-            self.course_preferences = {
-                course: self.course_preference_input[course].value()
-                for course in self.course_preference_input
-            }
-
-            self.lab_preferences = {
-                    lab: self.lab_preference_input[lab].value()
-                    for lab in self.lab_preference_input
-            }
-
-            EditFacultyWindow.mod_faculty(self.json_config, self.name,
-                new_name = self.name_edit.text(),
-                minimum_credits = int(self.min_credits_edit.text()),
-                maximum_credits = int(self.max_credits_edit.text()),
-                unique_course_limit = int(self.course_limit_edit.text()),
-                times = {},
-                course_preferences = self.course_preferences,
-                room_preferences = self.room_preferences,
-                lab_preferences = self.lab_preferences)
-
-        except ValueError as error:
-            QMessageBox.warning(self, "Input Error: ", str(error))
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    config = JsonConfig("../unittests/dummy")
-    window = FacultyEditorGui(config)
-    window.show()
-    sys.exit(app.exec())
+        for i in list_widget.selectedItems():
+            name = i.text()
+            if name not in input_preferences:
+                spin = QSpinBox(self)
+                spin.setRange(0, 10)
+                spin.setValue(current_values.get(name, 0))
+                layout.addRow(f"{name} preference:", spin)
+                input_preferences[name] = spin

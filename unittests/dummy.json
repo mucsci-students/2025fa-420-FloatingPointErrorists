@@ -53,7 +53,9 @@
                     "Linux"
                 ],
                 "conflicts": [],
-                "faculty": []
+                "faculty": [
+                    "Zoppetti"
+                ]
             },
             {
                 "course_id": "CMSC 161",
@@ -255,7 +257,9 @@
                     "CMSC 453",
                     "CMSC 476"
                 ],
-                "faculty": []
+                "faculty": [
+                    "Hobbs"
+                ]
             },
             {
                 "course_id": "CMSC 453",
@@ -299,47 +303,17 @@
                 "maximum_credits": 12,
                 "minimum_credits": 12,
                 "unique_course_limit": 3,
-                "times": {
-                    "MON": [
-                        {
-                            "start": "11:00",
-                            "end": "16:00"
-                        }
-                    ],
-                    "TUE": [],
-                    "WED": [
-                        {
-                            "start": "10:00",
-                            "end": "15:00"
-                        }
-                    ],
-                    "THU": [
-                        {
-                            "start": "10:00",
-                            "end": "17:00"
-                        }
-                    ],
-                    "FRI": [
-                        {
-                            "start": "11:00",
-                            "end": "16:00"
-                        }
-                    ]
-                },
+                "times": {},
                 "course_preferences": {
-                    "CMSC 362": 5,
-                    "CMSC 476": 5,
-                    "CMSC 161": 4
+                    "CMSC 476": 0,
+                    "CMSC 362": 0,
+                    "CMSC 161": 0,
+                    "CMSC 152": 0
                 },
                 "room_preferences": {
-                    "Roddy 136": 5,
-                    "Roddy 140": 1,
-                    "Roddy 147": 1
+                    "Roddy 136": 1
                 },
-                "lab_preferences": {
-                    "Linux": 5,
-                    "Mac": 1
-                }
+                "lab_preferences": {}
             },
             {
                 "name": "Hardy",
@@ -529,80 +503,30 @@
                 "maximum_credits": 4,
                 "minimum_credits": 0,
                 "unique_course_limit": 1,
-                "times": {
-                    "MON": [],
-                    "TUE": [
-                        {
-                            "start": "08:00",
-                            "end": "10:00"
-                        }
-                    ],
-                    "WED": [],
-                    "THU": [
-                        {
-                            "start": "08:00",
-                            "end": "10:00"
-                        }
-                    ],
-                    "FRI": []
-                },
+                "times": {},
                 "course_preferences": {
-                    "CMSC 161": 5
+                    "CMSC 340": 0
                 },
                 "room_preferences": {
-                    "Roddy 147": 5,
-                    "Roddy 136": 1,
-                    "Roddy 140": 1
+                    "Roddy 140": 0
                 },
                 "lab_preferences": {
-                    "Linux": 5,
-                    "Mac": 1
+                    "Mac": 3
                 }
             },
             {
                 "name": "Hobbs",
                 "maximum_credits": 4,
-                "minimum_credits": 0,
+                "minimum_credits": 2,
                 "unique_course_limit": 1,
-                "times": {
-                    "MON": [
-                        {
-                            "start": "16:00",
-                            "end": "19:00"
-                        }
-                    ],
-                    "TUE": [
-                        {
-                            "start": "16:00",
-                            "end": "19:00"
-                        }
-                    ],
-                    "WED": [
-                        {
-                            "start": "16:00",
-                            "end": "19:00"
-                        }
-                    ],
-                    "THU": [
-                        {
-                            "start": "16:00",
-                            "end": "19:00"
-                        }
-                    ],
-                    "FRI": []
-                },
+                "times": {},
                 "course_preferences": {
-                    "CMSC 420": 5
+                    "CMSC 161": 0,
+                    "CMSC 362": 3,
+                    "CMSC 420": 0
                 },
-                "room_preferences": {
-                    "Roddy 140": 5,
-                    "Roddy 136": 1,
-                    "Roddy 147": 1
-                },
-                "lab_preferences": {
-                    "Mac": 5,
-                    "Linux": 1
-                }
+                "room_preferences": {},
+                "lab_preferences": {}
             },
             {
                 "name": "Yang",
@@ -628,7 +552,12 @@
                             "end": "15:00"
                         }
                     ],
-                    "THU": [],
+                    "THU": [
+                        {
+                            "start": "01:00",
+                            "end": "03:00"
+                        }
+                    ],
                     "FRI": [
                         {
                             "start": "09:00",
@@ -641,13 +570,13 @@
                     "CMSC 453": 4
                 },
                 "room_preferences": {
-                    "Roddy 140": 3,
                     "Roddy 136": 3,
+                    "Roddy 140": 3,
                     "Roddy 147": 3
                 },
                 "lab_preferences": {
-                    "Mac": 3,
-                    "Linux": 3
+                    "Linux": 3,
+                    "Mac": 3
                 }
             },
             {
