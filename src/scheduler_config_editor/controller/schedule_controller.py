@@ -11,17 +11,6 @@ class SchedulerController:
         self.length = 0
         # 0 = courses, 1 = faulty, 2 = rooms
         self.mode = 0
-
-
-    def get_format(self) -> str:
-        if self.mode == 0:
-            return ScheduleHandler.format_schedule_str(self.cur_schedules.schedules[self.index])
-        elif self.mode == 1:
-            return ScheduleHandler.faculty_schedule_str(self.cur_schedules.schedules[self.index])
-        elif self.mode == 2:
-            return ScheduleHandler.room_schedule_str(self.cur_schedules.schedules[self.index])
-        else:
-            return "Unexpected error"
     
     def next_schedule(self) -> None:
         if self.index < self.length - 1:
@@ -41,17 +30,17 @@ class SchedulerController:
         if self.mode == 0:
             self.cur_table.setColumnCount(5)
             self.cur_table.setHorizontalHeaderLabels(["Course", "Faculty", "Room", "Lab", "Times"])
-            data = ScheduleHandler.get_schedules(self.cur_schedules.schedules[self.index])
+            data = ScheduleHandler.schedule_rows(self.cur_schedules.schedules[self.index])
             
         elif self.mode == 1:
             self.cur_table.setColumnCount(8)
             self.cur_table.setHorizontalHeaderLabels(["Faculty", "Course", "Room (Lab)", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
-            data = ScheduleHandler.get_faculty_schedules(self.cur_schedules.schedules[self.index])
+            data = ScheduleHandler.faculty_schedule_rows(self.cur_schedules.schedules[self.index])
 
         else:
             self.cur_table.setColumnCount(8)
             self.cur_table.setHorizontalHeaderLabels(["Room", "Course", "Faculty", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
-            data = ScheduleHandler.get_room_schedules(self.cur_schedules.schedules[self.index])
+            data = ScheduleHandler.room_schedule_rows(self.cur_schedules.schedules[self.index])
 
         for row_data in data:
             self.add_row(row_data)

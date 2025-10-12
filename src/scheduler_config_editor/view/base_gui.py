@@ -3,8 +3,7 @@ from PyQt6.QtWidgets import (
     QApplication, QLabel, QWidget, QLineEdit, QPushButton,
     QVBoxLayout, QHBoxLayout, QTabWidget, QMainWindow,
     QCheckBox, QComboBox, QFileDialog, QGridLayout,
-    QScrollArea, QTableWidget
-    QScrollArea, QMessageBox
+    QScrollArea, QTableWidget, QMessageBox
 )
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
