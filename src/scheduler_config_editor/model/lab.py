@@ -11,7 +11,7 @@ class Lab:
             json_config.scheduler_config.labs.append(new_lab)
             json_config.scheduler_config.labs.sort()
         else:
-            raise ValueError(f"Lab {new_lab} already exists.")
+            raise Lab.LabExistsError(f"Lab {new_lab} already exists.")
 
     @staticmethod
     def mod_lab(json_config: JsonConfig, lab: str, new_lab: str) -> None:
@@ -23,16 +23,27 @@ class Lab:
                 course.lab.sort()
         for faculty_member in json_config.scheduler_config.faculty:
             if lab in faculty_member.lab_preferences:
-                faculty_member.lab_preferences[new_lab] = faculty_member.labs_preferences.pop(lab)
+                faculty_member.lab_preferences[new_lab] = faculty_member.lab_preferences.pop(lab)
         json_config.scheduler_config.labs.sort()
 
     @staticmethod
     def del_lab(json_config: JsonConfig, lab: str) -> None:
         """Deletes a specified lab from the config"""
-        json_config.scheduler_config.labs.remove(lab)
-        for course in json_config.scheduler_config.courses:
-            if course.lab.count(lab) == 1:
-                course.lab.remove(lab)
-        for faculty_member in json_config.scheduler_config.faculty:
-            if lab in faculty_member.lab_preferences:
-                faculty_member.lab_preferences.pop(lab)
+        if json_config.scheduler_config.labs.count(lab) == 1:
+            json_config.scheduler_config.labs.remove(lab)
+            for course in json_config.scheduler_config.courses:
+                if course.lab.count(lab) == 1:
+                    course.lab.remove(lab)
+            for faculty_member in json_config.scheduler_config.faculty:
+                if lab in faculty_member.lab_preferences:
+                    faculty_member.lab_preferences.pop(lab)
+        else:
+            raise Lab.LabMissingError(f"Lab {lab} does not exist.")
+
+    class LabExistsError(Exception):
+        # Exception for when a lab already exists in the JSON
+        pass
+
+    class LabMissingError(Exception):
+        # Exception for when a lab does not exist in the JSON
+        pass
