@@ -3,6 +3,14 @@ from PyQt6.QtWidgets import QApplication, QLineEdit, QWidget, QLineEdit, QPushBu
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 
+from scheduler_config_editor.model.json import JsonConfig
+from scheduler_config_editor.model.courses import Course
+
+
+"""import scheduler_config_editor
+from scheduler_config_editor import JsonConfig
+from scheduler_config_editor.model.courses import Course"""
+
 class CourseEditorGUI(QMainWindow):
     def __init__(self)  -> None:
         super().__init__()
@@ -50,6 +58,8 @@ class CoursesEditorWidget(QWidget):
             self.course_conflicts_line_edit.setPlaceholderText("Enter Course Conflict")
             self.course_faculty_line_edit = QLineEdit(self)
             self.course_faculty_line_edit.setPlaceholderText("Enter Faculty")
+            self.course_index_line_edit = QLineEdit(self)
+            self.course_index_line_edit.setPlaceholderText("Enter Index")
 
             self.courses_widget.layout.addWidget(self.course_id_line_edit, 0, 0)
             self.courses_widget.layout.addWidget(self.course_credits_line_edit, 0, 1)
@@ -57,13 +67,39 @@ class CoursesEditorWidget(QWidget):
             self.courses_widget.layout.addWidget(self.course_lab_line_edit, 1, 1)
             self.courses_widget.layout.addWidget(self.course_conflicts_line_edit, 2, 0)
             self.courses_widget.layout.addWidget(self.course_faculty_line_edit, 2, 1)
+            self.courses_widget.layout.addWidget(self.course_index_line_edit, 3, 0)
+
+            self.save_button = QPushButton("Save Course")
+            self.delete_button = QPushButton("Delete Course")
+            self.courses_widget.layout.addWidget(self.save_button, 4, 0)
+            self.courses_widget.layout.addWidget(self.delete_button, 4, 1)
+
+            self.save_button.clicked.connect(self.save_course)
+            self.delete_button.clicked.connect(self.delete_course)
 
             self.layout.addWidget(self.courses_widget)
             self.setLayout(self.layout)
 
+            self.course_id = self.course_id_line_edit.text()
+            self.credits = self.course_credits_line_edit.text()
+            self.room = self.course_room_line_edit.text()
+            self.lab = self.course_lab_line_edit.text()
+            self.conflicts = self.course_conflicts_line_edit.text()
+            self.index = self.course_index_line_edit.text()
+
+        def save_course(self):
+            #CoursesEditorWidget.mod_course( )
+            print("saved course")
+            pass
+            
+        def delete_course(self):
+            #.delete_course()
+            print("deleted course")
+            pass
+
 """if __name__ == "__main__":
     app = QApplication(sys.argv)
-    #config = JsonConfig("../unittests/dummy")
-    window = CourseEditorGUI()
+    config = JsonConfig("../unittests/dummy")
+    window = CourseEditorGUI(config)
     window.show()
     sys.exit(app.exec())"""
