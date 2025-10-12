@@ -90,6 +90,8 @@ def load_config(ctx: click.Context, file_path: str) -> None:
         click.echo("Configuration loaded")
     except json.JSONDecodeError as e:
         raise click.ClickException(f"Invalid JSON: {e}") from e
+    except TypeError as e:
+        raise click.ClickException(f"Invalid Configuration") from e
 
 @base_cli.command() # type: ignore
 @click.pass_context
@@ -153,15 +155,7 @@ def set_scheduler_options(config: JsonConfig) -> None:
 
 def select_optimizations() -> list[OptimizerFlags]:
     """Prompt the user to select optimization flags."""
-    optimizations = [
-        OptimizerFlags.FACULTY_COURSE,
-        OptimizerFlags.FACULTY_ROOM,
-        OptimizerFlags.FACULTY_LAB,
-        OptimizerFlags.SAME_ROOM,
-        OptimizerFlags.SAME_LAB,
-        OptimizerFlags.PACK_ROOMS,
-    ]
-    selected = [flag for flag in optimizations if click.confirm(f"Optimize by {flag}?", default=True)]
+    selected = [flag for flag in OptimizerFlags if click.confirm(f"Optimize by {flag}?", default=True)]
     return selected
 
 def show_schedule_viewer(ctx: click.Context) -> None:

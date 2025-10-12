@@ -115,8 +115,8 @@ class ScheduleHandler:
             course_instance: CourseInstanceJSON = {
                 "course": course.strip(),
                 "faculty": faculty.strip(),
-                "room": room.strip() if room.strip() else None,
-                "lab": lab.strip() if lab.strip() else None,
+                "room": room.strip() if room.strip() and room != "None" else None,
+                "lab": lab.strip() if lab.strip() and lab != "None" else None,
                 "times": time_instances,
                 "lab_index": lab_index
             }

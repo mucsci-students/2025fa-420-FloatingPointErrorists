@@ -454,7 +454,7 @@ class SimpleTabs(QWidget):
                 self.editor_content_area.addWidget(self.faculty_gui)
 
         except Exception as error:
-                QMessageBox.warning(self, "Load Error", error)
+                QMessageBox.critical(self, "Load Error", str(error))
 
     # Saves config file
     def save_config(self) -> None:
@@ -463,11 +463,10 @@ class SimpleTabs(QWidget):
                 return
         try:
             self.config.save()
-            self.generator_gui.update_config(self.config)
             self.generator_controller.update_config(self.config)
             QMessageBox.information(self, "Config Saved", "Config saved successfully")
         except Exception as error:
-            QMessageBox.warning(self, "Save Error", error)
+            QMessageBox.critical(self, "Save Error", str(error))
 
     def handle_schedules_generated(self, schedules: list[list[CourseInstance]]) -> None:
         if self.sc is not None:
