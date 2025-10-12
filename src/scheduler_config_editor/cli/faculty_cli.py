@@ -1,8 +1,8 @@
 import click
 from click_shell import shell
-from .base_cli import get_json_config, show, clear, run, save
-from scheduler_config_editor.model.faculty import Faculty
-from scheduler_config_editor.model.json import JsonConfig
+from ..model.faculty import Faculty
+from ..model.json import JsonConfig
+from .base_cli import clear, get_json_config, run, save, show
 
 """
 This module implements a command-line interface (CLI) for managing faculty in the configuration file.
