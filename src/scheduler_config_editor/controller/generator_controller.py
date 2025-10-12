@@ -33,7 +33,7 @@ class GeneratorController:
                 selected_flags.append(fg)
 
         # Getting limit
-        limit_value = self.view.get_limit()
+        limit_value = self.view.get_limit() or self.config.combined_config.limit
 
         self.config.set_optimization(selected_flags)
         self.config.set_limit(int(limit_value))
@@ -45,6 +45,9 @@ class GeneratorController:
     def on_generate_clicked(self) -> None:
         try:
             self.schedules = self.generate()
+            if len(self.schedules) == 0:
+                QMessageBox.information(self.view, "No Solutions Found", "No schedules could be generated with the current configuration.")
+                return
             QMessageBox.information(self.view, "Generation Complete", f"Generation Complete")
 
             if self.on_schedules_generated:
