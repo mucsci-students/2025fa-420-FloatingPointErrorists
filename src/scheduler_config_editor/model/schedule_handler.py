@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import re
+from collections import defaultdict
 from scheduler.json_types import CourseInstanceJSON, TimeInstanceJSON
 from scheduler.models import CourseInstance
 from tabulate import tabulate
@@ -58,13 +59,13 @@ class ScheduleHandler:
     def _load_json_schedules(self, file_path: str) -> None:
         """Load schedules from a JSON file."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 data = json.load(f)
                 if not isinstance(data, list) or not all(isinstance(s, list) for s in data):
                     raise ValueError("JSON file does not match expected schedule format.")
                 self._schedules = data
         except (json.JSONDecodeError, ValueError) as e:
-            raise ValueError(f"Invalid JSON format in {file_path}: {e}")
+            raise ValueError(f"Invalid JSON format in {file_path}: {e}") from e
 
     def _load_csv_schedules(self, file_path: str) -> None:
         """Load schedules from a CSV file."""
@@ -75,7 +76,7 @@ class ScheduleHandler:
             schedules = [ScheduleHandler._parse_block(block) for block in blocks]
             self._schedules = schedules
         except Exception as e:
-            raise ValueError(f"Invalid CSV format in {file_path}: {e}")
+            raise ValueError(f"Invalid CSV format in {file_path}: {e}") from e
 
     @staticmethod
     def _split_blocks(lines: list[str]) -> list[list[str]]:
@@ -138,107 +139,96 @@ class ScheduleHandler:
     @staticmethod
     def _format_time_instance(time: TimeInstanceJSON) -> str:
         """Format a time instance as 'MON 14:00-14:50'."""
+        day = INDEX_TO_DAY[time["day"]]
         start_hour = time["start"] // 60
         start_minute = time["start"] % 60
         end = time["start"] + time["duration"]
         end_hour = end // 60
         end_minute = end % 60
-        return f"{start_hour:02d}:{start_minute:02d}-{end_hour:02d}:{end_minute:02d}"
+        return f"{day} {start_hour:02d}:{start_minute:02d}-{end_hour:02d}:{end_minute:02d}"
 
     @staticmethod
     def format_schedule(schedule: list[CourseInstanceJSON]) -> str:
-        """Format schedule with courses as rows and days as columns."""
-        days = ["MON", "TUE", "WED", "THU", "FRI"]
-        courses = sorted({course["course"] for course in schedule})
-        # Build mapping: course -> day -> list of info
-        course_day_map: dict[str, dict[str, list[str]]] = {c: {day: [] for day in days} for c in courses}
-        for course in schedule:
-            course_name = course["course"]
-            faculty = course.get("faculty", "")
-            room = course.get("room", "")
-            lab = course.get("lab", "")
-            lab_index = course.get("lab_index", "")
-            for idx, t in enumerate(course["times"]):
-                day = INDEX_TO_DAY[t["day"]]
-                time_str = ScheduleHandler._format_time_instance(t)
-                location = lab if lab_index is not None and idx == lab_index else room
-                info = f"{faculty}, {location}, {time_str}"
-                course_day_map[course_name][day].append(info)
-        # Build table rows
-        headers = ["Course"] + days
+        """Returns a string of the schedule formatted as a table."""
+        headers = ["Course", "Faculty", "Room", "Lab", "Times"]
         rows = []
-        for c in courses:
-            row = [c]
-            for day in days:
-                entries = course_day_map[c][day]
-                row.append("\n".join(entries) if entries else "")
+        for course in schedule:
+            lab_index = course.get("lab_index")
+            time_str = ", ".join(
+                ScheduleHandler._format_time_instance(t) + ("^" if lab_index is not None and idx == lab_index else "")
+                for idx, t in enumerate(course["times"])
+            )
+            row = [
+                course["course"],
+                course["faculty"],
+                course.get("room", ""),
+                course.get("lab", ""),
+                time_str,
+            ]
             rows.append(row)
-        return tabulate(rows, headers=headers, tablefmt="grid")
+        return tabulate(rows, headers=headers, tablefmt="github")
 
     @staticmethod
     def faculty_schedule(schedule: list[CourseInstanceJSON]) -> str:
-        """Format schedule with faculty as rows and days as columns, showing course, time, and room in cells. Sorted by earliest time first."""
+        """Returns s string of the schedule where each faculty has their own table with days as columns."""
         days = ["MON", "TUE", "WED", "THU", "FRI"]
-        faculty_list = sorted({course.get("faculty", "") for course in schedule})
-        # Build mapping: faculty -> day -> list of (start_time, info)
-        faculty_day_map: dict[str, dict[str, list[tuple[int, str]]]] = {f: {day: [] for day in days} for f in faculty_list}
+        faculty_map = defaultdict(list)
         for course in schedule:
-            faculty = course.get("faculty", "")
-            course_name = course["course"]
-            room = course.get("room", "")
-            lab = course.get("lab", "")
-            lab_index = course.get("lab_index", "")
-            for idx, t in enumerate(course["times"]):
-                day = INDEX_TO_DAY[t["day"]]
-                time_str = ScheduleHandler._format_time_instance(t)
-                location = lab if lab_index is not None and idx == lab_index else room
-                info = f"{course_name}, {location}, {time_str}"
-                faculty_day_map[faculty][day].append((t["start"], info))
-        # Build table rows
-        headers = ["Faculty"] + days
-        rows = []
-        for f in faculty_list:
-            row = [f]
-            for day in days:
-                entries = sorted(faculty_day_map[f][day], key=lambda x: x[0])
-                row.append("\n".join(info for _, info in entries) if entries else "")
-            rows.append(row)
-        return tabulate(rows, headers=headers, tablefmt="grid")
+            faculty_map[course["faculty"]].append(course)
+        final_str = ""
+        for faculty, courses in faculty_map.items():
+            final_str += f"\n{faculty}:\n"
+            headers = ["Course", "Room (Lab)"] + days
+            rows = []
+            for course in courses:
+                lab_index = course.get("lab_index")
+                row = [
+                    course["course"],
+                    f"{course.get('room', '')} ({course.get('lab', '')})"
+                ]
+                for day in days:
+                    meetings = [
+                        ScheduleHandler._format_time_instance(time) + (
+                            "^" if lab_index is not None and idx == lab_index else "")
+                        for idx, time in enumerate(course["times"])
+                        if INDEX_TO_DAY[time["day"]] == day
+                    ]
+                    meeting_str = ", ".join(m[4:] for m in meetings)
+                    row.append(meeting_str)
+                rows.append(row)
+            final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
+        return final_str
 
     @staticmethod
     def room_schedule(schedule: list[CourseInstanceJSON]) -> str:
-        """Format schedule with rooms/labs as rows and days as columns, showing course, faculty, and time in cells. Sorted by earliest time first."""
+        """Returns a string of the schedule where each room has its own table with days as columns."""
         days = ["MON", "TUE", "WED", "THU", "FRI"]
-        # Collect all unique rooms and labs
-        locations: set[str] = set()
+        room_map = defaultdict(list)
         for course in schedule:
-            if course.get("room"):
-                locations.add(course["room"])
-            if course.get("lab"):
-                locations.add(course["lab"])
-        sorted_locations: list[str] = sorted(loc for loc in locations if loc and loc != "None")
-        # Build mapping: location -> day -> list of (start_time, info)
-        location_day_map: dict[str, dict[str, list[tuple[int, str]]]] = {loc: {day: [] for day in days} for loc in sorted_locations}
-        for course in schedule:
-            course_name = course["course"]
-            faculty = course.get("faculty", "")
-            room = course.get("room", "")
-            lab = course.get("lab", "")
-            lab_index = course.get("lab_index", None)
-            for idx, t in enumerate(course["times"]):
-                day = INDEX_TO_DAY[t["day"]]
-                location = lab if lab_index is not None and idx == lab_index else room
-                if location and location != "None":
-                    time_str = ScheduleHandler._format_time_instance(t)
-                    info = f"{course_name}, {faculty}, {time_str}"
-                    location_day_map[location][day].append((t["start"], info))
-        # Build table rows
-        headers = ["Room/Lab"] + days
-        rows = []
-        for loc in sorted_locations:
-            row = [loc]
-            for day in days:
-                entries = sorted(location_day_map[loc][day], key=lambda x: x[0])
-                row.append("\n".join(info for _, info in entries) if entries else "")
-            rows.append(row)
-        return tabulate(rows, headers=headers, tablefmt="grid")
+            room = course.get("room")
+            lab = course.get("lab")
+            if room is not None:
+                room_map[room].append(course)
+            if lab is not None:
+                room_map[lab].append(course)
+        final_str = ""
+        for room, courses in room_map.items():
+            final_str += f"\n{room}:\n"
+            headers = ["Course", "Faculty"] + days
+            rows = []
+            for course in courses:
+                lab_index = course.get("lab_index")
+                row = [course["course"], course["faculty"]]
+                for day in days:
+                    meetings = [
+                        ScheduleHandler._format_time_instance(time)[4:]
+                        for idx, time in enumerate(course["times"])
+                        if INDEX_TO_DAY[time["day"]] == day and (
+                                (room == course.get("lab") and idx == lab_index) or
+                                (room == course.get("room") and idx != lab_index)
+                        )
+                    ]
+                    row.append(", ".join(meetings))
+                rows.append(row)
+            final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
+        return final_str

@@ -1,6 +1,11 @@
 import os
-from scheduler import load_config_from_file, CombinedConfig, SchedulerConfig, TimeSlotConfig, OptimizerFlags
-
+from scheduler import (
+    CombinedConfig,
+    OptimizerFlags,
+    SchedulerConfig,
+    TimeSlotConfig,
+    load_config_from_file,
+)
 
 class JsonConfig:
     """
@@ -18,13 +23,15 @@ class JsonConfig:
     def __init__(self, file_path: str) -> None:
         """Initialize the JsonConfig with the path to the JSON file."""
         if not os.path.exists(file_path):
-            file_path = f"configs/{file_path}.json"
+            file_path = f"configs/{file_path}"
+            if not file_path.endswith(".json"):
+                file_path += ".json"
         self._file_path: str = file_path
         # Ensure configs directory exists
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         # Check if file exists and is empty. If it is empty, populate it with default.json. If it doesn't exist, create it and populate it with default.json
         if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
-            with open('data/default.json', 'r', encoding='utf-8') as default_config:
+            with open("data/default.json", 'r', encoding='utf-8') as default_config:
                 default_data = default_config.read()
             with open(file_path, 'w', encoding='utf-8') as target_file:
                 target_file.write(default_data)

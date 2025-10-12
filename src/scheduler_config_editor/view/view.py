@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout
+from PyQt6.QtWidgets import QApplication
 from scheduler_config_editor.view.base_gui import SimpleGUI
 
 def view() -> None:
