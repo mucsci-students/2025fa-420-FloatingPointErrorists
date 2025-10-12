@@ -151,21 +151,7 @@ class ScheduleHandler:
     def format_schedule(schedule: list[CourseInstanceJSON]) -> str:
         """Returns a string of the schedule formatted as a table."""
         headers = ["Course", "Faculty", "Room", "Lab", "Times"]
-        rows = []
-        for course in schedule:
-            lab_index = course.get("lab_index")
-            time_str = ", ".join(
-                ScheduleHandler._format_time_instance(t) + ("^" if lab_index is not None and idx == lab_index else "")
-                for idx, t in enumerate(course["times"])
-            )
-            row = [
-                course["course"],
-                course["faculty"],
-                course.get("room", ""),
-                course.get("lab", ""),
-                time_str,
-            ]
-            rows.append(row)
+        rows = ScheduleHandler.get_schedules(schedule)
         return tabulate(rows, headers=headers, tablefmt="github")
 
     @staticmethod
@@ -232,3 +218,81 @@ class ScheduleHandler:
                 rows.append(row)
             final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
         return final_str
+
+    @staticmethod
+    def get_schedules(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
+        """Returns a list of rows representing the schedule."""
+        rows = []
+        for course in schedule:
+            lab_index = course.get("lab_index")
+            time_str = ", ".join(
+                ScheduleHandler._format_time_instance(t) + ("^" if lab_index is not None and idx == lab_index else "")
+                for idx, t in enumerate(course["times"])
+            )
+            row = [
+                course["course"],
+                course["faculty"],
+                course.get("room", ""),
+                course.get("lab", ""),
+                time_str,
+            ]
+            rows.append(row)
+        return rows
+
+    @staticmethod
+    def get_faculty_schedules(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
+        """Returns a list of rows representing the schedule sorted by faculty"""
+        days = ["MON", "TUE", "WED", "THU", "FRI"]
+        faculty_map = defaultdict(list)
+        for course in schedule:
+            faculty_map[course["faculty"]].append(course)
+        rows = []
+        for faculty, courses in faculty_map.items():
+            for course in courses:
+                lab_index = course.get("lab_index")
+                row = [
+                    faculty,
+                    course["course"],
+                    f"{course.get('room', '')} ({course.get('lab', '')})"
+                ]
+                for day in days:
+                    meetings = [
+                        ScheduleHandler._format_time_instance(time) + (
+                            "^" if lab_index is not None and idx == lab_index else "")
+                        for idx, time in enumerate(course["times"])
+                        if INDEX_TO_DAY[time["day"]] == day
+                    ]
+                    meeting_str = ", ".join(m[4:] for m in meetings)
+                    row.append(meeting_str)
+                rows.append(row)
+        return rows
+
+    @staticmethod
+    def get_room_schedules(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
+        """Returns a list of rows representing the schedule sorted by room"""
+        days = ["MON", "TUE", "WED", "THU", "FRI"]
+        room_map = defaultdict(list)
+        for course in schedule:
+            room = course.get("room")
+            lab = course.get("lab")
+            if room is not None:
+                room_map[room].append(course)
+            if lab is not None:
+                room_map[lab].append(course)
+        rows = []
+        for room, courses in room_map.items():
+            for course in courses:
+                lab_index = course.get("lab_index")
+                row = [room, course["course"], course["faculty"]]
+                for day in days:
+                    meetings = [
+                        ScheduleHandler._format_time_instance(time)[4:]
+                        for idx, time in enumerate(course["times"])
+                        if INDEX_TO_DAY[time["day"]] == day and (
+                                (room == course.get("lab") and idx == lab_index) or
+                                (room == course.get("room") and idx != lab_index)
+                        )
+                    ]
+                    row.append(", ".join(meetings))
+                rows.append(row)
+        return rows

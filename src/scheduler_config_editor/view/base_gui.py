@@ -66,6 +66,9 @@ class SimpleTabs(QWidget):
         self.schedule_viewer_tab = QWidget()
         self.tabs.resize(int(screen_width * 0.25), int(screen_height * 0.25))
 
+        # Config
+        self.config = None # change this when we figure it out
+
         # TabBar Stylesheet
         self.setStyleSheet('''
         QTabWidget::tab-bar {
@@ -313,26 +316,9 @@ class SimpleTabs(QWidget):
             pass # REPLACE WITH WHATEVER METHOD UPDATES VIEWER
 
         # GENERATOR
-        setup_generator_tab(self, None, handle_generated_schedules)
+        setup_generator_tab(self, handle_generated_schedules)
         # GENERATOR END
 
     def handleButton(self) -> None:
         self.modifier = ModClass(self)
         self.modifier.test()
-
-    # GENERATOR
-    def handle_generated_schedules(schedules: list[list[CourseInstance]]) -> None:
-        pass
-    # GENERATOR END
-
-    # Open Course Editor GUI
-    def open_course_editor_gui(self):
-        self.course_editor_window.show()
-    
-    def save_config(self):
-        print("Saved config")
-        pass
-
-    def load_config(self):
-        print("Loaded config")
-        pass
