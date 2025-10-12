@@ -4,7 +4,7 @@ from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 
 import scheduler_config_editor
-from scheduler_config_editor import Room, Lab, JsonConfig
+from scheduler_config_editor.model import Room, Lab, JsonConfig
 
 class RoomEditorGui(QMainWindow):
     ROOM = "Room"
