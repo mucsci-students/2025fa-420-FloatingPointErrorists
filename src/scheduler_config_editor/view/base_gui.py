@@ -16,6 +16,15 @@ from scheduler_config_editor.controller.faculty_controller import FacultyEditorC
 from scheduler_config_editor.model.schedule_handler import ScheduleHandler
 from scheduler_config_editor.view.schedule_window import newWindow
 from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
+from scheduler_config_editor.controller.schedule_controller import SchedulerController
+from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
+from scheduler_config_editor.view.schedule_window import newWindow
+
+import scheduler_config_editor
+from scheduler_config_editor.model.json import JsonConfig
+
+sys.path.append('../controller')
+from scheduler_config_editor.controller.testing import ModClass
 
 """Simple Gui Window Initializer"""
 
@@ -84,34 +93,12 @@ class SimpleTabs(QWidget):
         self.editor_tab.layout = QGridLayout(self)
         self.editor_tab.setLayout(self.editor_tab.layout)
 
-        #self.editor_label = QLabel()
-        """self.editor_label.setText(
- ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠒⢒⡶⠒⠈⠐⠂⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⢚⡟⢁⠔⠁⠀⣀⠔⠊⠉⠉⠺⡦⡀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⡜⠁⠋⡰⠃⠀⢀⠜⠁⠀⠀⠀⠀⠀⣉⣉⡙⢦⡀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢀⠞⠀⢀⡞⠁⠀⣠⣯⣶⣖⠒⢢⡠⠒⣽⣭⡟⣷⠉⡡⠀⠀⠀
-⠀⠀⠀⠀⠀⢀⡎⠀⠀⡞⠀⠀⢰⢻⣿⢷⣼⣧⠼⠤⠤⠽⠷⠛⢋⡿⡁⠀⠀⠀
-⠀⠀⠀⠀⠀⡜⠀⠀⢰⠃⠀⠀⡟⣿⡯⢭⣁⣀⡀⠀⠀⠀⣀⣀⠼⡄⡇⠀⠀⠀
-⠀⠀⠀⠀⣰⠁⠀⠀⠘⡆⠀⠀⡗⢿⣯⣿⡶⣿⡛⠿⠿⡟⠛⣄⢯⠀⡇⠀⠀⠀
-⠀⠀⠀⢠⠃⠀⠀⠀⠀⠘⣄⠀⠘⢄⡉⠛⠯⣓⣛⣛⡛⠓⢚⡡⠞⡰⠉⡆⠀⠀
-⠀⠀⢀⠇⠀⠀⠀⠀⠀⠀⠈⠳⣄⠀⠈⠲⢤⣤⣤⣬⠽⠟⠁⣠⠞⠀⢸⠀⠀⠀
-⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠵⣦⡀⠀⠈⠙⠣⡄⣠⠖⠁⠀⢠⢻⠀⠀⠀
-⠀⠀⡞⢀⡦⠭⢔⡄⠀⠀⠀⠀⠀⠀⠀⠈⠓⢦⡀⠀⠈⢧⠀⠀⠀⠎⠈⢣⠀⠀
-⠀⡴⢻⠘⡑⢐⠎⡝⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢦⠀⢸⡄⠀⠀⠀⠀⠈⡦⡀
-⢸⠀⠘⢦⠈⠁⢰⣜⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠇⢸⠀⠀⢀⣀⡤⠞⠁⡧
-⠈⠢⡀⠀⠙⠦⢌⣁⣀⣀⠀⠀⠀⢀⣀⣀⣀⠤⠖⢉⡠⠋⠉⠉⠉⠀⠀⣀⠔⠁
-⠀⠀⠈⠙⠒⠢⠤⠤⠤⠭⠭⠭⠭⠥⠤⠤⠤⠔⠚⠁⠈⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀
-        )
-        """
-
-        #self.editor_tab.layout.addWidget(self.editor_label)
-        #self.editor_tab.setLayout(self.editor_tab.layout)
-
         # Dropdown code
-        # self.editor_combo_box.layout = QVBoxLayout(self)
         self.editor_combo_box = QComboBox()
         self.editor_combo_box.addItems(['Course', 'Room', 'Lab', 'Faculty'])
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        self.course_editor_window = CourseEditorGUI()
 
         # Creates a container for the editor content
         self.editor_content_area = QVBoxLayout(self)
@@ -120,6 +107,7 @@ class SimpleTabs(QWidget):
         # Faculty placeholders
         self.faculty_controller = FacultyEditorController()
         self.faculty_gui = None
+        self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
         # When dropdown changes
         def on_editor_selection_change() -> None:
@@ -149,6 +137,17 @@ class SimpleTabs(QWidget):
         # self.editor_tab.layout.addWidget(self.button)
         
         # self.button.clicked.connect(self.handleButton)
+        self.editor_combo_box.activated.connect(self.open_course_editor_gui)
+
+        # Code for save button
+        self.save_config_button = QPushButton("Save Config")
+        self.editor_tab.layout.addWidget(self.save_config_button, 1, 0, alignment=Qt.AlignmentFlag.AlignRight)
+        self.save_config_button.clicked.connect(self.save_config)
+
+        # Code for load button
+        self.load_config_button = QPushButton("Load Config")
+        self.editor_tab.layout.addWidget(self.load_config_button, 2, 0, alignment=Qt.AlignmentFlag.AlignRight)
+        self.load_config_button.clicked.connect(self.load_config)
 
 
 
