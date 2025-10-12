@@ -89,8 +89,7 @@ class SimpleTabs(QWidget):
         self.tabs.addTab(self.generator_tab, "Generator")
         self.tabs.addTab(self.schedule_viewer_tab, "Schedules")
 
-        # Temporary labels for each tab to show that they work lmao
-        self.editor_tab.layout = QGridLayout(self)
+        self.editor_tab.layout = QGridLayout()
         self.editor_tab.setLayout(self.editor_tab.layout)
 
         # Dropdown code
@@ -137,16 +136,20 @@ class SimpleTabs(QWidget):
 
         self.editor_combo_box.currentTextChanged.connect(on_editor_selection_change)
 
-        # Code for save button
-        self.save_config_button = QPushButton("Save Config")
-        self.editor_tab.layout.addWidget(self.save_config_button, 1, 0, alignment=Qt.AlignmentFlag.AlignRight)
-        self.save_config_button.clicked.connect(self.save_config)
-
-        # Code for load button
+        # Button Layout for Load/Save Config
+        bottom_buttons_layout = QHBoxLayout()
         self.load_config_button = QPushButton("Load Config")
-        self.editor_tab.layout.addWidget(self.load_config_button, 2, 0, alignment=Qt.AlignmentFlag.AlignRight)
         self.load_config_button.clicked.connect(self.load_config)
 
+        self.save_config_button = QPushButton("Save Config")
+        self.save_config_button.clicked.connect(self.save_config)
+        self.save_config_button.setEnabled(False)
+
+        bottom_buttons_layout.addStretch()
+        bottom_buttons_layout.addWidget(self.load_config_button)
+        bottom_buttons_layout.addWidget(self.save_config_button)
+
+        self.editor_tab.layout.addLayout(bottom_buttons_layout, 99, 0, 1, 2)
 
 # Schedule Viewer Tab #########################################################################################
         
@@ -375,6 +378,9 @@ class SimpleTabs(QWidget):
             self.config = JsonConfig(config_path)
             QMessageBox.information(self, "Config Loaded", "Successfully loaded config")
             self.faculty_controller = FacultyEditorController(self.config)
+
+            # Enables save button
+            self.save_config_button.setEnabled(True)
 
             # If faculty tab is currently being used, refresh GUI
             if self.editor_combo_box.currentText() == "Faculty":

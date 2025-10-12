@@ -7,11 +7,10 @@ from scheduler_config_editor.model.json import JsonConfig
 from scheduler_config_editor.model.courses import Course
 
 
-"""import scheduler_config_editor
-from scheduler_config_editor import JsonConfig
-from scheduler_config_editor.model.courses import Course"""
-
 class CourseEditorGUI(QMainWindow):
+    """
+    A visual display of courses that allows users to edit the config
+    """
     def __init__(self)  -> None:
         super().__init__()
 
