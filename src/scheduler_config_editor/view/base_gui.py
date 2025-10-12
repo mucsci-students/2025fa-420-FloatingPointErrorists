@@ -412,7 +412,6 @@ class SimpleTabs(QWidget):
                 return
         try:
             self.config.save()
-            self.generator_gui.update_config(self.config)
             self.generator_controller.update_config(self.config)
             QMessageBox.information(self, "Config Saved", "Config saved successfully")
         except Exception as error:
