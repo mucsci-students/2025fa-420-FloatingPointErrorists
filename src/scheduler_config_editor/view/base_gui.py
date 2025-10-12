@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
     QApplication, QLabel, QWidget, QLineEdit, QPushButton,
     QVBoxLayout, QHBoxLayout, QTabWidget, QMainWindow,
     QCheckBox, QComboBox, QFileDialog, QGridLayout,
-    QScrollArea
+    QScrollArea, QMessageBox
 )
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
@@ -105,7 +105,7 @@ class SimpleTabs(QWidget):
         self.editor_tab.layout.addLayout(self.editor_content_area, 1, 0, 1, 2)
 
         # Faculty placeholders
-        self.faculty_controller = FacultyEditorController()
+        self.faculty_controller = None
         self.faculty_gui = None
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
@@ -119,8 +119,8 @@ class SimpleTabs(QWidget):
             selected = self.editor_combo_box.currentText()
 
             if selected == 'Course':
-                label = QLabel('Course Editor Placeholder')
-                self.editor_content_area.addWidget(label)
+                self.course_gui = CourseEditorGUI()
+                self.editor_content_area.addWidget(self.course_gui)
             elif selected == 'Room':
                 label = QLabel('Room Editor Placeholder')
                 self.editor_content_area.addWidget(label)
@@ -128,16 +128,14 @@ class SimpleTabs(QWidget):
                 label = QLabel('Lab Editor Placeholder')
                 self.editor_content_area.addWidget(label)
             elif selected == 'Faculty':
-                self.faculty_gui = FacultyEditorGui(self.faculty_controller)
-                self.editor_content_area.addWidget(self.faculty_gui)
+                if not self.faculty_controller:
+                    label = QLabel ("Please load a config file first.")
+                    self.editor_content_area.addWidget(label)
+                else:
+                    self.faculty_gui = FacultyEditorGui(self.faculty_controller)
+                    self.editor_content_area.addWidget(self.faculty_gui)
 
-        self.editor_combo_box.currentTextChanged.connect(on_editor_selection_change())
-        # Code for testing testing.py with a button
-        # self.button = QPushButton("Test button")
-        # self.editor_tab.layout.addWidget(self.button)
-        
-        # self.button.clicked.connect(self.handleButton)
-        self.editor_combo_box.activated.connect(self.open_course_editor_gui)
+        self.editor_combo_box.currentTextChanged.connect(on_editor_selection_change)
 
         # Code for save button
         self.save_config_button = QPushButton("Save Config")
@@ -148,7 +146,6 @@ class SimpleTabs(QWidget):
         self.load_config_button = QPushButton("Load Config")
         self.editor_tab.layout.addWidget(self.load_config_button, 2, 0, alignment=Qt.AlignmentFlag.AlignRight)
         self.load_config_button.clicked.connect(self.load_config)
-
 
 
 # Schedule Viewer Tab #########################################################################################
@@ -364,3 +361,40 @@ class SimpleTabs(QWidget):
     def handleButton(self) -> None:
         self.modifier = ModClass(self)
         self.modifier.test()
+
+    # Asks user for config file
+    def load_config(self) -> None:
+        config_path, _ = QFileDialog.getOpenFileName(self,
+            "Select Scheduler Config File","", "JSON Files (*.json);;All Files (*)")
+
+        if not config_path:
+            QMessageBox.warning(self, "No Config File Selected", "Please select a valid config file")
+            return
+
+        try:
+            self.config = JsonConfig(config_path)
+            QMessageBox.information(self, "Config Loaded", "Successfully loaded config")
+            self.faculty_controller = FacultyEditorController(self.config)
+
+            # If faculty tab is currently being used, refresh GUI
+            if self.editor_combo_box.currentText() == "Faculty":
+                while self.editor_content_area.count():
+                    item = self.editor_content_area.takeAt(0)
+                    widget = item.widget()
+                    if widget:
+                        widget.deleteLater()
+                self.faculty_gui = FacultyEditorGui(self.faculty_controller)
+                self.editor_content_area.addWidget(self.faculty_gui)
+        except Exception as error:
+                QMessageBox.warning(self, "Load Error", error)
+
+    # Saves config file
+    def save_config(self) -> None:
+        if not self.config:
+                QMessageBox.warning(self, "Error", "No config loaded to save.")
+                return
+        try:
+            self.config.save()
+            QMessageBox.information(self, "Config Saved", "Config saved successfully")
+        except Exception as error:
+            QMessageBox.warning(self, "Save Error", error)
