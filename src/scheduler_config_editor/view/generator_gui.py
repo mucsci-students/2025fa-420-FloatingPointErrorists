@@ -14,7 +14,8 @@ from scheduler.models import CourseInstance
 
 sys.path.append('../controller')
 
-def setup_generator_tab(tabs_instance: SimpleTabs, config: JsonConfig, on_schedules_generated: Callable[[list[list[CourseInstance]]], None]) -> None:
+def setup_generator_tab(tabs_instance: SimpleTabs,
+                        on_schedules_generated: Callable[[list[list[CourseInstance]]], None]) -> None:
     # === Layout Setup ===
     tabs_instance.generator_layout = QVBoxLayout()
     tabs_instance.generator_tab.setLayout(tabs_instance.generator_layout)
@@ -26,12 +27,12 @@ def setup_generator_tab(tabs_instance: SimpleTabs, config: JsonConfig, on_schedu
     flags_layout = QVBoxLayout()
 
     # Checkboxes
-    tabs_instance.optimizer_checkboxes = []
+    optimizer_checkboxes = []
 
     for flag in OptimizerFlags:
         checkbox = QCheckBox(f"{flag} optimization")
         flags_layout.addWidget(checkbox)
-        tabs_instance.optimizer_checkboxes.append(checkbox)
+        optimizer_checkboxes.append(checkbox)
 
     flags_group.setLayout(flags_layout)
     generator_layout.addWidget(flags_group)
@@ -42,8 +43,8 @@ def setup_generator_tab(tabs_instance: SimpleTabs, config: JsonConfig, on_schedu
 
     limit_label = QLabel("Max schedules:")
     limit_input = QLineEdit()
-    limit_input.setPlaceholderText("Enter a non-negative integer")
-    limit_input.setValidator(QIntValidator(0, 99999))  # Only allows non-negative ints
+    limit_input.setPlaceholderText("Enter a positive integer")
+    limit_input.setValidator(QIntValidator(1, 99999999))  # Only allows positive ints
 
     tabs_instance.limit_input = limit_input  # Save
 
@@ -58,7 +59,7 @@ def setup_generator_tab(tabs_instance: SimpleTabs, config: JsonConfig, on_schedu
 
     def on_generate_clicked() -> None:
         try:
-            schedules = generate(tabs_instance.optimizer_checkboxes, tabs_instance.limit_input, config)
+            schedules = generate(optimizer_checkboxes, limit_input, tabs_instance.config)
             # Pass the generated schedules back using the callback
             on_schedules_generated(schedules)
             QMessageBox.information(tabs_instance, "Generation Complete", f"Generation Complete")

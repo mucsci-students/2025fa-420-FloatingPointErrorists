@@ -3,6 +3,7 @@ import json
 import os
 import re
 from collections import defaultdict
+from typing import Callable, Any
 from scheduler.json_types import CourseInstanceJSON, TimeInstanceJSON
 from scheduler.models import CourseInstance
 from tabulate import tabulate
@@ -148,81 +149,65 @@ class ScheduleHandler:
         return f"{day} {start_hour:02d}:{start_minute:02d}-{end_hour:02d}:{end_minute:02d}"
 
     @staticmethod
-    def format_schedule(schedule: list[CourseInstanceJSON]) -> str:
-        """Returns a string of the schedule formatted as a table."""
-        headers = ["Course", "Faculty", "Room", "Lab", "Times"]
-        rows = ScheduleHandler.get_schedules(schedule)
-        return tabulate(rows, headers=headers, tablefmt="github")
-
-    @staticmethod
-    def faculty_schedule(schedule: list[CourseInstanceJSON]) -> str:
-        """Returns s string of the schedule where each faculty has their own table with days as columns."""
-        days = ["MON", "TUE", "WED", "THU", "FRI"]
-        faculty_map = defaultdict(list)
+    def _group_by(
+            schedule: list[CourseInstanceJSON],
+            key_fn: Callable[[CourseInstanceJSON], Any]
+    ) -> dict[Any, list[CourseInstanceJSON]]:
+        """Group courses in the schedule by a key function."""
+        groups: dict[Any, list[CourseInstanceJSON]] = defaultdict(list)
         for course in schedule:
-            faculty_map[course["faculty"]].append(course)
-        final_str = ""
-        for faculty, courses in faculty_map.items():
-            final_str += f"\n{faculty}:\n"
-            headers = ["Course", "Room (Lab)"] + days
-            rows = []
-            for course in courses:
-                lab_index = course.get("lab_index")
-                row = [
-                    course["course"],
-                    f"{course.get('room', '')} ({course.get('lab', '')})"
-                ]
-                for day in days:
-                    meetings = [
-                        ScheduleHandler._format_time_instance(time) + (
-                            "^" if lab_index is not None and idx == lab_index else "")
-                        for idx, time in enumerate(course["times"])
-                        if INDEX_TO_DAY[time["day"]] == day
-                    ]
-                    meeting_str = ", ".join(m[4:] for m in meetings)
-                    row.append(meeting_str)
-                rows.append(row)
-            final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
-        return final_str
+            groups[key_fn(course)].append(course)
+        return groups
 
     @staticmethod
-    def room_schedule(schedule: list[CourseInstanceJSON]) -> str:
-        """Returns a string of the schedule where each room has its own table with days as columns."""
-        days = ["MON", "TUE", "WED", "THU", "FRI"]
-        room_map = defaultdict(list)
-        for course in schedule:
-            room = course.get("room")
-            lab = course.get("lab")
-            if room is not None:
-                room_map[room].append(course)
-            if lab is not None:
-                room_map[lab].append(course)
-        final_str = ""
-        for room, courses in room_map.items():
-            final_str += f"\n{room}:\n"
-            headers = ["Course", "Faculty"] + days
-            rows = []
-            for course in courses:
-                lab_index = course.get("lab_index")
-                row = [course["course"], course["faculty"]]
-                for day in days:
-                    meetings = [
-                        ScheduleHandler._format_time_instance(time)[4:]
-                        for idx, time in enumerate(course["times"])
-                        if INDEX_TO_DAY[time["day"]] == day and (
-                                (room == course.get("lab") and idx == lab_index) or
-                                (room == course.get("room") and idx != lab_index)
-                        )
-                    ]
-                    row.append(", ".join(meetings))
-                rows.append(row)
-            final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
-        return final_str
+    def _build_rows(
+            courses: list[CourseInstanceJSON],
+            row_fn: Callable[[CourseInstanceJSON, list[str]], list[str]],
+            days: list[str]
+    ) -> list[list[str]]:
+        """Build table rows for a group of courses using a row builder function"""
+        return [row_fn(course, days) for course in courses]
 
     @staticmethod
-    def get_schedules(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
-        """Returns a list of rows representing the schedule."""
-        rows = []
+    def _faculty_row(course: CourseInstanceJSON, days: list[str]) -> list[str]:
+        """Build a row for a faculty schedule table."""
+        lab_index = course.get("lab_index")
+        row = [
+            course["course"],
+            f"{course.get('room', '')} ({course.get('lab', '')})"
+        ]
+        for day in days:
+            meetings = [
+                ScheduleHandler._format_time_instance(time) + (
+                    "^" if lab_index is not None and idx == lab_index else "")
+                for idx, time in enumerate(course["times"])
+                if INDEX_TO_DAY[time["day"]] == day
+            ]
+            meeting_str = ", ".join(m[4:] for m in meetings)
+            row.append(meeting_str)
+        return row
+
+    @staticmethod
+    def _room_row(course: CourseInstanceJSON, days: list[str], room: str) -> list[str]:
+        """Build a row for a room schedule table."""
+        lab_index = course.get("lab_index")
+        row = [course["course"], course["faculty"]]
+        for day in days:
+            meetings = [
+                ScheduleHandler._format_time_instance(time)[4:]
+                for idx, time in enumerate(course["times"])
+                if INDEX_TO_DAY[time["day"]] == day and (
+                        (room == course.get("lab") and idx == lab_index) or
+                        (room == course.get("room") and idx != lab_index)
+                )
+            ]
+            row.append(", ".join(meetings))
+        return row
+
+    @staticmethod
+    def schedule_rows(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
+        """Build rows for the general schedule table."""
+        rows: list[list[str]] = []
         for course in schedule:
             lab_index = course.get("lab_index")
             time_str = ", ".join(
@@ -240,38 +225,22 @@ class ScheduleHandler:
         return rows
 
     @staticmethod
-    def get_faculty_schedules(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
-        """Returns a list of rows representing the schedule sorted by faculty"""
+    def faculty_schedule_rows(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
+        """Build rows for the faculty schedule table."""
         days = ["MON", "TUE", "WED", "THU", "FRI"]
-        faculty_map = defaultdict(list)
-        for course in schedule:
-            faculty_map[course["faculty"]].append(course)
-        rows = []
+        faculty_map = ScheduleHandler._group_by(schedule, lambda c: c["faculty"])
+        rows: list[list[str]] = []
         for faculty, courses in faculty_map.items():
             for course in courses:
-                lab_index = course.get("lab_index")
-                row = [
-                    faculty,
-                    course["course"],
-                    f"{course.get('room', '')} ({course.get('lab', '')})"
-                ]
-                for day in days:
-                    meetings = [
-                        ScheduleHandler._format_time_instance(time) + (
-                            "^" if lab_index is not None and idx == lab_index else "")
-                        for idx, time in enumerate(course["times"])
-                        if INDEX_TO_DAY[time["day"]] == day
-                    ]
-                    meeting_str = ", ".join(m[4:] for m in meetings)
-                    row.append(meeting_str)
+                row = [faculty] + ScheduleHandler._faculty_row(course, days)
                 rows.append(row)
         return rows
 
     @staticmethod
-    def get_room_schedules(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
-        """Returns a list of rows representing the schedule sorted by room"""
+    def room_schedule_rows(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
+        """Build rows for the room schedule table."""
         days = ["MON", "TUE", "WED", "THU", "FRI"]
-        room_map = defaultdict(list)
+        room_map: dict[str, list[CourseInstanceJSON]] = defaultdict(list)
         for course in schedule:
             room = course.get("room")
             lab = course.get("lab")
@@ -279,20 +248,49 @@ class ScheduleHandler:
                 room_map[room].append(course)
             if lab is not None:
                 room_map[lab].append(course)
-        rows = []
+        rows: list[list[str]] = []
         for room, courses in room_map.items():
             for course in courses:
-                lab_index = course.get("lab_index")
-                row = [room, course["course"], course["faculty"]]
-                for day in days:
-                    meetings = [
-                        ScheduleHandler._format_time_instance(time)[4:]
-                        for idx, time in enumerate(course["times"])
-                        if INDEX_TO_DAY[time["day"]] == day and (
-                                (room == course.get("lab") and idx == lab_index) or
-                                (room == course.get("room") and idx != lab_index)
-                        )
-                    ]
-                    row.append(", ".join(meetings))
+                row = [room] + ScheduleHandler._room_row(course, days, room)
                 rows.append(row)
         return rows
+
+    @staticmethod
+    def format_schedule_str(schedule: list[CourseInstanceJSON]) -> str:
+        """Format the general schedule as a table string."""
+        headers = ["Course", "Faculty", "Room", "Lab", "Times"]
+        rows = ScheduleHandler.schedule_rows(schedule)
+        return tabulate(rows, headers=headers, tablefmt="github")
+
+    @staticmethod
+    def faculty_schedule_str(schedule: list[CourseInstanceJSON]) -> str:
+        """Format the faculty schedule as a table string."""
+        days = ["MON", "TUE", "WED", "THU", "FRI"]
+        faculty_map = ScheduleHandler._group_by(schedule, lambda c: c["faculty"])
+        final_str = ""
+        for faculty, courses in faculty_map.items():
+            final_str += f"\n{faculty}:\n"
+            headers = ["Course", "Room (Lab)"] + days
+            rows = ScheduleHandler._build_rows(courses, ScheduleHandler._faculty_row, days)
+            final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
+        return final_str
+
+    @staticmethod
+    def room_schedule_str(schedule: list[CourseInstanceJSON]) -> str:
+        """Format the room schedule as a table string."""
+        days = ["MON", "TUE", "WED", "THU", "FRI"]
+        room_map: dict[str, list[CourseInstanceJSON]] = defaultdict(list)
+        for course in schedule:
+            room = course.get("room")
+            lab = course.get("lab")
+            if room is not None:
+                room_map[room].append(course)
+            if lab is not None:
+                room_map[lab].append(course)
+        final_str = ""
+        for room, courses in room_map.items():
+            final_str += f"\n{room}:\n"
+            headers = ["Course", "Faculty"] + days
+            rows = [ScheduleHandler._room_row(course, days, room) for course in courses]
+            final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
+        return final_str

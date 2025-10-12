@@ -29,16 +29,16 @@ def test_import_schedules_csv(tmp_path):
     assert handler.schedules[0][0]["course"] == "CS101"
 
 def test_format_schedule():
-    result = ScheduleHandler.format_schedule([course_instance])
+    result = ScheduleHandler.format_schedule_str([course_instance])
     assert "CS101" in result
     assert "Dr. Smith" in result
 
 def test_faculty_schedule():
-    result = ScheduleHandler.faculty_schedule([course_instance])
+    result = ScheduleHandler.faculty_schedule_str([course_instance])
     assert "Dr. Smith" in result
     assert "CS101" in result
 
 def test_room_schedule():
-    result = ScheduleHandler.room_schedule([course_instance])
+    result = ScheduleHandler.room_schedule_str([course_instance])
     assert "101" in result or "LabA" in result
     assert "CS101" in result

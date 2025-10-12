@@ -23,9 +23,9 @@ def generate(checkboxes: list[QCheckBox], limit: QLineEdit, config: JsonConfig) 
             selected_flags.append(fg)
 
     # Getting limit
-    limit_value = limit.text() or "0"
+    limit_value = limit.text() or "1"
     config.set_optimization(selected_flags)
-    config.set_limit(limit_value)
+    config.set_limit(int(limit_value))
 
     return run_using_config(config.combined_config)
 

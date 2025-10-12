@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QTabWidget, QMainWindow,
     QCheckBox, QComboBox, QFileDialog, QGridLayout,
     QScrollArea, QTableWidget
+    QScrollArea, QMessageBox
 )
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
@@ -11,9 +12,20 @@ from scheduler.models import CourseInstance
 
 sys.path.append('../controller')
 from scheduler_config_editor.controller.testing import ModClass
-from scheduler_config_editor.controller.schedule_controller import SchedulerController 
+from scheduler_config_editor.controller.schedule_controller import SchedulerController
+from scheduler_config_editor.controller.faculty_controller import FacultyEditorController
 from scheduler_config_editor.model.schedule_handler import ScheduleHandler
-from scheduler_config_editor.view.schedule_window import newWindow 
+from scheduler_config_editor.view.schedule_window import newWindow
+from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
+from scheduler_config_editor.controller.schedule_controller import SchedulerController
+from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
+from scheduler_config_editor.view.schedule_window import newWindow
+
+import scheduler_config_editor
+from scheduler_config_editor.model.json import JsonConfig
+
+sys.path.append('../controller')
+from scheduler_config_editor.controller.testing import ModClass
 
 """Simple Gui Window Initializer"""
 
@@ -62,6 +74,9 @@ class SimpleTabs(QWidget):
         self.schedule_viewer_tab = QWidget()
         self.tabs.resize(int(screen_width * 0.25), int(screen_height * 0.25))
 
+        # Config
+        self.config = None # change this when we figure it out
+
         # TabBar Stylesheet
         self.setStyleSheet('''
         QTabWidget::tab-bar {
@@ -75,49 +90,67 @@ class SimpleTabs(QWidget):
         self.tabs.addTab(self.generator_tab, "Generator")
         self.tabs.addTab(self.schedule_viewer_tab, "Schedules")
 
-        # Temporary labels for each tab to show that they work lmao
-        self.editor_tab.layout = QGridLayout(self)
+        self.editor_tab.layout = QGridLayout()
         self.editor_tab.setLayout(self.editor_tab.layout)
 
-        #self.editor_label = QLabel()
-        """self.editor_label.setText(
- ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠒⢒⡶⠒⠈⠐⠂⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⢚⡟⢁⠔⠁⠀⣀⠔⠊⠉⠉⠺⡦⡀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⡜⠁⠋⡰⠃⠀⢀⠜⠁⠀⠀⠀⠀⠀⣉⣉⡙⢦⡀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢀⠞⠀⢀⡞⠁⠀⣠⣯⣶⣖⠒⢢⡠⠒⣽⣭⡟⣷⠉⡡⠀⠀⠀
-⠀⠀⠀⠀⠀⢀⡎⠀⠀⡞⠀⠀⢰⢻⣿⢷⣼⣧⠼⠤⠤⠽⠷⠛⢋⡿⡁⠀⠀⠀
-⠀⠀⠀⠀⠀⡜⠀⠀⢰⠃⠀⠀⡟⣿⡯⢭⣁⣀⡀⠀⠀⠀⣀⣀⠼⡄⡇⠀⠀⠀
-⠀⠀⠀⠀⣰⠁⠀⠀⠘⡆⠀⠀⡗⢿⣯⣿⡶⣿⡛⠿⠿⡟⠛⣄⢯⠀⡇⠀⠀⠀
-⠀⠀⠀⢠⠃⠀⠀⠀⠀⠘⣄⠀⠘⢄⡉⠛⠯⣓⣛⣛⡛⠓⢚⡡⠞⡰⠉⡆⠀⠀
-⠀⠀⢀⠇⠀⠀⠀⠀⠀⠀⠈⠳⣄⠀⠈⠲⢤⣤⣤⣬⠽⠟⠁⣠⠞⠀⢸⠀⠀⠀
-⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠵⣦⡀⠀⠈⠙⠣⡄⣠⠖⠁⠀⢠⢻⠀⠀⠀
-⠀⠀⡞⢀⡦⠭⢔⡄⠀⠀⠀⠀⠀⠀⠀⠈⠓⢦⡀⠀⠈⢧⠀⠀⠀⠎⠈⢣⠀⠀
-⠀⡴⢻⠘⡑⢐⠎⡝⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢦⠀⢸⡄⠀⠀⠀⠀⠈⡦⡀
-⢸⠀⠘⢦⠈⠁⢰⣜⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠇⢸⠀⠀⢀⣀⡤⠞⠁⡧
-⠈⠢⡀⠀⠙⠦⢌⣁⣀⣀⠀⠀⠀⢀⣀⣀⣀⠤⠖⢉⡠⠋⠉⠉⠉⠀⠀⣀⠔⠁
-⠀⠀⠈⠙⠒⠢⠤⠤⠤⠭⠭⠭⠭⠥⠤⠤⠤⠔⠚⠁⠈⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀
-        )
-        """
-
-        #self.editor_tab.layout.addWidget(self.editor_label)
-        #self.editor_tab.setLayout(self.editor_tab.layout)
-
         # Dropdown code
-        # self.editor_combo_box.layout = QVBoxLayout(self)
         self.editor_combo_box = QComboBox()
-
         self.editor_combo_box.addItems(['Course', 'Room', 'Lab', 'Faculty'])
-
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
+        self.course_editor_window = CourseEditorGUI()
 
-        # Code for testing testing.py with a button
-        # self.button = QPushButton("Test button")
-        # self.editor_tab.layout.addWidget(self.button)
-        
-        # self.button.clicked.connect(self.handleButton)
+        # Creates a container for the editor content
+        self.editor_content_area = QVBoxLayout(self)
+        self.editor_tab.layout.addLayout(self.editor_content_area, 1, 0, 1, 2)
 
+        # Faculty placeholders
+        self.faculty_controller = None
+        self.faculty_gui = None
+        self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
+        # When dropdown changes
+        def on_editor_selection_change() -> None:
+            while self.editor_content_area.count():
+                item = self.editor_content_area.takeAt(0)
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+            selected = self.editor_combo_box.currentText()
+
+            if selected == 'Course':
+                self.course_gui = CourseEditorGUI()
+                self.editor_content_area.addWidget(self.course_gui)
+            elif selected == 'Room':
+                label = QLabel('Room Editor Placeholder')
+                self.editor_content_area.addWidget(label)
+            elif selected == 'Lab':
+                label = QLabel('Lab Editor Placeholder')
+                self.editor_content_area.addWidget(label)
+            elif selected == 'Faculty':
+                if not self.faculty_controller:
+                    label = QLabel ("Please load a config file first.")
+                    self.editor_content_area.addWidget(label)
+                else:
+                    self.faculty_gui = FacultyEditorGui(self.faculty_controller)
+                    self.editor_content_area.addWidget(self.faculty_gui)
+
+        self.editor_combo_box.currentTextChanged.connect(on_editor_selection_change)
+
+        # Button Layout for Load/Save Config
+        bottom_buttons_layout = QHBoxLayout()
+        self.load_config_button = QPushButton("Load Config")
+        self.load_config_button.clicked.connect(self.load_config)
+
+        self.save_config_button = QPushButton("Save Config")
+        self.save_config_button.clicked.connect(self.save_config)
+        self.save_config_button.setEnabled(False)
+
+        bottom_buttons_layout.addStretch()
+        bottom_buttons_layout.addWidget(self.load_config_button)
+        bottom_buttons_layout.addWidget(self.save_config_button)
+
+        self.editor_tab.layout.addLayout(bottom_buttons_layout, 99, 0, 1, 2)
 
 # Schedule Viewer Tab #########################################################################################
         
@@ -366,9 +399,49 @@ class SimpleTabs(QWidget):
             pass # REPLACE WITH WHATEVER METHOD UPDATES VIEWER
 
         # GENERATOR
-        setup_generator_tab(self, None, handle_generated_schedules)
+        setup_generator_tab(self, handle_generated_schedules)
         # GENERATOR END
 
     def handleButton(self) -> None:
         self.modifier = ModClass(self)
         self.modifier.test()
+
+    # Asks user for config file
+    def load_config(self) -> None:
+        config_path, _ = QFileDialog.getOpenFileName(self,
+            "Select Scheduler Config File","", "JSON Files (*.json);;All Files (*)")
+
+        if not config_path:
+            QMessageBox.warning(self, "No Config File Selected", "Please select a valid config file")
+            return
+
+        try:
+            self.config = JsonConfig(config_path)
+            QMessageBox.information(self, "Config Loaded", "Successfully loaded config")
+            self.faculty_controller = FacultyEditorController(self.config)
+
+            # Enables save button
+            self.save_config_button.setEnabled(True)
+
+            # If faculty tab is currently being used, refresh GUI
+            if self.editor_combo_box.currentText() == "Faculty":
+                while self.editor_content_area.count():
+                    item = self.editor_content_area.takeAt(0)
+                    widget = item.widget()
+                    if widget:
+                        widget.deleteLater()
+                self.faculty_gui = FacultyEditorGui(self.faculty_controller)
+                self.editor_content_area.addWidget(self.faculty_gui)
+        except Exception as error:
+                QMessageBox.warning(self, "Load Error", error)
+
+    # Saves config file
+    def save_config(self) -> None:
+        if not self.config:
+                QMessageBox.warning(self, "Error", "No config loaded to save.")
+                return
+        try:
+            self.config.save()
+            QMessageBox.information(self, "Config Saved", "Config saved successfully")
+        except Exception as error:
+            QMessageBox.warning(self, "Save Error", error)

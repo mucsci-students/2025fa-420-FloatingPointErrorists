@@ -5,5 +5,5 @@ from scheduler_config_editor.view.base_gui import SimpleGUI
 def view() -> None:
     app = QApplication(sys.argv)
     window = SimpleGUI()
-    window.show()
+    window.showMaximized()
     sys.exit(app.exec())
