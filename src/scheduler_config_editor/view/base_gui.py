@@ -54,6 +54,7 @@ class SimpleGUI(QMainWindow):
 """Simple Tabs Initializer"""
 
 class SimpleTabs(QWidget):
+
     def __init__(self, parent) -> None:
         super(QWidget, self).__init__(parent)
 
@@ -165,7 +166,7 @@ class SimpleTabs(QWidget):
 
 # Schedule Viewer Tab #########################################################################################
         
-        sc = SchedulerController()
+        self.sc = SchedulerController()
 
         def set_schedule_label(text: str) -> None:
             self.schedule_viewer_label.setText(text)
@@ -182,9 +183,9 @@ class SimpleTabs(QWidget):
         #add view_by_courses button
         def view_by_courses() -> None:
             try:
-                sc.mode = 0
-                sc.set_table()
-                self.schedule_table = sc.cur_table
+                self.sc.mode = 0
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
             except:
                 self.schedule_viewer_label.setText("""Schedule by course will be shown here""")
@@ -197,9 +198,9 @@ class SimpleTabs(QWidget):
         #add view_by_faulty button
         def view_by_faulty() -> None:
             try:
-                sc.mode = 1
-                sc.set_table()
-                self.schedule_table = sc.cur_table
+                self.sc.mode = 1
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
             except:
                 set_schedule_label("""Schedule by faculty will be shown here""")
@@ -212,9 +213,9 @@ class SimpleTabs(QWidget):
         #add view_by_room button
         def view_by_room() -> None:
             try:
-                sc.mode = 2
-                sc.set_table()
-                self.schedule_table = sc.cur_table
+                self.sc.mode = 2
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
             except:
                 set_schedule_label("""Schedule by room will be shown here""")
@@ -244,7 +245,7 @@ class SimpleTabs(QWidget):
                 self.nw.widget.scroll_area_w.setWidget(new_table)
 
             except:
-                pass  
+                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?")  
 
         self.schedule_viewer_button = QPushButton("Popout Window")
         self.schedule_viewer_button.clicked.connect(popoutwindow)
@@ -272,18 +273,18 @@ class SimpleTabs(QWidget):
 
         #add bot layout
         view_bot_layout = QHBoxLayout()
-        view_bot_layout.addStretch()
+        view_bot_layout.addStretch(7)
 
         #add prev_schedule button
         def schedule_back() -> None:
             try:
-                sc.previous_schedule()
-                sc.set_table()
-                self.schedule_table = sc.cur_table
+                self.sc.previous_schedule()
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
             except:
-                pass
+                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?")
 
 
         self.schedule_viewer_button = QPushButton("<--")
@@ -300,19 +301,19 @@ class SimpleTabs(QWidget):
             try:
                 newIndex = int(i)
                 if newIndex < 1:
-                    sc.index = 0
-                elif newIndex > sc.length:
-                    sc.index = sc.length - 1
+                    self.sc.index = 0
+                elif newIndex > self.sc.length:
+                    self.sc.index = self.sc.length - 1
                 else:
-                    sc.index = newIndex - 1
+                    self.sc.index = newIndex - 1
 
-                sc.set_table()
-                self.schedule_table = sc.cur_table
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
 
             except:
-                pass
+                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?\nPlease use an integer")
                     
         self.schedule_viewer_index = QLineEdit()
         self.schedule_viewer_index.setPlaceholderText("x")
@@ -330,37 +331,47 @@ class SimpleTabs(QWidget):
         #add next_schedule button
         def schedule_forward() -> None:
             try:
-                sc.next_schedule()
-                sc.set_table()
-                self.schedule_table = sc.cur_table
+                self.sc.next_schedule()
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
             except:
-                pass
+                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?")
 
         self.schedule_viewer_button = QPushButton("-->")
         self.schedule_viewer_button.clicked.connect(schedule_forward)
         view_bot_layout.addWidget(self.schedule_viewer_button)
 
         #push next widgets to right
-        view_bot_layout.addStretch()
+        view_bot_layout.addStretch(6)
 
         #bot_right sub layout
         view_bot_right_layout = QVBoxLayout()
         view_bot_right_layout.addStretch()
 
         #add checkboxs
-        checkbox1 = QCheckBox('json')
-        view_bot_right_layout.addWidget(checkbox1)
-        checkbox2 = QCheckBox('csv')
-        view_bot_right_layout.addWidget(checkbox2)
+        self.checkboxjson = QCheckBox('json')
+        view_bot_right_layout.addWidget(self.checkboxjson)
+        self.checkboxcsv = QCheckBox('csv')
+        view_bot_right_layout.addWidget(self.checkboxcsv)
+
+        #add filename lineedit
+        self.schedule_viewer_filename = QLineEdit()
+        self.schedule_viewer_filename.setPlaceholderText("Filename")
+        self.schedule_viewer_filename.setAlignment(Qt.AlignmentFlag.AlignRight)
+        view_bot_right_layout.addWidget(self.schedule_viewer_filename)
 
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
-            if checkbox1.isChecked():
-                pass # SAVE AS JSON HERE
-            if checkbox2.isChecked():
-                pass # SAVE AS CSV HERE
+            try:
+                if self.checkboxjson.isChecked():
+                    self.sc.save_as_json(self.schedules, self.schedule_viewer_filename.text())
+                if self.checkboxcsv.isChecked():
+                    self.sc.save_as_csv(self.schedules, self.schedule_viewer_filename.text())
+                QMessageBox.information(self, "Information", "Save Complete.")
+            except:
+                QMessageBox.information(self, "Error", "Are you trying to save a non generated schedule?")
 
         self.schedule_viewer_button = QPushButton("Save")
         self.schedule_viewer_button.clicked.connect(save_button) 
@@ -371,22 +382,25 @@ class SimpleTabs(QWidget):
 
             #open a file dialog to select file
             try:
-                test = QFileDialog.getOpenFileName(
+                my_file = QFileDialog.getOpenFileName(
                     self,
                     'Open file',
                     'schedules',
                     'All Files (*);; JSON files (*.json);; CSV files (*.csv)')
-                sc.cur_schedules.import_schedules(test[0])
-                sc.length = len(sc.cur_schedules.schedules)
+                self.sc.cur_schedules.import_schedules(my_file[0])
+                self.sc.length = len(self.sc.cur_schedules.schedules)
+
+                #reset generated schedule if any
+                self.schedules = None
 
                 #show first schedule
-                sc.set_table()
-                self.schedule_table = sc.cur_table
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
-                self.schedule_viewer_label_len.setText("/" + str(sc.length))
+                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+                self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
             except:
-                pass
+                QMessageBox.warning(self, "Error", "Invalid File, No File loaded.")
         
         self.schedule_viewer_button = QPushButton("Load")
         self.schedule_viewer_button.clicked.connect(load_button) 
@@ -394,7 +408,7 @@ class SimpleTabs(QWidget):
 
         #end bot right sub layout
         view_bot_right_layout.addStretch()
-        view_bot_layout.addLayout(view_bot_right_layout)
+        view_bot_layout.addLayout(view_bot_right_layout, stretch=1)
 
         #end bot layout
         self.schedule_layout.addLayout(view_bot_layout)
@@ -456,4 +470,18 @@ class SimpleTabs(QWidget):
             QMessageBox.warning(self, "Save Error", error)
 
     def handle_schedules_generated(self, schedules: list[list[CourseInstance]]) -> None:
-        self.schedules = schedules
+        if self.sc is not None:
+            self.sc.cur_schedules.load_schedules(schedules)
+            self.sc.index = 0
+            self.sc.length = len(self.sc.cur_schedules.schedules)
+
+            #show first schedule
+            self.sc.set_table()
+            self.schedule_table = self.sc.cur_table
+            self.my_scroll.setWidget(self.schedule_table)
+            self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+            self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
+
+            #save as list[list[courseinstance]]
+            self.schedules = schedules
+
