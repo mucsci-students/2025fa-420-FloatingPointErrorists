@@ -62,6 +62,9 @@ class SimpleTabs(QWidget):
         self.schedule_viewer_tab = QWidget()
         self.tabs.resize(int(screen_width * 0.25), int(screen_height * 0.25))
 
+        # Config
+        self.config = None # change this when we figure it out
+
         # TabBar Stylesheet
         self.setStyleSheet('''
         QTabWidget::tab-bar {
@@ -326,7 +329,7 @@ class SimpleTabs(QWidget):
             pass # REPLACE WITH WHATEVER METHOD UPDATES VIEWER
 
         # GENERATOR
-        setup_generator_tab(self, None, handle_generated_schedules)
+        setup_generator_tab(self, handle_generated_schedules)
         # GENERATOR END
 
     def handleButton(self) -> None:
