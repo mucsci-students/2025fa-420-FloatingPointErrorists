@@ -134,19 +134,18 @@ class SimpleTabs(QWidget):
                 if not self.course_controller:
                     self.editor_content_area.addWidget(self.config_prompt)
                 else:
-                    self.course_gui = CourseEditorGUI(self.course_controller)
-                    self.editor_content_area.addWidget(self.course_gui)
+                    self.editor_content_area.addWidget(self.course_controller.view)
             elif selected == 'Room/Lab':
                 if not self.room_controller:
                     self.editor_content_area.addWidget(self.config_prompt)
                 else:
-                    self.editor_content_area.addWidget(self.room_controller.room_view)
+                    self.editor_content_area.addWidget(self.room_controller.view)
             elif selected == 'Faculty':
                 if not self.faculty_controller:
                     self.editor_content_area.addWidget(self.config_prompt)
                 else:
-                    self.faculty_gui = FacultyEditorGui(self.faculty_controller)
-                    self.editor_content_area.addWidget(self.faculty_gui)
+                    # self.faculty_gui = FacultyEditorGui(self.faculty_controller)
+                    self.editor_content_area.addWidget(self.faculty_controller.view)
 
         self.editor_combo_box.currentTextChanged.connect(on_editor_selection_change)
 
@@ -470,7 +469,7 @@ class SimpleTabs(QWidget):
                 self.faculty_gui = FacultyEditorGui(self.faculty_controller)
                 self.editor_content_area.addWidget(self.faculty_gui)
             elif self.editor_combo_box.currentText() == "Room/Lab":
-                self.editor_content_area.addWidget(self.room_controller.room_view)
+                self.editor_content_area.addWidget(self.room_controller.view)
             else:
                 self.course_gui = CourseEditorGUI(self.course_controller)
                 self.editor_content_area.addWidget(self.course_gui)

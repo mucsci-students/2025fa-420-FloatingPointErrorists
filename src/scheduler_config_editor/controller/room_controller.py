@@ -6,24 +6,25 @@ class RoomEditorController:
     def __init__(self, json_config: JsonConfig) -> None:
         from scheduler_config_editor.view.room_editor_gui import RoomEditorGui
         self.json_config = json_config
-        self.room_view = RoomEditorGui(self)
-        self.refresh_lists()
+        self.view = RoomEditorGui(self)
+        self.populate_lists()
+        self.view.repaint()
 
-    def refresh_lists(self) -> None:
-        self.room_view.room_list.clear()
-        self.room_view.lab_list.clear()
+    def populate_lists(self) -> None:
+        self.view.room_list.clear()
+        self.view.lab_list.clear()
         for i, room in enumerate (self.json_config.scheduler_config.rooms):
-            self.room_view.room_list.addItem(self.json_config.scheduler_config.rooms[i])
+            self.view.room_list.addItem(self.json_config.scheduler_config.rooms[i])
 
         for i, lab in enumerate (self.json_config.scheduler_config.labs):
-            self.room_view.lab_list.addItem(self.json_config.scheduler_config.labs[i])
+            self.view.lab_list.addItem(self.json_config.scheduler_config.labs[i])
 
 
     def show_editor(self, item: QListWidgetItem, group: str) -> None:
         editor_box = self.get_editor(item, group)
 
         # clear previous editor content
-        container_layout = self.room_view.editor_container.layout()
+        container_layout = self.view.editor_container.layout()
         if container_layout is not None:
             while container_layout.count() > 0:
                 layout_item = container_layout.takeAt(0)
@@ -36,11 +37,11 @@ class RoomEditorController:
             # add new editor content
             container_layout.addWidget(editor_box)
 
-        self.room_view.editor_container.setTitle(f"{group} Editor")
-        self.room_view.editor_container.show()
+        self.view.editor_container.setTitle(f"{group} Editor")
+        self.view.editor_container.show()
 
     def get_editor(self, item: QListWidgetItem, group: str) -> QWidget:
-        editor_widget = QWidget(parent=self.room_view.editor_container)
+        editor_widget = QWidget(parent=self.view.editor_container)
         editor_layout = QVBoxLayout()
         editor_widget.setLayout(editor_layout)
 
@@ -66,7 +67,7 @@ class RoomEditorController:
         def save() -> None:
             self.write_out(editor_textbox.toPlainText(), name, group)
             self.refresh_lists()
-            self.room_view.editor_container.setHidden(True)
+            self.view.editor_container.setHidden(True)
 
         editor_save_button = QPushButton("Save")
         editor_save_button.clicked.connect(save)
@@ -96,13 +97,13 @@ class RoomEditorController:
                     self.show_error(group, e)
 
             self.refresh_lists()
-            self.room_view.editor_container.setHidden(True)
+            self.view.editor_container.setHidden(True)
 
         editor_del_button.clicked.connect(delete)
 
         def cancel() -> None:
             self.refresh_lists()
-            self.room_view.editor_container.setHidden(True)
+            self.view.editor_container.setHidden(True)
 
         editor_cancel_button = QPushButton("Cancel")
         editor_cancel_button.clicked.connect(cancel)
