@@ -3,11 +3,15 @@ from PyQt6.QtWidgets import (
     QApplication, QLabel, QWidget, QLineEdit, QPushButton,
     QVBoxLayout, QHBoxLayout, QTabWidget, QMainWindow,
     QCheckBox, QComboBox, QFileDialog, QGridLayout,
-    QScrollArea, QMessageBox
+    QScrollArea, QTableWidget, QMessageBox
 )
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 from scheduler.models import CourseInstance
+
+from scheduler_config_editor.controller.course_editor_controller import CourseEditorController
+from scheduler_config_editor.controller.generator_controller import GeneratorController
+from scheduler_config_editor.view.generator_gui import GeneratorGui
 
 sys.path.append('../controller')
 from scheduler_config_editor.controller.testing import ModClass
@@ -65,7 +69,6 @@ class SimpleTabs(QWidget):
         screen_width = screen_geometry.width()
         screen_height = screen_geometry.height()
 
-
         self.layout = QVBoxLayout(self)
 
         # Initialize Tabs
@@ -76,7 +79,8 @@ class SimpleTabs(QWidget):
         self.tabs.resize(int(screen_width * 0.25), int(screen_height * 0.25))
 
         # Config
-        self.config = None # change this when we figure it out
+        self.config: JsonConfig = None
+        self.schedules: list[list[CourseInstance]]
 
         # TabBar Stylesheet
         self.setStyleSheet('''
@@ -94,12 +98,13 @@ class SimpleTabs(QWidget):
         self.editor_tab.layout = QGridLayout()
         self.editor_tab.setLayout(self.editor_tab.layout)
 
+        self.generator_tab.layout = QVBoxLayout()
+        self.generator_tab.setLayout(self.generator_tab.layout)
+
         # Dropdown code
         self.editor_combo_box = QComboBox()
         self.editor_combo_box.addItems(['Course', 'Room/Lab', 'Faculty'])
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
-
-        self.course_editor_window = CourseEditorGUI()
 
         # Creates a container for the editor content
         self.editor_content_area = QVBoxLayout(self)
@@ -116,6 +121,19 @@ class SimpleTabs(QWidget):
         self.faculty_controller = None
         self.faculty_gui = None
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        # Course placeholders
+        self.course_controller = None
+        self.course_gui = None
+
+        # Generator placeholders
+        self.generator_controller = GeneratorController(self.config)
+        self.generator_gui = self.generator_controller.view
+
+        self.generator_controller.on_schedules_generated = self.handle_schedules_generated
+
+        # Add the generator_gui into the generator_tab's layout
+        self.generator_tab.layout.addWidget(self.generator_gui)
 
         # When dropdown changes
         def on_editor_selection_change() -> None:
@@ -171,7 +189,7 @@ class SimpleTabs(QWidget):
 
 # Schedule Viewer Tab #########################################################################################
         
-        sc = SchedulerController()
+        self.sc = SchedulerController()
 
         def set_schedule_label(text: str) -> None:
             self.schedule_viewer_label.setText(text)
@@ -188,10 +206,13 @@ class SimpleTabs(QWidget):
         #add view_by_courses button
         def view_by_courses() -> None:
             try:
-                sc.mode = 0
-                self.schedule_viewer_label.setText(sc.get_format())
+                self.sc.mode = 0
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
             except:
-                self.schedule_viewer_label.setText("""Schedule by course will be shown here""")    
+                self.schedule_viewer_label.setText("""Schedule by course will be shown here""")
+                self.my_scroll.setWidget(self.schedule_viewer_label)
 
         self.schedule_viewer_button = QPushButton("Courses")
         self.schedule_viewer_button.clicked.connect(view_by_courses)
@@ -200,10 +221,13 @@ class SimpleTabs(QWidget):
         #add view_by_faulty button
         def view_by_faulty() -> None:
             try:
-                sc.mode = 1
-                self.schedule_viewer_label.setText(sc.get_format())
+                self.sc.mode = 1
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
             except:
-                set_schedule_label("""Schedule by faculty will be shown here""")    
+                set_schedule_label("""Schedule by faculty will be shown here""")
+                self.my_scroll.setWidget(self.schedule_viewer_label) 
 
         self.schedule_viewer_button = QPushButton("Faculty")
         self.schedule_viewer_button.clicked.connect(view_by_faulty)
@@ -212,10 +236,13 @@ class SimpleTabs(QWidget):
         #add view_by_room button
         def view_by_room() -> None:
             try:
-                sc.mode = 2
-                self.schedule_viewer_label.setText(sc.get_format())
+                self.sc.mode = 2
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
             except:
-                set_schedule_label("""Schedule by room will be shown here""")    
+                set_schedule_label("""Schedule by room will be shown here""")
+                self.my_scroll.setWidget(self.schedule_viewer_label)
 
         self.schedule_viewer_button = QPushButton("Room")
         self.schedule_viewer_button.clicked.connect(view_by_room)
@@ -226,9 +253,32 @@ class SimpleTabs(QWidget):
         def popoutwindow() -> None:
             self.nw.show()
             try:
-                self.nw.widget.schedule.setText(sc.get_format())
+                #Copies schedule_table into new window's my_table
+                new_table = QTableWidget()
+                new_table.setRowCount(self.schedule_table.rowCount())
+                new_table.setColumnCount(self.schedule_table.columnCount())
+
+                if self.sc.mode == 0:
+                    new_table.setColumnCount(5)
+                    new_table.setHorizontalHeaderLabels(["Course", "Faculty", "Room", "Lab", "Times"])
+                elif self.sc.mode == 1:
+                    new_table.setColumnCount(8)
+                    new_table.setHorizontalHeaderLabels(["Faculty", "Course", "Room (Lab)", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+                else:
+                    new_table.setColumnCount(8)
+                    new_table.setHorizontalHeaderLabels(["Room", "Course", "Faculty", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+
+                for i in range(self.schedule_table.rowCount()):
+                    for j in range(self.schedule_table.columnCount()):
+                        item = self.schedule_table.item(i, j)
+                        if item:
+                            new_table.setItem(i, j, item.clone())
+
+                self.nw.widget.my_table = new_table
+                self.nw.widget.scroll_area_w.setWidget(new_table)
+
             except:
-                self.nw.widget.schedule.setText("""Schedule Not Selected""")    
+                QMessageBox.warning(self, "Error", "No Schedule Loaded")  
 
         self.schedule_viewer_button = QPushButton("Popout Window")
         self.schedule_viewer_button.clicked.connect(popoutwindow)
@@ -251,15 +301,24 @@ class SimpleTabs(QWidget):
         set_schedule_label("""Schedule by course will be shown here""")    
         self.my_scroll.setWidget(self.schedule_viewer_label)
 
+        #table
+        self.schedule_table = QTableWidget()
+
         #add bot layout
         view_bot_layout = QHBoxLayout()
-        view_bot_layout.addStretch()
+        view_bot_layout.addStretch(7)
 
         #add prev_schedule button
         def schedule_back() -> None:
-            sc.previous_schedule()
-            self.schedule_viewer_label.setText(sc.get_format())
-            self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+            try:
+                self.sc.previous_schedule()
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
+            except:
+                QMessageBox.warning(self, "Error", "No Schedule Loaded")
+
 
         self.schedule_viewer_button = QPushButton("<--")
         self.schedule_viewer_button.clicked.connect(schedule_back)
@@ -275,17 +334,19 @@ class SimpleTabs(QWidget):
             try:
                 newIndex = int(i)
                 if newIndex < 1:
-                    sc.index = 0
-                elif newIndex > sc.length:
-                    sc.index = sc.length - 1
+                    self.sc.index = 0
+                elif newIndex > self.sc.length:
+                    self.sc.index = self.sc.length - 1
                 else:
-                    sc.index = newIndex - 1
+                    self.sc.index = newIndex - 1
 
-                self.schedule_viewer_label.setText(sc.get_format())
-                self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
 
             except:
-                pass
+                QMessageBox.warning(self, "Error", "No schedule loaded or non valid integer.")
                     
         self.schedule_viewer_index = QLineEdit()
         self.schedule_viewer_index.setPlaceholderText("x")
@@ -302,33 +363,51 @@ class SimpleTabs(QWidget):
 
         #add next_schedule button
         def schedule_forward() -> None:
-            sc.next_schedule()
-            self.schedule_viewer_label.setText(sc.get_format())
-            self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
+            try:
+                self.sc.next_schedule()
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
+            except:
+                QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
         self.schedule_viewer_button = QPushButton("-->")
         self.schedule_viewer_button.clicked.connect(schedule_forward)
         view_bot_layout.addWidget(self.schedule_viewer_button)
 
         #push next widgets to right
-        view_bot_layout.addStretch()
+        view_bot_layout.addStretch(6)
 
         #bot_right sub layout
         view_bot_right_layout = QVBoxLayout()
         view_bot_right_layout.addStretch()
 
         #add checkboxs
-        checkbox1 = QCheckBox('json')
-        view_bot_right_layout.addWidget(checkbox1)
-        checkbox2 = QCheckBox('csv')
-        view_bot_right_layout.addWidget(checkbox2)
+        self.checkboxjson = QCheckBox('json')
+        view_bot_right_layout.addWidget(self.checkboxjson)
+        self.checkboxcsv = QCheckBox('csv')
+        view_bot_right_layout.addWidget(self.checkboxcsv)
+
+        #add filename lineedit
+        self.schedule_viewer_filename = QLineEdit()
+        self.schedule_viewer_filename.setPlaceholderText("Filename")
+        self.schedule_viewer_filename.setAlignment(Qt.AlignmentFlag.AlignRight)
+        view_bot_right_layout.addWidget(self.schedule_viewer_filename)
 
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
-            if checkbox1.isChecked():
-                pass # SAVE AS JSON HERE
-            if checkbox2.isChecked():
-                pass # SAVE AS CSV HERE
+            if self.schedules != []:
+                try:
+                    if self.checkboxjson.isChecked():
+                        self.sc.save_as_json(self.schedules, self.schedule_viewer_filename.text())
+                    if self.checkboxcsv.isChecked():
+                        self.sc.save_as_csv(self.schedules, self.schedule_viewer_filename.text())
+                    QMessageBox.information(self, "Information", "Save Complete.")
+                except:
+                    QMessageBox.warning(self, "Error", "You trying to save a non generated schedule.")
+            else:
+                QMessageBox.warning(self, "Error", "No or empty generated schedule")
 
         self.schedule_viewer_button = QPushButton("Save")
         self.schedule_viewer_button.clicked.connect(save_button) 
@@ -339,20 +418,25 @@ class SimpleTabs(QWidget):
 
             #open a file dialog to select file
             try:
-                test = QFileDialog.getOpenFileName(
+                my_file = QFileDialog.getOpenFileName(
                     self,
                     'Open file',
                     'schedules',
                     'All Files (*);; JSON files (*.json);; CSV files (*.csv)')
-                sc.cur_schedules.import_schedules(test[0])
-                sc.length = len(sc.cur_schedules.schedules)
+                self.sc.cur_schedules.import_schedules(my_file[0])
+                self.sc.length = len(self.sc.cur_schedules.schedules)
+
+                #reset generated schedule if any
+                self.schedules = None
 
                 #show first schedule
-                self.schedule_viewer_label.setText(sc.get_format())
-                self.schedule_viewer_index.setPlaceholderText(str(sc.index + 1))
-                self.schedule_viewer_label_len.setText("/" + str(sc.length))
+                self.sc.set_table()
+                self.schedule_table = self.sc.cur_table
+                self.my_scroll.setWidget(self.schedule_table)
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
+                self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
             except:
-                pass
+                QMessageBox.warning(self, "Error", "Invalid File, No File loaded.")
         
         self.schedule_viewer_button = QPushButton("Load")
         self.schedule_viewer_button.clicked.connect(load_button) 
@@ -360,7 +444,7 @@ class SimpleTabs(QWidget):
 
         #end bot right sub layout
         view_bot_right_layout.addStretch()
-        view_bot_layout.addLayout(view_bot_right_layout)
+        view_bot_layout.addLayout(view_bot_right_layout, stretch=1)
 
         #end bot layout
         self.schedule_layout.addLayout(view_bot_layout)
@@ -371,13 +455,6 @@ class SimpleTabs(QWidget):
        
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
-
-        def handle_generated_schedules(schedules: list[list[CourseInstance]]) -> None:
-            pass # REPLACE WITH WHATEVER METHOD UPDATES VIEWER
-
-        # GENERATOR
-        setup_generator_tab(self, handle_generated_schedules)
-        # GENERATOR END
 
     def handleButton(self) -> None:
         self.modifier = ModClass(self)
@@ -396,6 +473,9 @@ class SimpleTabs(QWidget):
             self.config = JsonConfig(config_path)
             QMessageBox.information(self, "Config Loaded", "Successfully loaded config")
             self.faculty_controller = FacultyEditorController(self.config)
+            self.course_controller = CourseEditorController(self.config)
+            self.generator_controller.update_config(self.config)
+            self.generator_gui.update_config(self.config)
             self.room_controller = RoomEditorController(self.config)
             
 
@@ -421,7 +501,7 @@ class SimpleTabs(QWidget):
                         widget.setParent(None)
                 self.editor_content_area.addWidget(self.room_controller.room_view)
         except Exception as error:
-                QMessageBox.warning(self, "Load Error", error)
+                QMessageBox.critical(self, "Load Error", str(error))
 
     # Saves config file
     def save_config(self) -> None:
@@ -430,6 +510,24 @@ class SimpleTabs(QWidget):
                 return
         try:
             self.config.save()
+            self.generator_controller.update_config(self.config)
             QMessageBox.information(self, "Config Saved", "Config saved successfully")
         except Exception as error:
-            QMessageBox.warning(self, "Save Error", error)
+            QMessageBox.critical(self, "Save Error", str(error))
+
+    def handle_schedules_generated(self, schedules: list[list[CourseInstance]]) -> None:
+        if self.sc is not None:
+            self.sc.cur_schedules.load_schedules(schedules)
+            self.sc.index = 0
+            self.sc.length = len(self.sc.cur_schedules.schedules)
+
+            #show first schedule
+            self.sc.set_table()
+            self.schedule_table = self.sc.cur_table
+            self.my_scroll.setWidget(self.schedule_table)
+            self.schedule_viewer_index.setText(str(self.sc.index + 1))
+            self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
+
+            #save as list[list[courseinstance]]
+            self.schedules = schedules
+
