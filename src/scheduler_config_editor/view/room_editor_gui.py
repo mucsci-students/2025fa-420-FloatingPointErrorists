@@ -6,7 +6,7 @@ from PyQt6.QtCore import Qt
 import scheduler_config_editor
 from scheduler_config_editor.model import Room, Lab, JsonConfig
 
-class RoomEditorGui(QMainWindow):
+class RoomEditorGui(QWidget):
     ROOM = "Room"
     LAB = "Lab"
 
@@ -17,10 +17,7 @@ class RoomEditorGui(QMainWindow):
         self.json_config = controller.json_config
 
         # Layout Stuff
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        self.my_layout = QVBoxLayout()
-        central_widget.setLayout(self.my_layout)
+        self.my_layout = QVBoxLayout(self)
         
         # Changes title
         self.title = QLabel("Room and Lab Editor")
@@ -56,3 +53,9 @@ class RoomEditorGui(QMainWindow):
 
         self.my_layout.addWidget(room_group_box)
         self.my_layout.addWidget(lab_group_box)
+
+        # Add a groupbox for the editor
+        self.editor_container = QGroupBox("Editor")
+        self.editor_container.setLayout(QVBoxLayout())
+        self.my_layout.addWidget(self.editor_container)
+        self.editor_container.setHidden(True)

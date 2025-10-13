@@ -16,6 +16,8 @@ class Room:
     @staticmethod
     def mod_room(json_config: JsonConfig, room: str, new_room: str) -> None:
         """Takes in the name of an existing room and changes it to the new room"""
+        if json_config.scheduler_config.rooms.count(new_room) == 1:
+            raise Room.RoomExistsError(f"Room {new_room} already exists.")
         try:
             json_config.scheduler_config.rooms[json_config.scheduler_config.rooms.index(room)] = new_room
             for course in json_config.scheduler_config.courses:

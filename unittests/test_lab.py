@@ -70,3 +70,16 @@ def test_lab_mod_ne() -> None:
     except Lab.LabMissingError:
         assert True
 
+def test_lab_mod_dupe() -> None:
+    runner = CliRunner()
+    obj = {}
+    runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
+    jsonObj = obj[CONFIG_KEY]
+    Lab.add_lab(jsonObj, "New Lab")
+    Lab.add_lab(jsonObj, "Test Lab")
+    try:
+        Lab.mod_lab(jsonObj, "Test Lab", "New Lab")
+        assert False
+    except Lab.LabExistsError:
+        assert True
+
