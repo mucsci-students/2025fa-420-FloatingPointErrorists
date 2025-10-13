@@ -1,5 +1,6 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QLineEdit, QWidget, QLineEdit, QPushButton, QComboBox, QGridLayout, QVBoxLayout, QTabWidget, QMainWindow
+from PyQt6.QtWidgets import QApplication, QLineEdit, QWidget, QLineEdit, QPushButton, QComboBox, QGridLayout, \
+    QVBoxLayout, QTabWidget, QMainWindow, QLabel, QHBoxLayout, QListWidget, QListWidgetItem, QFormLayout, QScrollArea
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 
@@ -7,98 +8,214 @@ from scheduler_config_editor.model.json import JsonConfig
 from scheduler_config_editor.model.courses import Course
 
 
-class CourseEditorGUI(QMainWindow):
+class CourseEditorGUI(QWidget):
     """
-    A visual display of courses that allows users to edit the config
+    A visual display of courses that allows users to edit the courses
     """
-    def __init__(self)  -> None:
+    def __init__(self, controller)  -> None:
         super().__init__()
+        self.controller = controller
+        self.json_config = controller.json_config
+        self.open_editing_window: list[QWidget] = []
+
+        # Layout Stuff
+        self.main_layout = QVBoxLayout(self)
 
         # Grabbing dimensions of user's primary screen
         screen = QGuiApplication.primaryScreen()
-        screen_geometry = screen.availableGeometry()
-        screen_width = screen_geometry.width()
-        screen_height = screen_geometry.height()
-        
-        # Set window title and size
-        self.setWindowTitle("Course Editor")
+        if screen is not None:
+            screen_geometry = screen.availableGeometry()
+            screen_width = screen_geometry.width()
+            screen_height = screen_geometry.height()
+        else:
+            screen_width = 1920
+            screen_height = 1080
         self.resize(int(screen_width * 0.5), int(screen_height * 0.5))
+        
+        # Set window title
+        self.title = QLabel("Course Editor")
+        self.main_layout.addWidget(self.title)
 
-        # Centering the tabs widget
-        self.courses_widget = CoursesEditorWidget(self)
-        self.setCentralWidget(self.courses_widget)
+        # Makes and places add button in the top right
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        self.add_button = QPushButton("Add Course")
+        button_layout.addWidget(self.add_button)
+        self.main_layout.addLayout(button_layout)
+
+        # Creating list of clickable courses and populating it
+        self.list = QListWidget(self)
+        self.main_layout.addWidget(self.list)
+
+        for i, course in enumerate (self.json_config.scheduler_config.courses):
+            item_text = f"{course.course_id} - {i}"
+            item = QListWidgetItem(item_text)
+            item.setData(Qt.ItemDataRole.UserRole, course)
+            item.setData(Qt.ItemDataRole.UserRole + 1, i)
+            self.list.addItem(item)
+
+        # Connecting Buttons
+        self.add_button.clicked.connect(self.controller.open_add_course_window)
+        self.list.itemClicked.connect(self.controller.open_edit_course_window)
 
 class CoursesEditorWidget(QWidget):
-        def __init__(self, parent) -> None:
-            super(QWidget, self).__init__(parent)
+        def __init__(self, controller, course_data=None, index=None, parent=None) -> None:
+            super().__init__()
+            self.controller = controller
+            self.json_config = controller.json_config
+            self.course_data = course_data
+            self.parent = parent
+            self.index = index
 
+            if getattr(self.course_data, "course_id", None):
+                self.setWindowTitle("Edit Course: " + self.course_data.course_id)
+                for i, course in enumerate(self.json_config.scheduler_config.courses):
+                    if self.json_config.scheduler_config.courses[i].course_id == self.course_data.course_id:
+                        index = i
+                        break
+                self.course_data = self.json_config.scheduler_config.courses[index]
+                self.course_id = self.course_data.course_id
+            else:
+                self.setWindowTitle("Add New Course")
+                self.faculty_data = None
+                self.course_id = "Course ID"
             self.courses_widget = QWidget()
 
-            self.layout = QGridLayout(self)
+            # Grabbing dimensions of user's primary screen
+            screen = QGuiApplication.primaryScreen()
+            if screen is not None:
+                screen_geometry = screen.availableGeometry()
+                screen_width = screen_geometry.width()
+                screen_height = screen_geometry.height()
+            else:
+                screen_width = 1920
+                screen_height = 1080
+            self.resize(int(screen_width * 0.5), int(screen_height * 0.5))
 
-            self.courses_widget.layout = QGridLayout(self)
-            self.courses_widget.setLayout(self.courses_widget.layout)
+            # Layout
+            self.main_layout = QVBoxLayout(self)
 
-             # course id
-             # credits
-             # room
-             # lab
-             # conflicts
-             # faculty
+            # Space to edit course id and credits
+            top_layout = QHBoxLayout()
+            top_layout.addWidget(QLabel("Course ID:"))
             self.course_id_line_edit = QLineEdit(self)
-            self.course_id_line_edit.setPlaceholderText("Enter Course ID Here")
+            if self.course_data:
+                self.course_id_line_edit.setText(self.course_id)
+            else:
+                self.course_id_line_edit.setPlaceholderText("Enter Course ID Here")
+            top_layout.addWidget(self.course_id_line_edit)
+
+            top_layout.addWidget(QLabel("Credits:"))
             self.course_credits_line_edit = QLineEdit(self)
-            self.course_credits_line_edit.setPlaceholderText("Enter Credits") 
-            self.course_room_line_edit = QLineEdit(self)
-            self.course_room_line_edit.setPlaceholderText("Enter Room")
-            self.course_lab_line_edit = QLineEdit(self)
-            self.course_lab_line_edit.setPlaceholderText("Enter Lab")
-            self.course_conflicts_line_edit = QLineEdit(self)
-            self.course_conflicts_line_edit.setPlaceholderText("Enter Course Conflict")
-            self.course_faculty_line_edit = QLineEdit(self)
-            self.course_faculty_line_edit.setPlaceholderText("Enter Faculty")
-            self.course_index_line_edit = QLineEdit(self)
-            self.course_index_line_edit.setPlaceholderText("Enter Index")
+            if self.course_data:
+                self.course_credits_line_edit.setText(str(self.course_data.credits))
+            else:
+                self.course_credits_line_edit.setPlaceholderText("Enter Credits")
+            top_layout.addWidget(self.course_credits_line_edit)
+            self.main_layout.addLayout(top_layout)
 
-            self.courses_widget.layout.addWidget(self.course_id_line_edit, 0, 0)
-            self.courses_widget.layout.addWidget(self.course_credits_line_edit, 0, 1)
-            self.courses_widget.layout.addWidget(self.course_room_line_edit, 1, 0)
-            self.courses_widget.layout.addWidget(self.course_lab_line_edit, 1, 1)
-            self.courses_widget.layout.addWidget(self.course_conflicts_line_edit, 2, 0)
-            self.courses_widget.layout.addWidget(self.course_faculty_line_edit, 2, 1)
-            self.courses_widget.layout.addWidget(self.course_index_line_edit, 3, 0)
+            scroll_area = QScrollArea()
+            scroll_area.setWidgetResizable(True)
+            scroll_content = QWidget()
+            scroll_layout = QHBoxLayout(scroll_content)
 
-            self.save_button = QPushButton("Save Course")
-            self.delete_button = QPushButton("Delete Course")
-            self.courses_widget.layout.addWidget(self.save_button, 4, 0)
-            self.courses_widget.layout.addWidget(self.delete_button, 4, 1)
+            # Space to choose acceptable rooms
+            self.room_layout = QVBoxLayout()
+            self.room_layout.addWidget(QLabel("Choose Room(s):"))
+            self.room_list = QListWidget(self)
+            self.room_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
+            for i, rooms in enumerate(self.json_config.scheduler_config.rooms):
+                room = QListWidgetItem(self.json_config.scheduler_config.rooms[i])
+                self.room_list.addItem(room)
+            self.room_layout.addWidget(self.room_list)
+            scroll_layout.addLayout(self.room_layout)
 
-            self.save_button.clicked.connect(self.save_course)
-            self.delete_button.clicked.connect(self.delete_course)
+            # Space to choose acceptable labs
+            self.lab_layout = QVBoxLayout()
+            self.lab_layout.addWidget(QLabel("Choose Lab(s):"))
+            self.lab_list = QListWidget(self)
+            self.lab_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
+            for i, labs in enumerate(self.json_config.scheduler_config.labs):
+                lab = QListWidgetItem(self.json_config.scheduler_config.labs[i])
+                self.lab_list.addItem(lab)
+            self.lab_layout.addWidget(self.lab_list)
+            scroll_layout.addLayout(self.lab_layout)
 
-            self.layout.addWidget(self.courses_widget)
-            self.setLayout(self.layout)
+            # Space to choose course conflicts
+            self.course_conflict_layout = QVBoxLayout()
+            self.course_conflict_layout.addWidget(QLabel("Choose Course Conflict(s):"))
+            self.course_conflicts_list = QListWidget(self)
+            self.course_conflicts_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
+            for i, courses in enumerate(self.json_config.scheduler_config.courses):
+                course = QListWidgetItem(self.json_config.scheduler_config.courses[i].course_id)
+                self.course_conflicts_list.addItem(course)
+            self.course_conflict_layout.addWidget(self.course_conflicts_list)
+            scroll_layout.addLayout(self.course_conflict_layout)
 
-            self.course_id = self.course_id_line_edit.text()
-            self.credits = self.course_credits_line_edit.text()
-            self.room = self.course_room_line_edit.text()
-            self.lab = self.course_lab_line_edit.text()
-            self.conflicts = self.course_conflicts_line_edit.text()
-            self.index = self.course_index_line_edit.text()
+            # Space to choose faculty available
+            self.faculty_layout = QVBoxLayout()
+            self.faculty_layout.addWidget(QLabel("Choose Faculty Member(s):"))
+            self.faculty_list = QListWidget(self)
+            self.faculty_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
+            for i, faculty in enumerate(self.json_config.scheduler_config.faculty):
+                name = QListWidgetItem(self.json_config.scheduler_config.faculty[i].name)
+                self.faculty_list.addItem(name)
+            self.faculty_layout.addWidget(self.faculty_list)
+            scroll_layout.addLayout(self.faculty_layout)
+            scroll_area.setWidget(scroll_content)
+            self.main_layout.addWidget(scroll_area)
 
-        def save_course(self):
-            #CoursesEditorWidget.mod_course( )
-            print("saved course")
-            pass
-            
-        def delete_course(self):
-            #.delete_course()
-            print("deleted course")
-            pass
+            # Preference values layout
+            self.pref_layout = QHBoxLayout()
+            self.main_layout.addLayout(self.pref_layout)
+            self.room_pref_layout = QFormLayout()
+            self.course_pref_layout = QFormLayout()
+            self.lab_pref_layout = QFormLayout()
+            self.pref_layout.addLayout(self.room_pref_layout)
+            self.pref_layout.addLayout(self.course_pref_layout)
+            self.pref_layout.addLayout(self.lab_pref_layout)
 
-"""if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    config = JsonConfig("../unittests/dummy")
-    window = CourseEditorGUI(config)
-    window.show()
-    sys.exit(app.exec())"""
+            for selection_layout in [self.pref_layout, self.course_pref_layout, self.lab_pref_layout]:
+                selection_widget = QWidget()
+                selection_widget.setLayout(selection_layout)
+                selection_widget.setLayout(selection_layout)
+                scroll_layout.addWidget(selection_widget)
+
+            scroll_area.setWidget(scroll_content)
+            self.main_layout.addWidget(scroll_area)
+
+            # Preselecting preference values if editing
+            if course_data:
+                room_keys = set(getattr(course_data, 'room', []) or [])
+                lab_keys = set(getattr(course_data, 'lab', []) or [])
+                conflict_keys = set(getattr(course_data, 'conflicts', []) or [])
+                faculty_keys = set(getattr(course_data, 'faculty', []) or [])
+                # Rooms
+                self.preselect_items(self.room_list, room_keys)
+                 # Labs
+                self.preselect_items(self.lab_list, lab_keys)
+                # Course Conflicts
+                self.preselect_items(self.course_conflicts_list, conflict_keys)
+                # Faculty
+                self.preselect_items(self.faculty_list, faculty_keys)
+
+            # Delete button in bottom left and save in bottom right
+            self.main_layout.addStretch()
+            bottom_buttons_layout = QHBoxLayout()
+            if self.course_data:
+                delete_button = QPushButton("Delete")
+                delete_button.clicked.connect(lambda: self.controller.delete_course(self))
+                bottom_buttons_layout.addWidget(delete_button)
+            bottom_buttons_layout.addStretch()
+            save_button = QPushButton("Save")
+            save_button.clicked.connect(lambda: self.controller.save_course(self))
+            bottom_buttons_layout.addWidget(save_button)
+            self.main_layout.addLayout(bottom_buttons_layout)
+
+         # Pre-selecting preferences with data already in config
+        def preselect_items(self, list_widget: QListWidget, keys: set[str]) -> None:
+            for i in range(list_widget.count()):
+                item = list_widget.item(i)
+                if item and item.text() in keys:
+                    item.setSelected(True)
+

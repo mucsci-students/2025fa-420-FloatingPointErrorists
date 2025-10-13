@@ -29,7 +29,7 @@ class FacultyEditorGui(QMainWindow):
         self.main_layout = QVBoxLayout()
         central_widget.setLayout(self.main_layout)
 
-        # Grabbing dimensions of user's primary scree
+        # Grabbing dimensions of user's primary screen
         screen = QGuiApplication.primaryScreen()
         if screen is not None:
             screen_geometry = screen.availableGeometry()
