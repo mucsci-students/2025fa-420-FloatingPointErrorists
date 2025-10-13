@@ -237,6 +237,16 @@ class SimpleTabs(QWidget):
                 new_table.setRowCount(self.schedule_table.rowCount())
                 new_table.setColumnCount(self.schedule_table.columnCount())
 
+                if self.sc.mode == 0:
+                    new_table.setColumnCount(5)
+                    new_table.setHorizontalHeaderLabels(["Course", "Faculty", "Room", "Lab", "Times"])
+                elif self.sc.mode == 1:
+                    new_table.setColumnCount(8)
+                    new_table.setHorizontalHeaderLabels(["Faculty", "Course", "Room (Lab)", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+                else:
+                    new_table.setColumnCount(8)
+                    new_table.setHorizontalHeaderLabels(["Room", "Course", "Faculty", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+
                 for i in range(self.schedule_table.rowCount()):
                     for j in range(self.schedule_table.columnCount()):
                         item = self.schedule_table.item(i, j)
@@ -247,7 +257,7 @@ class SimpleTabs(QWidget):
                 self.nw.widget.scroll_area_w.setWidget(new_table)
 
             except:
-                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?")  
+                QMessageBox.warning(self, "Error", "No Schedule Loaded")  
 
         self.schedule_viewer_button = QPushButton("Popout Window")
         self.schedule_viewer_button.clicked.connect(popoutwindow)
@@ -284,9 +294,9 @@ class SimpleTabs(QWidget):
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
             except:
-                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?")
+                QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
 
         self.schedule_viewer_button = QPushButton("<--")
@@ -312,10 +322,10 @@ class SimpleTabs(QWidget):
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
 
             except:
-                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?\nPlease use an integer")
+                QMessageBox.warning(self, "Error", "No schedule loaded or non valid integer.")
                     
         self.schedule_viewer_index = QLineEdit()
         self.schedule_viewer_index.setPlaceholderText("x")
@@ -337,9 +347,9 @@ class SimpleTabs(QWidget):
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
             except:
-                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?")
+                QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
         self.schedule_viewer_button = QPushButton("-->")
         self.schedule_viewer_button.clicked.connect(schedule_forward)
@@ -366,14 +376,17 @@ class SimpleTabs(QWidget):
 
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
-            try:
-                if self.checkboxjson.isChecked():
-                    self.sc.save_as_json(self.schedules, self.schedule_viewer_filename.text())
-                if self.checkboxcsv.isChecked():
-                    self.sc.save_as_csv(self.schedules, self.schedule_viewer_filename.text())
-                QMessageBox.information(self, "Information", "Save Complete.")
-            except:
-                QMessageBox.information(self, "Error", "Are you trying to save a non generated schedule?")
+            if self.schedules != []:
+                try:
+                    if self.checkboxjson.isChecked():
+                        self.sc.save_as_json(self.schedules, self.schedule_viewer_filename.text())
+                    if self.checkboxcsv.isChecked():
+                        self.sc.save_as_csv(self.schedules, self.schedule_viewer_filename.text())
+                    QMessageBox.information(self, "Information", "Save Complete.")
+                except:
+                    QMessageBox.warning(self, "Error", "You trying to save a non generated schedule.")
+            else:
+                QMessageBox.warning(self, "Error", "No or empty generated schedule")
 
         self.schedule_viewer_button = QPushButton("Save")
         self.schedule_viewer_button.clicked.connect(save_button) 
@@ -399,7 +412,7 @@ class SimpleTabs(QWidget):
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
                 self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
             except:
                 QMessageBox.warning(self, "Error", "Invalid File, No File loaded.")
@@ -481,7 +494,7 @@ class SimpleTabs(QWidget):
             self.sc.set_table()
             self.schedule_table = self.sc.cur_table
             self.my_scroll.setWidget(self.schedule_table)
-            self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+            self.schedule_viewer_index.setText(str(self.sc.index + 1))
             self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
 
             #save as list[list[courseinstance]]
