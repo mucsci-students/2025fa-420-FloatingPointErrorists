@@ -11,6 +11,7 @@ from PyQt6.QtGui import QGuiApplication, QScreen
 from PyQt6.QtCore import Qt
 from scheduler.models import CourseInstance
 
+from scheduler_config_editor.controller.course_editor_controller import CourseEditorController
 from scheduler_config_editor.controller.generator_controller import GeneratorController
 from scheduler_config_editor.view.generator_gui import GeneratorGui
 
@@ -22,6 +23,8 @@ from scheduler_config_editor.view.schedule_window import newWindow
 from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
 from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
+from scheduler_config_editor.view.room_editor_gui import RoomEditorGui
+from scheduler_config_editor.controller.room_controller import RoomEditorController
 from scheduler_config_editor.view.schedule_window import newWindow
 
 import scheduler_config_editor
@@ -111,16 +114,25 @@ class SimpleTabs(QWidget):
         self.editor_combo_box.addItems(['Course', 'Room', 'Lab', 'Faculty'])
         editor_layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
-        self.course_editor_window = CourseEditorGUI()
-
         # Creates a container for the editor content
         self.editor_content_area = QVBoxLayout(self)
         editor_layout.addLayout(self.editor_content_area, 1, 0, 1, 2)
+
+        # Prompt to load a config json
+        self.config_prompt = QLabel ("Please load a config file first.")
+        self.editor_content_area.addWidget(self.config_prompt)
+
+        # Room and Lab placeholder
+        self.room_controller = None
 
         # Faculty placeholders
         self.faculty_controller: FacultyEditorController
         self.faculty_gui: FacultyEditorGui
         editor_layout.addWidget(self.editor_combo_box, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        # Course placeholders
+        self.course_controller = None
+        self.course_gui = None
 
         # Generator placeholders
         self.generator_controller = GeneratorController(self.config)
@@ -142,18 +154,26 @@ class SimpleTabs(QWidget):
             selected = self.editor_combo_box.currentText()
 
             if selected == 'Course':
-                self.course_gui = CourseEditorGUI()
-                self.editor_content_area.addWidget(self.course_gui)
-            elif selected == 'Room':
-                label = QLabel('Room Editor Placeholder')
-                self.editor_content_area.addWidget(label)
-            elif selected == 'Lab':
-                label = QLabel('Lab Editor Placeholder')
-                self.editor_content_area.addWidget(label)
+                if not self.config:
+                    # config_prompt = QLabel ("Please load a config file first.")
+                    self.editor_content_area.addWidget(self.config_prompt)
+                else:
+                    self.course_gui = CourseEditorGUI()
+                    self.editor_content_area.addWidget(self.course_gui)
+            elif selected == 'Room/Lab':
+                if not self.config:
+                    # config_prompt = QLabel ("Please load a config file first.")
+                    self.editor_content_area.addWidget(self.config_prompt)
+                else:
+                    # label = QLabel('Room Editor Placeholder')
+                    self.editor_content_area.addWidget(self.room_controller.room_view)
+            # elif selected == 'Lab':
+            #     label = QLabel('Lab Editor Placeholder')
+            #     self.editor_content_area.addWidget(label)
             elif selected == 'Faculty':
                 if not self.faculty_controller:
-                    label = QLabel ("Please load a config file first.")
-                    self.editor_content_area.addWidget(label)
+                    # config_prompt = QLabel ("Please load a config file first.")
+                    self.editor_content_area.addWidget(self.config_prompt)
                 else:
                     self.faculty_gui = FacultyEditorGui(self.faculty_controller)
                     self.editor_content_area.addWidget(self.faculty_gui)
@@ -246,6 +266,16 @@ class SimpleTabs(QWidget):
                 new_table.setRowCount(self.schedule_table.rowCount())
                 new_table.setColumnCount(self.schedule_table.columnCount())
 
+                if self.sc.mode == 0:
+                    new_table.setColumnCount(5)
+                    new_table.setHorizontalHeaderLabels(["Course", "Faculty", "Room", "Lab", "Times"])
+                elif self.sc.mode == 1:
+                    new_table.setColumnCount(8)
+                    new_table.setHorizontalHeaderLabels(["Faculty", "Course", "Room (Lab)", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+                else:
+                    new_table.setColumnCount(8)
+                    new_table.setHorizontalHeaderLabels(["Room", "Course", "Faculty", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+
                 for i in range(self.schedule_table.rowCount()):
                     for j in range(self.schedule_table.columnCount()):
                         item = self.schedule_table.item(i, j)
@@ -293,9 +323,9 @@ class SimpleTabs(QWidget):
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
             except:
-                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?")
+                QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
 
         self.schedule_viewer_button = QPushButton("<--")
@@ -321,10 +351,10 @@ class SimpleTabs(QWidget):
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
 
             except:
-                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?\nPlease use an integer")
+                QMessageBox.warning(self, "Error", "No schedule loaded or non valid integer.")
                     
         self.schedule_viewer_index = QLineEdit()
         self.schedule_viewer_index.setPlaceholderText("x")
@@ -346,9 +376,9 @@ class SimpleTabs(QWidget):
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
             except:
-                QMessageBox.warning(self, "Error", "Is a Schedule Loaded?")
+                QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
         self.schedule_viewer_button = QPushButton("-->")
         self.schedule_viewer_button.clicked.connect(schedule_forward)
@@ -375,14 +405,17 @@ class SimpleTabs(QWidget):
 
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
-            try:
-                if self.checkboxjson.isChecked():
-                    self.sc.save_as_json(self.schedules, self.schedule_viewer_filename.text())
-                if self.checkboxcsv.isChecked():
-                    self.sc.save_as_csv(self.schedules, self.schedule_viewer_filename.text())
-                QMessageBox.information(self, "Information", "Save Complete.")
-            except:
-                QMessageBox.information(self, "Error", "Are you trying to save a non generated schedule?")
+            if self.schedules != []:
+                try:
+                    if self.checkboxjson.isChecked():
+                        self.sc.save_as_json(self.schedules, self.schedule_viewer_filename.text())
+                    if self.checkboxcsv.isChecked():
+                        self.sc.save_as_csv(self.schedules, self.schedule_viewer_filename.text())
+                    QMessageBox.information(self, "Information", "Save Complete.")
+                except:
+                    QMessageBox.warning(self, "Error", "You trying to save a non generated schedule.")
+            else:
+                QMessageBox.warning(self, "Error", "No or empty generated schedule")
 
         self.schedule_viewer_button = QPushButton("Save")
         self.schedule_viewer_button.clicked.connect(save_button) 
@@ -408,7 +441,7 @@ class SimpleTabs(QWidget):
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-                self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+                self.schedule_viewer_index.setText(str(self.sc.index + 1))
                 self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
             except:
                 QMessageBox.warning(self, "Error", "Invalid File, No File loaded.")
@@ -444,8 +477,11 @@ class SimpleTabs(QWidget):
             self.config = JsonConfig(config_path)
             QMessageBox.information(self, "Config Loaded", "Successfully loaded config")
             self.faculty_controller = FacultyEditorController(self.config)
+            self.course_controller = CourseEditorController(self.config)
             self.generator_controller.update_config(self.config)
             self.generator_gui.update_config(self.config)
+            self.room_controller = RoomEditorController(self.config)
+            
 
             # Enables save button
             self.save_config_button.setEnabled(True)
@@ -460,7 +496,14 @@ class SimpleTabs(QWidget):
                             widget.deleteLater()
                 self.faculty_gui = FacultyEditorGui(self.faculty_controller)
                 self.editor_content_area.addWidget(self.faculty_gui)
-
+            elif self.editor_combo_box.currentText()  == "Room/Lab":
+                while self.editor_content_area.count():
+                    item = self.editor_content_area.takeAt(0)
+                    widget = item.widget()
+                    if widget:
+                        self.editor_content_area.removeWidget(widget)
+                        widget.setParent(None)
+                self.editor_content_area.addWidget(self.room_controller.room_view)
         except Exception as error:
             QMessageBox.critical(self, "Load Error", str(error))
 
@@ -486,7 +529,7 @@ class SimpleTabs(QWidget):
             self.sc.set_table()
             self.schedule_table = self.sc.cur_table
             self.my_scroll.setWidget(self.schedule_table)
-            self.schedule_viewer_index.setPlaceholderText(str(self.sc.index + 1))
+            self.schedule_viewer_index.setText(str(self.sc.index + 1))
             self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
 
             #save as list[list[courseinstance]]
