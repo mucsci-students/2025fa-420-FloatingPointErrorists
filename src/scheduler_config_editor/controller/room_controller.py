@@ -8,10 +8,10 @@ class RoomEditorController:
         from scheduler_config_editor.view.room_editor_gui import RoomEditorGui
         self.json_config = json_config
         self.room_view = RoomEditorGui(self)
-        self.populate_lists()
+        self.refresh_lists()
         self.room_view.repaint()
 
-    def populate_lists(self) -> None:
+    def refresh_lists(self) -> None:
         self.room_view.room_list.clear()
         self.room_view.lab_list.clear()
         for i, room in enumerate (self.json_config.scheduler_config.rooms):
@@ -57,7 +57,7 @@ class RoomEditorController:
         # Defines a function for writing out to the json
         def save() -> None:
             self.write_out(editor_textbox.toPlainText(), name, group)
-            self.populate_lists()
+            self.refresh_lists()
             editor_box.setHidden(True)
             self.room_view.my_layout.removeWidget(editor_box)
 
@@ -88,7 +88,7 @@ class RoomEditorController:
                 except Lab.LabMissingError as e:
                     self.show_error(group, e)
 
-            self.populate_lists()
+            self.refresh_lists()
             editor_box.setHidden(True)
             self.room_view.my_layout.removeWidget(editor_box)
 
@@ -96,7 +96,7 @@ class RoomEditorController:
         editor_layout.addWidget(editor_del_button)
 
         def cancel() -> None:
-            self.populate_lists()
+            self.refresh_lists()
             editor_box.setHidden(True)
             self.room_view.my_layout.removeWidget(editor_box)
 
