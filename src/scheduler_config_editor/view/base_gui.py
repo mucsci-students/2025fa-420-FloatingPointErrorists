@@ -466,13 +466,11 @@ class SimpleTabs(QWidget):
                     self.editor_content_area.removeWidget(widget)
                     widget.setParent(None)
             if self.editor_combo_box.currentText() == "Faculty":
-                self.faculty_gui = FacultyEditorGui(self.faculty_controller)
-                self.editor_content_area.addWidget(self.faculty_gui)
+                self.editor_content_area.addWidget(self.faculty_controller.view)
             elif self.editor_combo_box.currentText() == "Room/Lab":
                 self.editor_content_area.addWidget(self.room_controller.view)
             else:
-                self.course_gui = CourseEditorGUI(self.course_controller)
-                self.editor_content_area.addWidget(self.course_gui)
+                self.editor_content_area.addWidget(self.course_controller.view)
         except Exception as error:
                 QMessageBox.critical(self, "Load Error", str(error))
 
