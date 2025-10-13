@@ -1,5 +1,4 @@
-from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QMessageBox, QListWidget, QListWidgetItem, QGroupBox, QVBoxLayout, QPushButton, QTextEdit, QWidget
+from PyQt6.QtWidgets import QMessageBox, QListWidgetItem, QVBoxLayout, QPushButton, QTextEdit, QWidget
 
 from scheduler_config_editor.model import Room, Lab,JsonConfig
 
@@ -9,7 +8,6 @@ class RoomEditorController:
         self.json_config = json_config
         self.room_view = RoomEditorGui(self)
         self.refresh_lists()
-        self.room_view.repaint()
 
     def refresh_lists(self) -> None:
         self.room_view.room_list.clear()
@@ -41,24 +39,10 @@ class RoomEditorController:
         self.room_view.editor_container.setTitle(f"{group} Editor")
         self.room_view.editor_container.show()
 
-        # editor_box = self.get_editor(item, group)
-        # if self.room_view.my_layout.count() != 4:
-        #     self.room_view.my_layout.addWidget(editor_box)
-        #     self.current_editor = editor_box
-        # else:
-        #     self.room_view.my_layout.replaceWidget(self.current_editor, editor_box)
-        #     self.current_editor.setParent(None)
-        #     self.current_editor = editor_box
-
     def get_editor(self, item: QListWidgetItem, group: str) -> QWidget:
         editor_widget = QWidget(parent=self.room_view.editor_container)
         editor_layout = QVBoxLayout()
         editor_widget.setLayout(editor_layout)
-        
-        # # Editor Group Box
-        # editor_box = QGroupBox(f"{group} Editor")
-        # editor_layout = QVBoxLayout()
-        # editor_box.setLayout(editor_layout)
 
         # Adds a text box to add/edit name
         editor_textbox = QTextEdit()
@@ -69,6 +53,7 @@ class RoomEditorController:
         #   IF clicked on item from a list
         editor_del_button = QPushButton("Delete")
         editor_del_button.setHidden(True)
+        editor_layout.addWidget(editor_del_button)
 
         # Sets the text box editor to a name if clicked on item from list
         name = ""
@@ -114,7 +99,6 @@ class RoomEditorController:
             self.room_view.editor_container.setHidden(True)
 
         editor_del_button.clicked.connect(delete)
-        editor_layout.addWidget(editor_del_button)
 
         def cancel() -> None:
             self.refresh_lists()

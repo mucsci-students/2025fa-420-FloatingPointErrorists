@@ -1,10 +1,5 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QTextEdit, QPushButton, QVBoxLayout, QMainWindow, QListWidget, QListWidgetItem, QMessageBox, QGroupBox
-from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtWidgets import QLabel, QWidget, QPushButton, QVBoxLayout, QListWidget, QGroupBox
 from PyQt6.QtCore import Qt
-
-import scheduler_config_editor
-from scheduler_config_editor.model import Room, Lab, JsonConfig
 
 class RoomEditorGui(QWidget):
     ROOM = "Room"
