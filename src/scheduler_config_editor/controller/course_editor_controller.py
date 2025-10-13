@@ -1,4 +1,3 @@
-from operator import index
 
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import QMessageBox, QListWidget, QListWidgetItem, QWidget
@@ -7,7 +6,7 @@ from scheduler import TimeRange
 from scheduler_config_editor.model import Course,JsonConfig
 from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI, CoursesEditorWidget
 
-class CourseEditorController(QWidget):
+class CourseEditorController:
     """
     Controller for the faculty editor
     """
@@ -31,16 +30,17 @@ class CourseEditorController(QWidget):
         self.view.list.clearSelection()
 
     def open_edit_course_window(self, item: QListWidgetItem) -> None:
-        course_id = item.data(Qt.ItemDataRole.UserRole)
         index = item.data(Qt.ItemDataRole.UserRole + 1)
         course_data = self.json_config.scheduler_config.courses[index]
         if course_data:
-            edit_window = CoursesEditorWidget(self, course_data)
+            edit_window = CoursesEditorWidget(self, course_data, index)
             edit_window.show()
+            self.view.open_editing_window.append(edit_window)
 
     def open_add_course_window(self) -> None:
         add_window = CoursesEditorWidget(self)
         add_window.show()
+        self.view.open_editing_window.append(add_window)
 
     def delete_course(self, edit_window: CoursesEditorWidget) -> None:
         course_id = edit_window.course_id_line_edit.text()
@@ -52,7 +52,7 @@ class CourseEditorController(QWidget):
 
         if confirm == QMessageBox.StandardButton.Yes:
             try:
-                Course.del_course(index, self.json_config)
+                Course.del_course(edit_window.index, self.json_config)
                 self.json_config.save()
                 del_message = QMessageBox()
                 del_message.setWindowTitle("Success")
@@ -78,7 +78,7 @@ class CourseEditorController(QWidget):
             faculty = [item.text() for item in edit_window.faculty_list.selectedItems()]
 
             if edit_window.course_data:
-                Course.mod_course(index = index,
+                Course.mod_course(index = edit_window.index,
                     json_config=self.json_config,
                     course_id=course_id,
                     course_credits=course_credits,

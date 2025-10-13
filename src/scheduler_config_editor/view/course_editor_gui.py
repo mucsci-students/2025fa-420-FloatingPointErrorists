@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QLineEdit, QWidget, QLineEdit, QPushButton, QComboBox, QGridLayout, \
-    QVBoxLayout, QTabWidget, QMainWindow, QLabel, QHBoxLayout, QListWidget, QListWidgetItem, QFormLayout
+    QVBoxLayout, QTabWidget, QMainWindow, QLabel, QHBoxLayout, QListWidget, QListWidgetItem, QFormLayout, QScrollArea
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 
@@ -8,7 +8,7 @@ from scheduler_config_editor.model.json import JsonConfig
 from scheduler_config_editor.model.courses import Course
 
 
-class CourseEditorGUI(QMainWindow):
+class CourseEditorGUI(QWidget):
     """
     A visual display of courses that allows users to edit the courses
     """
@@ -17,11 +17,9 @@ class CourseEditorGUI(QMainWindow):
         self.controller = controller
         self.json_config = controller.json_config
         self.open_editing_window: list[QWidget] = []
+
         # Layout Stuff
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        self.main_layout = QVBoxLayout()
-        central_widget.setLayout(self.main_layout)
+        self.main_layout = QVBoxLayout(self)
 
         # Grabbing dimensions of user's primary screen
         screen = QGuiApplication.primaryScreen()
@@ -60,17 +58,14 @@ class CourseEditorGUI(QMainWindow):
         self.add_button.clicked.connect(self.controller.open_add_course_window)
         self.list.itemClicked.connect(self.controller.open_edit_course_window)
 
-        # Centering the tabs widget
-        # self.courses_widget = CoursesEditorWidget(self)
-        # self.setCentralWidget(self.courses_widget)
-
 class CoursesEditorWidget(QWidget):
-        def __init__(self, controller, course_data=None, parent=None) -> None:
+        def __init__(self, controller, course_data=None, index=None, parent=None) -> None:
             super().__init__()
             self.controller = controller
             self.json_config = controller.json_config
             self.course_data = course_data
             self.parent = parent
+            self.index = index
 
             if getattr(self.course_data, "course_id", None):
                 self.setWindowTitle("Edit Course: " + self.course_data.course_id)
@@ -98,27 +93,31 @@ class CoursesEditorWidget(QWidget):
             self.resize(int(screen_width * 0.5), int(screen_height * 0.5))
 
             # Layout
-            centralWidget = QWidget()
-            self.setCentralWidget(centralWidget)
-            self.main_layout = QVBoxLayout()
-            centralWidget.setLayout(self.main_layout)
+            self.main_layout = QVBoxLayout(self)
 
             # Space to edit course id and credits
+            top_layout = QHBoxLayout()
+            top_layout.addWidget(QLabel("Course ID:"))
             self.course_id_line_edit = QLineEdit(self)
             if self.course_data:
                 self.course_id_line_edit.setText(self.course_id)
             else:
                 self.course_id_line_edit.setPlaceholderText("Enter Course ID Here")
+            top_layout.addWidget(self.course_id_line_edit)
 
-
+            top_layout.addWidget(QLabel("Credits:"))
             self.course_credits_line_edit = QLineEdit(self)
             if self.course_data:
-                self.course_credits_line_edit.setText(self.course_data.credits)
+                self.course_credits_line_edit.setText(str(self.course_data.credits))
             else:
                 self.course_credits_line_edit.setPlaceholderText("Enter Credits")
+            top_layout.addWidget(self.course_credits_line_edit)
+            self.main_layout.addLayout(top_layout)
 
-            # Preference list options for labs/rooms/courses
-            self.pref_list_layout = QHBoxLayout()
+            scroll_area = QScrollArea()
+            scroll_area.setWidgetResizable(True)
+            scroll_content = QWidget()
+            scroll_layout = QHBoxLayout(scroll_content)
 
             # Space to choose acceptable rooms
             self.room_layout = QVBoxLayout()
@@ -129,7 +128,7 @@ class CoursesEditorWidget(QWidget):
                 room = QListWidgetItem(self.json_config.scheduler_config.rooms[i])
                 self.room_list.addItem(room)
             self.room_layout.addWidget(self.room_list)
-            self.pref_list_layout.addLayout(self.room_layout)
+            scroll_layout.addLayout(self.room_layout)
 
             # Space to choose acceptable labs
             self.lab_layout = QVBoxLayout()
@@ -140,7 +139,7 @@ class CoursesEditorWidget(QWidget):
                 lab = QListWidgetItem(self.json_config.scheduler_config.labs[i])
                 self.lab_list.addItem(lab)
             self.lab_layout.addWidget(self.lab_list)
-            self.pref_list_layout.addLayout(self.lab_layout)
+            scroll_layout.addLayout(self.lab_layout)
 
             # Space to choose course conflicts
             self.course_conflict_layout = QVBoxLayout()
@@ -151,7 +150,7 @@ class CoursesEditorWidget(QWidget):
                 course = QListWidgetItem(self.json_config.scheduler_config.courses[i].course_id)
                 self.course_conflicts_list.addItem(course)
             self.course_conflict_layout.addWidget(self.course_conflicts_list)
-            self.pref_list_layout.addLayout(self.course_conflict_layout)
+            scroll_layout.addLayout(self.course_conflict_layout)
 
             # Space to choose faculty available
             self.faculty_layout = QVBoxLayout()
@@ -162,10 +161,11 @@ class CoursesEditorWidget(QWidget):
                 name = QListWidgetItem(self.json_config.scheduler_config.faculty[i].name)
                 self.faculty_list.addItem(name)
             self.faculty_layout.addWidget(self.faculty_list)
-            self.pref_list_layout.addLayout(self.faculty_layout)
+            scroll_layout.addLayout(self.faculty_layout)
+            scroll_area.setWidget(scroll_content)
+            self.main_layout.addWidget(scroll_area)
 
             # Preference values layout
-            self.main_layout.addLayout(self.pref_list_layout)
             self.pref_layout = QHBoxLayout()
             self.main_layout.addLayout(self.pref_layout)
             self.room_pref_layout = QFormLayout()
@@ -174,6 +174,15 @@ class CoursesEditorWidget(QWidget):
             self.pref_layout.addLayout(self.room_pref_layout)
             self.pref_layout.addLayout(self.course_pref_layout)
             self.pref_layout.addLayout(self.lab_pref_layout)
+
+            for selection_layout in [self.pref_layout, self.course_pref_layout, self.lab_pref_layout]:
+                selection_widget = QWidget()
+                selection_widget.setLayout(selection_layout)
+                selection_widget.setLayout(selection_layout)
+                scroll_layout.addWidget(selection_widget)
+
+            scroll_area.setWidget(scroll_content)
+            self.main_layout.addWidget(scroll_area)
 
             # Preselecting preference values if editing
             if course_data:
