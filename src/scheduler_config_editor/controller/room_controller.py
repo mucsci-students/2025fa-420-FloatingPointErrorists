@@ -7,10 +7,10 @@ class RoomEditorController:
         from scheduler_config_editor.view.room_editor_gui import RoomEditorGui
         self.json_config = json_config
         self.view = RoomEditorGui(self)
-        self.populate_lists()
+        self.refresh_lists()
         self.view.repaint()
 
-    def populate_lists(self) -> None:
+    def refresh_lists(self) -> None:
         self.view.room_list.clear()
         self.view.lab_list.clear()
         for i, room in enumerate (self.json_config.scheduler_config.rooms):
