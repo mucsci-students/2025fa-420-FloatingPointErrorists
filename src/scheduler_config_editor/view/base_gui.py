@@ -22,6 +22,8 @@ from scheduler_config_editor.view.schedule_window import newWindow
 from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
 from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
+from scheduler_config_editor.view.room_editor_gui import RoomEditorGui
+from scheduler_config_editor.controller.room_controller import RoomEditorController
 from scheduler_config_editor.view.schedule_window import newWindow
 
 import scheduler_config_editor
@@ -56,7 +58,9 @@ class SimpleGUI(QMainWindow):
 
 class SimpleTabs(QWidget):
 
-    def __init__(self, parent) -> None:
+    def __init__(self, parent: QWidget) -> None:
+        from scheduler_config_editor.view.generator_gui import setup_generator_tab
+
         super(QWidget, self).__init__(parent)
 
         # Grabbing dimensions of user's primary screen
@@ -99,12 +103,19 @@ class SimpleTabs(QWidget):
 
         # Dropdown code
         self.editor_combo_box = QComboBox()
-        self.editor_combo_box.addItems(['Course', 'Room', 'Lab', 'Faculty'])
+        self.editor_combo_box.addItems(['Course', 'Room/Lab', 'Faculty'])
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
         # Creates a container for the editor content
         self.editor_content_area = QVBoxLayout(self)
         self.editor_tab.layout.addLayout(self.editor_content_area, 1, 0, 1, 2)
+
+        # Prompt to load a config json
+        self.config_prompt = QLabel ("Please load a config file first.")
+        self.editor_content_area.addWidget(self.config_prompt)
+
+        # Room and Lab placeholder
+        self.room_controller = None
 
         # Faculty placeholders
         self.faculty_controller = None
@@ -130,21 +141,31 @@ class SimpleTabs(QWidget):
                 item = self.editor_content_area.takeAt(0)
                 widget = item.widget()
                 if widget:
-                    widget.deleteLater()
+                    self.editor_content_area.removeWidget(widget)
+                    widget.setParent(None)
             selected = self.editor_combo_box.currentText()
 
             if selected == 'Course':
-                self.editor_content_area.addWidget(self.course_controller.view)
-            elif selected == 'Room':
-                label = QLabel('Room Editor Placeholder')
-                self.editor_content_area.addWidget(label)
-            elif selected == 'Lab':
-                label = QLabel('Lab Editor Placeholder')
-                self.editor_content_area.addWidget(label)
+                if not self.config:
+                    # config_prompt = QLabel ("Please load a config file first.")
+                    self.editor_content_area.addWidget(self.config_prompt)
+                else:
+                    self.course_gui = CourseEditorGUI()
+                    self.editor_content_area.addWidget(self.course_gui)
+            elif selected == 'Room/Lab':
+                if not self.config:
+                    # config_prompt = QLabel ("Please load a config file first.")
+                    self.editor_content_area.addWidget(self.config_prompt)
+                else:
+                    # label = QLabel('Room Editor Placeholder')
+                    self.editor_content_area.addWidget(self.room_controller.room_view)
+            # elif selected == 'Lab':
+            #     label = QLabel('Lab Editor Placeholder')
+            #     self.editor_content_area.addWidget(label)
             elif selected == 'Faculty':
                 if not self.faculty_controller:
-                    label = QLabel ("Please load a config file first.")
-                    self.editor_content_area.addWidget(label)
+                    # config_prompt = QLabel ("Please load a config file first.")
+                    self.editor_content_area.addWidget(self.config_prompt)
                 else:
                     self.faculty_gui = FacultyEditorGui(self.faculty_controller)
                     self.editor_content_area.addWidget(self.faculty_gui)
@@ -455,6 +476,8 @@ class SimpleTabs(QWidget):
             self.course_controller = CourseEditorController(self.config)
             self.generator_controller.update_config(self.config)
             self.generator_gui.update_config(self.config)
+            self.room_controller = RoomEditorController(self.config)
+            
 
             # Enables save button
             self.save_config_button.setEnabled(True)
@@ -465,10 +488,18 @@ class SimpleTabs(QWidget):
                     item = self.editor_content_area.takeAt(0)
                     widget = item.widget()
                     if widget:
-                        widget.deleteLater()
+                        self.editor_content_area.removeWidget(widget)
+                        widget.setParent(None)
                 self.faculty_gui = FacultyEditorGui(self.faculty_controller)
                 self.editor_content_area.addWidget(self.faculty_gui)
-
+            elif self.editor_combo_box.currentText()  == "Room/Lab":
+                while self.editor_content_area.count():
+                    item = self.editor_content_area.takeAt(0)
+                    widget = item.widget()
+                    if widget:
+                        self.editor_content_area.removeWidget(widget)
+                        widget.setParent(None)
+                self.editor_content_area.addWidget(self.room_controller.room_view)
         except Exception as error:
                 QMessageBox.critical(self, "Load Error", str(error))
 

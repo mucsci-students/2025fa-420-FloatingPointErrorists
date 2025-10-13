@@ -10,7 +10,7 @@ LOAD_COMMAND = "load-config"
 def dummy_path() -> str:
     return str(Path(__file__).parent / "dummy.json")
 
-def test_room_add():
+def test_room_add() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -18,7 +18,7 @@ def test_room_add():
     Room.add_room(jsonObj, "Test Room")
     assert jsonObj.scheduler_config.rooms.count("Test Room") == 1
 
-def test_room_add_dupe():
+def test_room_add_dupe() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -26,10 +26,10 @@ def test_room_add_dupe():
     Room.add_room(jsonObj, "Test Room")
     try:
         Room.add_room(jsonObj, "Test Room")
-    except ValueError:
+    except Room.RoomExistsError:
         assert jsonObj.scheduler_config.rooms.count("Test Room") == 1
 
-def test_room_del():
+def test_room_del() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -38,7 +38,7 @@ def test_room_del():
     Room.del_room(jsonObj, "Test Room")
     assert jsonObj.scheduler_config.rooms.count("Test Room") == 0
 
-def test_room_del_ne():
+def test_room_del_ne() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -46,10 +46,10 @@ def test_room_del_ne():
     try:
         Room.del_room(jsonObj, "Test Room")
         assert False
-    except ValueError:
+    except Room.RoomMissingError:
         assert True
 
-def test_room_mod():
+def test_room_mod() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -58,7 +58,7 @@ def test_room_mod():
     Room.mod_room(jsonObj, "Test Room", "New Room")
     assert jsonObj.scheduler_config.rooms.count("New Room") == 1
 
-def test_room_mod_ne():
+def test_room_mod_ne() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -66,5 +66,5 @@ def test_room_mod_ne():
     try:
         Room.mod_room(jsonObj, "Test Room", "New Room")
         assert False
-    except ValueError:
+    except Room.RoomMissingError:
         assert True
