@@ -71,14 +71,14 @@ class FacultyEditorController:
             maximum_creds = int(edit_window.max_credits_edit.text())
             course_limit = int(edit_window.course_limit_edit.text())
 
-            if 0 > minimum_creds or minimum_creds > 21:
-                raise ValueError("Minimum credits must be between 0 and 21 credits.")
-            if 0 > maximum_creds or maximum_creds > 21:
-                raise ValueError("Maximum credits must be between 0 and 21 credits.")
-            if 0 > course_limit or course_limit > 21:
-                raise ValueError("Course limit must be between 0 and 21 courses.")
+            if 0 > maximum_creds:
+                raise ValueError("Maximum credits must be greater than or equal to 0.")
+            if 0 > minimum_creds:
+                raise ValueError("Minimum credits must be greater than or equal to 0.")
             if minimum_creds > maximum_creds:
-                raise ValueError("Minimum credits must be less than maximum credits.")
+                raise ValueError("Minimum credits must be less than or equal to maximum credits.")
+            if 1 > course_limit:
+                raise ValueError("Course limit must be a positive integer.")
 
             times = {}
             for day, widgets in edit_window.day_interval_widgets.items():
@@ -93,6 +93,10 @@ class FacultyEditorController:
                     intervals.append(interval)
                 if intervals:
                     times[day] = intervals
+
+            if len(times) == 0:
+                QMessageBox.warning(edit_window, "Error", f"Faculty must have at least one available time interval.")
+                return
 
             room_preferences = {
                 room: edit_window.room_preference_input[room].value()
@@ -148,5 +152,3 @@ class FacultyEditorController:
 
         except ValueError as error:
             QMessageBox.warning(edit_window, "Input Error", str(error))
-
-

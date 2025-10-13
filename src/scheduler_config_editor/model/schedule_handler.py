@@ -30,6 +30,7 @@ class ScheduleHandler:
 
     def load_schedules(self, schedules: list[list[CourseInstance]]) -> None:
         """Load schedules from a list of CourseInstance lists."""
+        self._schedules = []
         for other_schedule in schedules:
             new_schedule = []
             for course_instance in other_schedule:
