@@ -1,9 +1,9 @@
 from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QMessageBox, QListWidget, QListWidgetItem, QWidget
+from PyQt6.QtWidgets import QMessageBox, QListWidget, QListWidgetItem, QWidget, QMainWindow
 from scheduler import TimeRange
 
 from scheduler_config_editor.model import Faculty,JsonConfig
-from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui, EditFacultyWindow
+from scheduler_config_editor.view.faculty_editor_gui import EditFacultyWindow, FacultyEditorGui
 
 class FacultyEditorController:
     """
@@ -61,7 +61,6 @@ class FacultyEditorController:
 
             except Exception as error:
                 QMessageBox.warning(edit_window, "Error", f"Failed to delete faculty member: {name}: {error}")
-
 
     def save_faculty (self, edit_window: EditFacultyWindow) -> None:
         try:

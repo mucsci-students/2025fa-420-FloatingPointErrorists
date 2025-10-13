@@ -4,7 +4,11 @@ from PyQt6.QtCore import QTimer, QTime
 from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButton, QVBoxLayout, QMainWindow, \
     QHBoxLayout, QListWidget, QListWidgetItem, QSpinBox, QFormLayout, QMessageBox, QGroupBox, QGridLayout, QTimeEdit
 from PyQt6.QtGui import QGuiApplication, QIntValidator
-from scheduler import TimeRange
+from scheduler import TimeRange, FacultyConfig
+from typing import TYPE_CHECKING, Optional, TypedDict, List, Tuple, Dict
+
+if TYPE_CHECKING:
+    from scheduler_config_editor.controller.faculty_controller import FacultyEditorController
 from scheduler_config_editor.model import Faculty, JsonConfig
 
 sys.path.append('../controller')
@@ -17,7 +21,7 @@ class FacultyEditorGui(QMainWindow):
     faculty members. Users can also delete faculty members in this editable view as well.
     """
 
-    def __init__(self, controller) -> None:
+    def __init__(self, controller: "FacultyEditorController") -> None:
         super().__init__()
         self.controller = controller
         self.json_config = controller.json_config
@@ -64,7 +68,7 @@ class FacultyEditorGui(QMainWindow):
         self.list.itemClicked.connect(self.controller.open_edit_faculty_window)
 
 class EditFacultyWindow(QMainWindow):
-    def __init__(self, controller, faculty_data=None, parent_gui=None) -> None:
+    def __init__(self, controller: "FacultyEditorController", faculty_data: Optional[FacultyConfig] = None, parent_gui: Optional[QMainWindow] = None) -> None:
         super().__init__()
         self.controller = controller
         self.json_config = controller.json_config
@@ -72,11 +76,12 @@ class EditFacultyWindow(QMainWindow):
         self.parent_gui = parent_gui
 
         if getattr(self.faculty_data,"name", None):
-            self.setWindowTitle("Edit Faculty: " + self.faculty_data.name)
-            for i, faculty in enumerate(self.json_config.scheduler_config.faculty):
-                if self.json_config.scheduler_config.faculty[i].name == self.faculty_data.name:
-                    index = i
-                    break
+            if self.faculty_data is not None:
+                self.setWindowTitle("Edit Faculty: " + self.faculty_data.name)
+                for i, faculty in enumerate(self.json_config.scheduler_config.faculty):
+                    if self.json_config.scheduler_config.faculty[i].name == self.faculty_data.name:
+                        index = i
+                        break
             self.faculty_data = self.json_config.scheduler_config.faculty[index]
             self.name = self.faculty_data.name
         else:
@@ -165,17 +170,22 @@ class EditFacultyWindow(QMainWindow):
         self.time_layout = QGridLayout()
         self.main_layout.addLayout(self.time_layout)
         self.days = ["MON", "TUE", "WED", "THU", "FRI"]
-        self.day_interval_widgets: dict[str, dict[str, list[tuple[QTimeEdit, QTimeEdit, QPushButton]]]] = {}
 
         for i, day in enumerate(self.days):
             self.day_layout = QVBoxLayout()
             self.day_label = QLabel(day)
             self.add_interval_button = QPushButton(f"Add Time Range")
             # Adds interval for each specific day
-            self.add_interval_button.clicked.connect(lambda _, d=day:self.add_interval(d))
+            self.add_interval_button.clicked.connect(lambda _, d=day: self.add_interval(d))
 
             self.day_layout.addWidget(self.day_label)
             self.day_layout.addWidget(self.add_interval_button)
+
+            class DayIntervalData(TypedDict):
+                container: QVBoxLayout
+                intervals: List[Tuple[QTimeEdit, QTimeEdit, QPushButton]]
+
+            self.day_interval_widgets: Dict[str, DayIntervalData] = {}
 
             self.intervals_container = QVBoxLayout()
             self.day_layout.addLayout(self.intervals_container)
@@ -183,7 +193,7 @@ class EditFacultyWindow(QMainWindow):
                 "container": self.intervals_container,
                 "intervals": []
             }
-            self.time_layout.addLayout(self.day_layout, 0 ,i)
+            self.time_layout.addLayout(self.day_layout, 0, i)
 
         # Loading previous availabilities
         if self.faculty_data and self.faculty_data.times:
@@ -365,13 +375,13 @@ class EditFacultyWindow(QMainWindow):
                     label = layout.itemAt(i, QFormLayout.ItemRole.LabelRole)
                     if label is not None:
                         if isinstance(label.widget(), QLabel):
-                            if label.widget().text() == f"{name} preference:":
+                            if QLabel(label.widget()).text() == f"{name} preference:":
                                 layout.removeRow(i)
                             break
                 del input_preferences[name]
 
-        for i in list_widget.selectedItems():
-            name = i.text()
+        for e in list_widget.selectedItems():
+            name = e.text()
             if name not in input_preferences:
                 spin = QSpinBox(self)
                 spin.setRange(0, 10)

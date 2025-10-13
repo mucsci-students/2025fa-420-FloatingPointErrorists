@@ -15,7 +15,6 @@ from scheduler_config_editor.controller.generator_controller import GeneratorCon
 from scheduler_config_editor.view.generator_gui import GeneratorGui
 
 sys.path.append('../controller')
-from scheduler_config_editor.controller.testing import ModClass
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
 from scheduler_config_editor.controller.faculty_controller import FacultyEditorController
 from scheduler_config_editor.model.schedule_handler import ScheduleHandler
@@ -29,7 +28,6 @@ import scheduler_config_editor
 from scheduler_config_editor.model.json import JsonConfig
 
 sys.path.append('../controller')
-from scheduler_config_editor.controller.testing import ModClass
 
 """Simple Gui Window Initializer"""
 
@@ -433,10 +431,6 @@ class SimpleTabs(QWidget):
         self.main_layout.addWidget(self.tabs)
         self.setLayout(self.main_layout)
 
-    def handleButton(self) -> None:
-        self.modifier = ModClass(self)
-        self.modifier.test()
-
     # Asks user for config file
     def load_config(self) -> None:
         config_path, _ = QFileDialog.getOpenFileName(self,
@@ -468,7 +462,7 @@ class SimpleTabs(QWidget):
                 self.editor_content_area.addWidget(self.faculty_gui)
 
         except Exception as error:
-                QMessageBox.critical(self, "Load Error", str(error))
+            QMessageBox.critical(self, "Load Error", str(error))
 
     # Saves config file
     def save_config(self) -> None:
