@@ -9,6 +9,7 @@ from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 from scheduler.models import CourseInstance
 
+from scheduler_config_editor.controller.course_editor_controller import CourseEditorController
 from scheduler_config_editor.controller.generator_controller import GeneratorController
 from scheduler_config_editor.view.generator_gui import GeneratorGui
 
@@ -101,8 +102,6 @@ class SimpleTabs(QWidget):
         self.editor_combo_box.addItems(['Course', 'Room', 'Lab', 'Faculty'])
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
-        self.course_editor_window = CourseEditorGUI()
-
         # Creates a container for the editor content
         self.editor_content_area = QVBoxLayout(self)
         self.editor_tab.layout.addLayout(self.editor_content_area, 1, 0, 1, 2)
@@ -111,6 +110,10 @@ class SimpleTabs(QWidget):
         self.faculty_controller = None
         self.faculty_gui = None
         self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        # Course placeholders
+        self.course_controller = None
+        self.course_gui = None
 
         # Generator placeholders
         self.generator_controller = GeneratorController(self.config)
@@ -131,8 +134,7 @@ class SimpleTabs(QWidget):
             selected = self.editor_combo_box.currentText()
 
             if selected == 'Course':
-                self.course_gui = CourseEditorGUI()
-                self.editor_content_area.addWidget(self.course_gui)
+                self.editor_content_area.addWidget(self.course_controller.view)
             elif selected == 'Room':
                 label = QLabel('Room Editor Placeholder')
                 self.editor_content_area.addWidget(label)
@@ -450,6 +452,7 @@ class SimpleTabs(QWidget):
             self.config = JsonConfig(config_path)
             QMessageBox.information(self, "Config Loaded", "Successfully loaded config")
             self.faculty_controller = FacultyEditorController(self.config)
+            self.course_controller = CourseEditorController(self.config)
             self.generator_controller.update_config(self.config)
             self.generator_gui.update_config(self.config)
 
@@ -467,7 +470,7 @@ class SimpleTabs(QWidget):
                 self.editor_content_area.addWidget(self.faculty_gui)
 
         except Exception as error:
-                QMessageBox.warning(self, "Load Error", error)
+                QMessageBox.critical(self, "Load Error", str(error))
 
     # Saves config file
     def save_config(self) -> None:
@@ -476,11 +479,10 @@ class SimpleTabs(QWidget):
                 return
         try:
             self.config.save()
-            self.generator_gui.update_config(self.config)
             self.generator_controller.update_config(self.config)
             QMessageBox.information(self, "Config Saved", "Config saved successfully")
         except Exception as error:
-            QMessageBox.warning(self, "Save Error", error)
+            QMessageBox.critical(self, "Save Error", str(error))
 
     def handle_schedules_generated(self, schedules: list[list[CourseInstance]]) -> None:
         if self.sc is not None:
