@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 
 from PyQt6.QtWidgets import (
@@ -6,18 +7,21 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QIntValidator
 from scheduler import OptimizerFlags
+from scheduler.models import CourseInstance
+
+from scheduler_config_editor.controller.generator_controller import GeneratorController
 from scheduler_config_editor.model.json import JsonConfig
 
 sys.path.append('../controller')
 
 class GeneratorGui(QWidget):
-    def __init__(self, controller) -> None:
+    def __init__(self, controller: GeneratorController) -> None:
         super().__init__()
         self.controller = controller
         self.json_config = controller.config
         self.generator_layout = QVBoxLayout()
-        self.schedules = []
-        self.optimizer_checkboxes = []
+        self.schedules: list[list[CourseInstance]] = []
+        self.optimizer_checkboxes: list[QCheckBox] = []
         self.limit_input = QLineEdit()
         self.setup_generator_tab()
 

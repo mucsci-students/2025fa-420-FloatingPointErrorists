@@ -117,7 +117,7 @@ class EditFacultyWindow(QMainWindow):
         self.main_layout.addWidget(self.name_edit)
         self.name_edit.setFocus()
 
-        # Credit layout stuff
+        # Credit main_layout stuff
         self.credit_layout = QHBoxLayout()
         self.creds_validator = QIntValidator(0, 21)
 
@@ -232,7 +232,7 @@ class EditFacultyWindow(QMainWindow):
         self.lab_layout.addWidget(self.lab_list)
         self.pref_list_layout.addLayout(self.lab_layout)
 
-        # Preference values layout
+        # Preference values main_layout
         self.main_layout.addLayout(self.pref_list_layout)
         self.pref_layout = QHBoxLayout()
         self.main_layout.addLayout(self.pref_layout)

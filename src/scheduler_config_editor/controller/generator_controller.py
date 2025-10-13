@@ -1,11 +1,11 @@
-from typing import Callable
+from __future__ import annotations
+from typing import Callable, Optional
 from scheduler import OptimizerFlags
 from scheduler_config_editor.model.json import JsonConfig
-from PyQt6.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QLabel, QProgressBar
+from PyQt6.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QLabel, QProgressBar, QWidget
 from PyQt6.QtCore import QThread, pyqtSignal, Qt
 from scheduler.models import CourseInstance
 from scheduler_config_editor.model.run_scheduler import run_using_config
-from scheduler_config_editor.view.generator_gui import GeneratorGui
 
 # ---- Worker Thread (runs the heavy computation) ----
 class RunWorker(QThread):
@@ -17,7 +17,7 @@ class RunWorker(QThread):
         super().__init__()
         self.config = config
 
-    def run(self):
+    def run(self) -> None:
         try:
             # Run your scheduler here
             result = run_using_config(self.config.combined_config)
@@ -29,7 +29,7 @@ class RunWorker(QThread):
 # ---- Simple Popup with Loading Bar ----
 class LoadingDialog(QDialog):
     """A simple modal dialog with a loading bar."""
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
         self.setWindowTitle("Generating schedules...")
         self.setModal(True)
@@ -52,13 +52,14 @@ class GeneratorController:
     """
     Controller for the schedule generator GUI
     """
-    def __init__(self, config: JsonConfig) -> None:
+    def __init__(self, config: Optional[JsonConfig]) -> None:
+        from scheduler_config_editor.view.generator_gui import GeneratorGui
         self.config = config
         self.view = GeneratorGui(self)
-        self.schedules = None
-        self.on_schedules_generated: Callable[[list[list[CourseInstance]]], None] = None  # callback
-        self.worker = None
-        self.loading = None
+        self.schedules: Optional[list[list[CourseInstance]]] = None
+        self.on_schedules_generated: Optional[Callable[[list[list[CourseInstance]]], None]] = None  # callback
+        self.worker: Optional[RunWorker] = None
+        self.loading: Optional[LoadingDialog] = None
 
     def _prepare_config(self) -> None:
         """Read user selections and update config before running."""
@@ -67,9 +68,10 @@ class GeneratorController:
             if cbox.isChecked():
                 selected_flags.append(fg)
 
-        limit_value = self.view.get_limit() or self.config.combined_config.limit
-        self.config.set_optimization(selected_flags)
-        self.config.set_limit(int(limit_value))
+        if self.config is not None:
+            limit_value = self.view.get_limit() or self.config.combined_config.limit
+            self.config.set_optimization(selected_flags)
+            self.config.set_limit(int(limit_value))
 
     def on_generate_clicked(self) -> None:
         """Handle the Generate button click."""
