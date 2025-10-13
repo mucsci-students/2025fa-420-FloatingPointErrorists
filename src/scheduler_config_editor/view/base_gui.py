@@ -58,6 +58,7 @@ class SimpleTabs(QWidget):
         super(QWidget, self).__init__(parent)
 
         # Grabbing dimensions of user's primary screen
+        self.schedules = []
         screen = QGuiApplication.primaryScreen()
         screen_geometry = screen.availableGeometry()
         screen_width = screen_geometry.width()
@@ -384,12 +385,15 @@ class SimpleTabs(QWidget):
 
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
-            if self.schedules != []:
+            if self.schedules:
                 try:
+                    if not self.checkboxjson.isChecked() and not self.checkboxcsv.isChecked():
+                        QMessageBox.warning(self, "Error", "No file format selected.")
+                        return
                     if self.checkboxjson.isChecked():
-                        self.sc.save_as_json(self.schedules, self.schedule_viewer_filename.text())
+                        self.sc.save_as_json(self.schedules, self.schedule_viewer_filename.text() or "_")
                     if self.checkboxcsv.isChecked():
-                        self.sc.save_as_csv(self.schedules, self.schedule_viewer_filename.text())
+                        self.sc.save_as_csv(self.schedules, self.schedule_viewer_filename.text()  or "_")
                     QMessageBox.information(self, "Information", "Save Complete.")
                 except:
                     QMessageBox.warning(self, "Error", "You trying to save a non generated schedule.")
@@ -405,6 +409,7 @@ class SimpleTabs(QWidget):
 
             #open a file dialog to select file
             try:
+                self.sc.reset_index()
                 my_file = QFileDialog.getOpenFileName(
                     self,
                     'Open file',
@@ -412,7 +417,6 @@ class SimpleTabs(QWidget):
                     'All Files (*);; JSON files (*.json);; CSV files (*.csv)')
                 self.sc.cur_schedules.import_schedules(my_file[0])
                 self.sc.length = len(self.sc.cur_schedules.schedules)
-
                 #reset generated schedule if any
                 self.schedules = None
 
@@ -422,8 +426,8 @@ class SimpleTabs(QWidget):
                 self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
                 self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
-            except:
-                QMessageBox.warning(self, "Error", "Invalid File, No File loaded.")
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"{e}")
         
         self.schedule_viewer_button = QPushButton("Load")
         self.schedule_viewer_button.clicked.connect(load_button) 

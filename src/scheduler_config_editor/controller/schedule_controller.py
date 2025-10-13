@@ -12,6 +12,9 @@ class SchedulerController:
         self.length = 0
         # 0 = courses, 1 = faulty, 2 = rooms
         self.mode = 0
+
+    def reset_index(self) -> None:
+        self.index = 0
     
     def next_schedule(self) -> None:
         if self.index < self.length - 1:
