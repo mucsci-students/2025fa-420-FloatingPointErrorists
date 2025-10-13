@@ -45,7 +45,6 @@ class SimpleGUI(QMainWindow):
 class SimpleTabs(QWidget):
 
     def __init__(self, parent: QWidget) -> None:
-
         super(QWidget, self).__init__(parent)
 
         # Grabbing dimensions of user's primary screen
