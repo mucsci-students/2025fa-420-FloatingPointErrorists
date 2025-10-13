@@ -59,8 +59,6 @@ class SimpleGUI(QMainWindow):
 class SimpleTabs(QWidget):
 
     def __init__(self, parent: QWidget) -> None:
-        from scheduler_config_editor.view.generator_gui import setup_generator_tab
-
         super(QWidget, self).__init__(parent)
 
         # Grabbing dimensions of user's primary screen

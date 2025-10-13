@@ -45,20 +45,20 @@ class RoomEditorController:
         # Adds a button to delete the selected room
         #   IF clicked on item from a list
         editor_del_button = QPushButton("Delete")
-        editor_del_button.hide()
+        editor_del_button.setHidden(True)
 
         # Sets the text box editor to a name if clicked on item from list
         name = ""
         if type(item) is QListWidgetItem:
             name = item.text()
-            editor_del_button.show()
+            editor_del_button.setVisible(True)
         editor_textbox.setText(name)
 
         # Defines a function for writing out to the json
         def save() -> None:
             self.write_out(editor_textbox.toPlainText(), name, group)
             self.populate_lists()
-            editor_box.hide()
+            editor_box.setHidden(True)
             self.room_view.my_layout.removeWidget(editor_box)
 
         editor_save_button = QPushButton("Save")
@@ -89,7 +89,7 @@ class RoomEditorController:
                     self.show_error(group, e)
 
             self.populate_lists()
-            editor_box.hide()
+            editor_box.setHidden(True)
             self.room_view.my_layout.removeWidget(editor_box)
 
         editor_del_button.clicked.connect(delete)
@@ -97,7 +97,7 @@ class RoomEditorController:
 
         def cancel() -> None:
             self.populate_lists()
-            editor_box.hide()
+            editor_box.setHidden(True)
             self.room_view.my_layout.removeWidget(editor_box)
 
         editor_cancel_button = QPushButton("Cancel")
