@@ -68,3 +68,16 @@ def test_room_mod_ne() -> None:
         assert False
     except Room.RoomMissingError:
         assert True
+
+def test_room_mod_dupe() -> None:
+    runner = CliRunner()
+    obj = {}
+    runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
+    jsonObj = obj[CONFIG_KEY]
+    Room.add_room(jsonObj, "New Room")
+    Room.add_room(jsonObj, "Test Room")
+    try:
+        Room.mod_room(jsonObj, "Test Room", "New Room")
+        assert False
+    except Room.RoomExistsError:
+        assert True
