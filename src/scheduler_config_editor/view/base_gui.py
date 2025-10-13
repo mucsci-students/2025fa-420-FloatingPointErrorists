@@ -1,6 +1,5 @@
-import sys
 from PyQt6.QtWidgets import (
-    QApplication, QLabel, QWidget, QLineEdit, QPushButton,
+    QLabel, QWidget, QLineEdit, QPushButton,
     QVBoxLayout, QHBoxLayout, QTabWidget, QMainWindow,
     QCheckBox, QComboBox, QFileDialog, QGridLayout,
     QScrollArea, QTableWidget, QMessageBox
@@ -8,22 +7,14 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
 from scheduler.models import CourseInstance
-
 from scheduler_config_editor.controller.course_editor_controller import CourseEditorController
 from scheduler_config_editor.controller.generator_controller import GeneratorController
-from scheduler_config_editor.view.generator_gui import GeneratorGui
-from scheduler_config_editor.controller.schedule_controller import SchedulerController
 from scheduler_config_editor.controller.faculty_controller import FacultyEditorController
-from scheduler_config_editor.model.schedule_handler import ScheduleHandler
-from scheduler_config_editor.view.schedule_window import newWindow
 from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
 from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
-from scheduler_config_editor.view.room_editor_gui import RoomEditorGui
 from scheduler_config_editor.controller.room_controller import RoomEditorController
 from scheduler_config_editor.view.schedule_window import newWindow
-
-import scheduler_config_editor
 from scheduler_config_editor.model.json import JsonConfig
 
 
