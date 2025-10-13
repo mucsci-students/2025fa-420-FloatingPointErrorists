@@ -10,7 +10,7 @@ LOAD_COMMAND = "load-config"
 def dummy_path() -> str:
     return str(Path(__file__).parent / "dummy.json")
 
-def test_lab_add():
+def test_lab_add() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -18,7 +18,7 @@ def test_lab_add():
     Lab.add_lab(jsonObj, "Test Lab")
     assert jsonObj.scheduler_config.labs.count("Test Lab") == 1
 
-def test_lab_add_dupe():
+def test_lab_add_dupe() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -26,10 +26,10 @@ def test_lab_add_dupe():
     Lab.add_lab(jsonObj, "Test Lab")
     try:
         Lab.add_lab(jsonObj, "Test Lab")
-    except ValueError:
+    except Lab.LabExistsError:
         assert jsonObj.scheduler_config.labs.count("Test Lab") == 1
 
-def test_lab_del():
+def test_lab_del() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -38,7 +38,7 @@ def test_lab_del():
     Lab.del_lab(jsonObj, "Test Lab")
     assert jsonObj.scheduler_config.labs.count("Test Lab") == 0
 
-def test_lab_del_ne():
+def test_lab_del_ne() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -46,11 +46,11 @@ def test_lab_del_ne():
     try:
         Lab.del_lab(jsonObj, "Test Lab")
         assert False
-    except ValueError:
+    except Lab.LabMissingError:
         assert True
 
 
-def test_lab_mod():
+def test_lab_mod() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -59,7 +59,7 @@ def test_lab_mod():
     Lab.mod_lab(jsonObj, "Test Lab", "New Lab")
     assert jsonObj.scheduler_config.labs.count("New Lab") == 1
 
-def test_lab_mod_ne():
+def test_lab_mod_ne() -> None:
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
@@ -67,6 +67,6 @@ def test_lab_mod_ne():
     try:
         Lab.mod_lab(jsonObj, "Test Lab", "New Lab")
         assert False
-    except ValueError:
+    except Lab.LabMissingError:
         assert True
 
