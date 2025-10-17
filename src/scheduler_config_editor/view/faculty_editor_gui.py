@@ -4,6 +4,12 @@ from PyQt6.QtCore import QTimer, QTime
 from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QLineEdit, QPushButton, QVBoxLayout, QMainWindow, \
     QHBoxLayout, QListWidget, QListWidgetItem, QSpinBox, QFormLayout, QMessageBox, QGroupBox, QGridLayout, QTimeEdit
 from PyQt6.QtGui import QGuiApplication, QIntValidator
+
+from typing import TYPE_CHECKING, Optional, TypedDict, List, Tuple, Dict
+
+if TYPE_CHECKING:
+    from scheduler_config_editor.controller.faculty_controller import FacultyEditorController
+
 from scheduler import TimeRange
 from scheduler_config_editor.model import Faculty, JsonConfig
 
@@ -17,7 +23,7 @@ class FacultyEditorGui(QMainWindow):
     faculty members. Users can also delete faculty members in this editable view as well.
     """
 
-    def __init__(self, controller) -> None:
+    def __init__(self, controller: "FacultyEditorController") -> None:
         super().__init__()
         self.controller = controller
         self.json_config = controller.json_config
@@ -64,7 +70,7 @@ class FacultyEditorGui(QMainWindow):
         self.list.itemClicked.connect(self.controller.open_edit_faculty_window)
 
 class EditFacultyWindow(QMainWindow):
-    def __init__(self, controller, faculty_data=None, parent_gui=None) -> None:
+    def __init__(self, controller: "FacultyEditorController", faculty_data=None, parent_gui=None) -> None:
         super().__init__()
         self.controller = controller
         self.json_config = controller.json_config
