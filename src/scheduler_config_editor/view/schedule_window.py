@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QLabel, QWidget,  QVBoxLayout, QMainWindow, QScrollArea, QTableWidget
 from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QMainWindow, QScrollArea, QTableWidget, QVBoxLayout, QWidget
+
 
 class newWindow(QMainWindow):
     def __init__(self) -> None:

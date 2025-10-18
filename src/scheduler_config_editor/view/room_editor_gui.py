@@ -1,5 +1,13 @@
-from PyQt6.QtWidgets import QLabel, QWidget, QPushButton, QVBoxLayout, QListWidget, QGroupBox
 from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (
+    QGroupBox,
+    QLabel,
+    QListWidget,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
+
 
 class RoomEditorGui(QWidget):
     ROOM = "Room"

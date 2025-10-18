@@ -1,10 +1,13 @@
 
-from PyQt6.QtCore import QTimer, Qt
-from PyQt6.QtWidgets import QMessageBox, QListWidget, QListWidgetItem, QWidget
-from scheduler import TimeRange
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
 
-from scheduler_config_editor.model import Course,JsonConfig
-from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI, CoursesEditorWidget
+from scheduler_config_editor.model import Course, JsonConfig
+from scheduler_config_editor.view.course_editor_gui import (
+    CourseEditorGUI,
+    CoursesEditorWidget,
+)
+
 
 class CourseEditorController:
     """
@@ -52,15 +55,16 @@ class CourseEditorController:
 
         if confirm == QMessageBox.StandardButton.Yes:
             try:
-                Course.del_course(edit_window.index, self.json_config)
-                self.json_config.save()
-                del_message = QMessageBox()
-                del_message.setWindowTitle("Success")
-                del_message.setText(f"Successfully deleted course: {course_id}")
-                del_message.show()
-                QTimer.singleShot(2500, del_message.close)
-                self.refresh_list()
-                edit_window.close()
+                if edit_window.index is not None:
+                    Course.del_course(edit_window.index, self.json_config)
+                    self.json_config.save()
+                    del_message = QMessageBox()
+                    del_message.setWindowTitle("Success")
+                    del_message.setText(f"Successfully deleted course: {course_id}")
+                    del_message.show()
+                    QTimer.singleShot(2500, del_message.close)
+                    self.refresh_list()
+                    edit_window.close()
 
             except Exception as error:
                 QMessageBox.warning(edit_window, "Error", f"Failed to delete course: {course_id}: {error}")
@@ -77,7 +81,7 @@ class CourseEditorController:
             conflicts = [item.text() for item in edit_window.course_conflicts_list.selectedItems()]
             faculty = [item.text() for item in edit_window.faculty_list.selectedItems()]
 
-            if edit_window.course_data:
+            if edit_window.course_data and edit_window.index is not None:
                 Course.mod_course(index = edit_window.index,
                     json_config=self.json_config,
                     course_id=course_id,

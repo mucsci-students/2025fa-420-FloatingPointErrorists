@@ -1,18 +1,31 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QLineEdit, QWidget, QLineEdit, QPushButton, QComboBox, QGridLayout, \
-    QVBoxLayout, QTabWidget, QMainWindow, QLabel, QHBoxLayout, QListWidget, QListWidgetItem, QFormLayout, QScrollArea
-from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtWidgets import (
+    QFormLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QPushButton,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
+)
 
-from scheduler_config_editor.model.json import JsonConfig
-from scheduler_config_editor.model.courses import Course
+from typing import TYPE_CHECKING
+
+from scheduler import CourseConfig
+
+if TYPE_CHECKING:
+    from scheduler_config_editor.controller.course_editor_controller import CourseEditorController
 
 
 class CourseEditorGUI(QWidget):
     """
     A visual display of courses that allows users to edit the courses
     """
-    def __init__(self, controller)  -> None:
+    def __init__(self, controller: "CourseEditorController") -> None:
         super().__init__()
         self.controller = controller
         self.json_config = controller.json_config
@@ -59,22 +72,21 @@ class CourseEditorGUI(QWidget):
         self.list.itemClicked.connect(self.controller.open_edit_course_window)
 
 class CoursesEditorWidget(QWidget):
-        def __init__(self, controller, course_data=None, index=None, parent=None) -> None:
+        def __init__(self, controller: "CourseEditorController", course_data: CourseConfig | None = None, index: int | None = None) -> None:
             super().__init__()
             self.controller = controller
             self.json_config = controller.json_config
             self.course_data = course_data
-            self.parent = parent
             self.index = index
 
             if getattr(self.course_data, "course_id", None):
-                self.setWindowTitle("Edit Course: " + self.course_data.course_id)
-                for i, course in enumerate(self.json_config.scheduler_config.courses):
-                    if self.json_config.scheduler_config.courses[i].course_id == self.course_data.course_id:
-                        index = i
-                        break
-                self.course_data = self.json_config.scheduler_config.courses[index]
-                self.course_id = self.course_data.course_id
+                if self.course_data is not None:
+                    self.setWindowTitle("Edit Course: " + self.course_data.course_id)
+                    for i, course in enumerate(self.json_config.scheduler_config.courses):
+                        if self.json_config.scheduler_config.courses[i].course_id == self.course_data.course_id:
+                            self.course_data = self.json_config.scheduler_config.courses[index]
+                            self.course_id = self.course_data.course_id
+                            break
             else:
                 self.setWindowTitle("Add New Course")
                 self.faculty_data = None
@@ -165,7 +177,7 @@ class CoursesEditorWidget(QWidget):
             scroll_area.setWidget(scroll_content)
             self.main_layout.addWidget(scroll_area)
 
-            # Preference values layout
+            # Preference values main_layout
             self.pref_layout = QHBoxLayout()
             self.main_layout.addLayout(self.pref_layout)
             self.room_pref_layout = QFormLayout()

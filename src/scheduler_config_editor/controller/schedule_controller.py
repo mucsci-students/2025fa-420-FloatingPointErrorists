@@ -1,7 +1,9 @@
-from scheduler_config_editor.model.schedule_handler import ScheduleHandler
-from scheduler_config_editor.model.run_scheduler import write_as_csv, write_as_json
 from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem
 from scheduler.models import CourseInstance
+
+from scheduler_config_editor.model.run_scheduler import write_as_csv, write_as_json
+from scheduler_config_editor.model.schedule_handler import ScheduleHandler
+
 
 class SchedulerController:
 

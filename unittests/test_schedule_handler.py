@@ -1,5 +1,7 @@
 import json
+
 from scheduler.json_types import CourseInstanceJSON
+
 from scheduler_config_editor.model import ScheduleHandler
 
 course_instance: CourseInstanceJSON = {

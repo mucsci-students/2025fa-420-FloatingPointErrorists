@@ -1,10 +1,12 @@
 import os
 import signal
 import types
+
 import click
 from click_shell import shell
 from scheduler import OptimizerFlags
 from scheduler.models import CourseInstance
+
 from ..model.json import JsonConfig
 from ..model.run_scheduler import run_using_config, write_as_csv, write_as_json
 from ..model.schedule_handler import ScheduleHandler
@@ -91,7 +93,7 @@ def load_config(ctx: click.Context, file_path: str) -> None:
     except json.JSONDecodeError as e:
         raise click.ClickException(f"Invalid JSON: {e}") from e
     except TypeError as e:
-        raise click.ClickException(f"Invalid Configuration") from e
+        raise click.ClickException("Invalid Configuration") from e
 
 @base_cli.command() # type: ignore
 @click.pass_context

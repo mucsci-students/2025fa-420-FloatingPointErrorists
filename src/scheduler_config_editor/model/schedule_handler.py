@@ -3,7 +3,9 @@ import json
 import os
 import re
 from collections import defaultdict
-from typing import Callable, Any
+from collections.abc import Callable
+from typing import Any
+
 from scheduler.json_types import CourseInstanceJSON, TimeInstanceJSON
 from scheduler.models import CourseInstance
 from tabulate import tabulate

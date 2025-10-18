@@ -1,8 +1,11 @@
-import click
 from enum import Enum
+
+import click
 from click_shell import shell
+
 from ..model import ScheduleHandler
 from .base_cli import HANDLER_KEY, clear
+
 
 class DisplayMode(Enum):
     """ Modes for displaying schedules. """

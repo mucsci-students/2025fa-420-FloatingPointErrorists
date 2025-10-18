@@ -1,7 +1,10 @@
 import sys
+
 import click
+
 from .cli import apply_signal_handlers, base_cli
 from .view import view
+
 
 def run_shell() -> None:
     """
