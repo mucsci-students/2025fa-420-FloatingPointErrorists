@@ -29,6 +29,8 @@ from scheduler_config_editor.controller.generator_controller import GeneratorCon
 from scheduler_config_editor.controller.room_controller import RoomEditorController
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
 from scheduler_config_editor.model.json import JsonConfig
+from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
+from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
 from scheduler_config_editor.view.schedule_window import newWindow
 
 """Simple Gui Window Initializer"""
@@ -100,36 +102,36 @@ class SimpleTabs(QWidget):
         self.tabs.addTab(self.generator_tab, "Generator")
         self.tabs.addTab(self.schedule_viewer_tab, "Schedules")
 
-        self.editor_tab.editor_layout = QGridLayout()
-        self.editor_tab.setLayout(self.editor_tab.editor_layout)
+        editor_layout = QGridLayout()
+        self.editor_tab.setLayout(editor_layout)
 
-        self.generator_tab.generator_layout = QVBoxLayout()
-        self.generator_tab.setLayout(self.generator_tab.generator_layout)
+        generator_layout = QVBoxLayout()
+        self.generator_tab.setLayout(generator_layout)
 
         # Dropdown code
         self.editor_combo_box = QComboBox()
         self.editor_combo_box.addItems(['Course', 'Room/Lab', 'Faculty'])
-        self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+        editor_layout.addWidget(self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
         # Creates a container for the editor content
         self.editor_content_area = QVBoxLayout(self)
-        self.editor_tab.layout.addLayout(self.editor_content_area, 1, 0, 1, 2)
+        editor_layout.addLayout(self.editor_content_area, 1, 0, 1, 2)
 
         # Prompt to load a config json
         self.config_prompt = QLabel ("Please load a config file first.")
         self.editor_content_area.addWidget(self.config_prompt)
 
         # Room and Lab placeholder
-        self.room_controller = None
+        self.room_controller: RoomEditorController | None = None
 
         # Faculty placeholders
-        self.faculty_controller = None
-        self.faculty_gui = None
-        self.editor_tab.layout.addWidget(self.editor_combo_box, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.faculty_controller: FacultyEditorController | None = None
+        self.faculty_gui: FacultyEditorGui | None = None
+        editor_layout.addWidget(self.editor_combo_box, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
         # Course placeholders
-        self.course_controller = None
-        self.course_gui = None
+        self.course_controller: CourseEditorController | None = None
+        self.course_gui: CourseEditorGUI | None = None
 
         # Generator placeholders
         self.generator_controller = GeneratorController(self.config)
@@ -138,16 +140,17 @@ class SimpleTabs(QWidget):
         self.generator_controller.on_schedules_generated = self.handle_schedules_generated
 
         # Add the generator_gui into the generator_tab's main_layout
-        self.generator_tab.layout.addWidget(self.generator_gui)
+        generator_layout.addWidget(self.generator_gui)
 
         # When dropdown changes
         def on_editor_selection_change() -> None:
             while self.editor_content_area.count():
                 item = self.editor_content_area.takeAt(0)
-                widget = item.widget()
-                if widget:
-                    self.editor_content_area.removeWidget(widget)
-                    widget.setParent(None)
+                if item is not None:
+                    widget = item.widget()
+                    if widget:
+                        self.editor_content_area.removeWidget(widget)
+                        widget.setParent(None)
             selected = self.editor_combo_box.currentText()
 
             if selected == 'Course':
@@ -182,7 +185,7 @@ class SimpleTabs(QWidget):
         bottom_buttons_layout.addWidget(self.load_config_button)
         bottom_buttons_layout.addWidget(self.save_config_button)
 
-        self.editor_tab.layout.addLayout(bottom_buttons_layout, 99, 0, 1, 2)
+        editor_layout.addLayout(bottom_buttons_layout, 99, 0, 1, 2)
 
 # Schedule Viewer Tab #########################################################################################
         
@@ -427,7 +430,7 @@ class SimpleTabs(QWidget):
                 self.sc.cur_schedules.import_schedules(my_file[0])
                 self.sc.length = len(self.sc.cur_schedules.schedules)
                 #reset generated schedule if any
-                self.schedules = None
+                self.schedules = []
 
                 #show first schedule
                 self.sc.set_table()
@@ -481,10 +484,11 @@ class SimpleTabs(QWidget):
             # refresh GUI
             while self.editor_content_area.count():
                 item = self.editor_content_area.takeAt(0)
-                widget = item.widget()
-                if widget:
-                    self.editor_content_area.removeWidget(widget)
-                    widget.setParent(None)
+                if item is not None:
+                    widget = item.widget()
+                    if widget:
+                        self.editor_content_area.removeWidget(widget)
+                        widget.setParent(None)
             if self.editor_combo_box.currentText() == "Faculty":
                 self.editor_content_area.addWidget(self.faculty_controller.view)
             elif self.editor_combo_box.currentText() == "Room/Lab":

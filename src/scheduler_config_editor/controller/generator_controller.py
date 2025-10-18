@@ -55,7 +55,7 @@ class GeneratorController:
     """
     Controller for the schedule generator GUI
     """
-    def __init__(self, config: JsonConfig) -> None:
+    def __init__(self, config: JsonConfig | None) -> None:
         self.config = config
         self.view = GeneratorGui(self)
         self.schedules: list[list[CourseInstance]] = []
@@ -70,9 +70,10 @@ class GeneratorController:
             if cbox.isChecked():
                 selected_flags.append(fg)
 
-        limit_value = self.view.get_limit() or self.config.combined_config.limit
-        self.config.set_optimization(selected_flags)
-        self.config.set_limit(int(limit_value))
+        if self.config is not None:
+            limit_value = self.view.get_limit() or self.config.combined_config.limit
+            self.config.set_optimization(selected_flags)
+            self.config.set_limit(int(limit_value))
 
     def on_generate_clicked(self) -> None:
         """Handle the Generate button click."""
