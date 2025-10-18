@@ -1,7 +1,10 @@
 import os
+
 import pytest
 from scheduler import TimeRange
+
 from scheduler_config_editor.model import Faculty, JsonConfig
+
 
 @pytest.fixture()
 def json_config():

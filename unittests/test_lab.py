@@ -1,5 +1,7 @@
 from pathlib import Path
+
 from click.testing import CliRunner
+
 from scheduler_config_editor.cli import base_cli
 from scheduler_config_editor.model import Lab
 

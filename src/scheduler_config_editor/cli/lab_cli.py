@@ -1,5 +1,6 @@
 import click
 from click_shell import shell
+
 from ..model.lab import Lab
 from .base_cli import clear, get_json_config, run, save, show
 

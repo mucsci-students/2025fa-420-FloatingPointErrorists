@@ -1,6 +1,14 @@
-from PyQt6.QtWidgets import QMessageBox, QListWidgetItem, QVBoxLayout, QPushButton, QTextEdit, QWidget
+from PyQt6.QtWidgets import (
+    QListWidgetItem,
+    QMessageBox,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
-from scheduler_config_editor.model import Room, Lab,JsonConfig
+from scheduler_config_editor.model import JsonConfig, Lab, Room
+
 
 class RoomEditorController:
     def __init__(self, json_config: JsonConfig) -> None:

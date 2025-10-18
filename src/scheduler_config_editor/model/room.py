@@ -1,5 +1,6 @@
 from .json import JsonConfig
 
+
 class Room:
     """
     Module for handling Rooms in the config files
@@ -28,7 +29,7 @@ class Room:
                 if room in faculty_member.room_preferences:
                     faculty_member.room_preferences[new_room] = faculty_member.room_preferences.pop(room)
             json_config.scheduler_config.rooms.sort()
-        except ValueError as e:
+        except ValueError:
             raise Room.RoomMissingError(f"Room {room} does not exist.")
 
     @staticmethod

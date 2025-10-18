@@ -1,11 +1,14 @@
-from typing import Callable
+from collections.abc import Callable
+
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtWidgets import QDialog, QLabel, QMessageBox, QProgressBar, QVBoxLayout
 from scheduler import OptimizerFlags
-from scheduler_config_editor.model.json import JsonConfig
-from PyQt6.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QLabel, QProgressBar
-from PyQt6.QtCore import QThread, pyqtSignal, Qt
 from scheduler.models import CourseInstance
+
+from scheduler_config_editor.model.json import JsonConfig
 from scheduler_config_editor.model.run_scheduler import run_using_config
 from scheduler_config_editor.view.generator_gui import GeneratorGui
+
 
 # ---- Worker Thread (runs the heavy computation) ----
 class RunWorker(QThread):
@@ -17,7 +20,7 @@ class RunWorker(QThread):
         super().__init__()
         self.config = config
 
-    def run(self):
+    def run(self) -> None:
         try:
             # Run your scheduler here
             result = run_using_config(self.config.combined_config)
@@ -29,7 +32,7 @@ class RunWorker(QThread):
 # ---- Simple Popup with Loading Bar ----
 class LoadingDialog(QDialog):
     """A simple modal dialog with a loading bar."""
-    def __init__(self, parent=None):
+    def __init__(self, parent: QDialog | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Generating schedules...")
         self.setModal(True)
@@ -55,15 +58,15 @@ class GeneratorController:
     def __init__(self, config: JsonConfig) -> None:
         self.config = config
         self.view = GeneratorGui(self)
-        self.schedules = None
-        self.on_schedules_generated: Callable[[list[list[CourseInstance]]], None] = None  # callback
-        self.worker = None
-        self.loading = None
+        self.schedules: list[list[CourseInstance]] = []
+        self.on_schedules_generated: Callable[[list[list[CourseInstance]]], None] | None = None  # callback
+        self.worker: RunWorker
+        self.loading: LoadingDialog
 
     def _prepare_config(self) -> None:
         """Read user selections and update config before running."""
         selected_flags = []
-        for fg, cbox in zip(OptimizerFlags, self.view.get_checks()):
+        for fg, cbox in zip(OptimizerFlags, self.view.get_checks(), strict=False):
             if cbox.isChecked():
                 selected_flags.append(fg)
 

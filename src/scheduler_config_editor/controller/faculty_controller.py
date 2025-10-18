@@ -1,9 +1,13 @@
 from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QMessageBox, QListWidget, QListWidgetItem, QWidget
+from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
 from scheduler import TimeRange
 
-from scheduler_config_editor.model import Faculty,JsonConfig
-from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui, EditFacultyWindow
+from scheduler_config_editor.model import Faculty, JsonConfig
+from scheduler_config_editor.view.faculty_editor_gui import (
+    EditFacultyWindow,
+    FacultyEditorGui,
+)
+
 
 class FacultyEditorController:
     """
@@ -95,7 +99,7 @@ class FacultyEditorController:
                     times[day] = intervals
 
             if len(times) == 0:
-                QMessageBox.warning(edit_window, "Error", f"Faculty must have at least one available time interval.")
+                QMessageBox.warning(edit_window, "Error", "Faculty must have at least one available time interval.")
                 return
 
             room_preferences = {

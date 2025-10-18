@@ -1,5 +1,6 @@
 from .json import JsonConfig
 
+
 class Lab:
     """
     Module for handling Labs in the config files
@@ -28,7 +29,7 @@ class Lab:
                 if lab in faculty_member.lab_preferences:
                     faculty_member.lab_preferences[new_lab] = faculty_member.lab_preferences.pop(lab)
             json_config.scheduler_config.labs.sort()
-        except ValueError as e:
+        except ValueError:
             raise Lab.LabMissingError(f"Lab {lab} does not exist.")
 
     @staticmethod
