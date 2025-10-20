@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtWidgets import QDialog, QLabel, QMessageBox, QProgressBar, QVBoxLayout
-from scheduler import OptimizerFlags
+from scheduler import OptimizerFlags, Scheduler
 from scheduler.models import CourseInstance
 
 from scheduler_config_editor.model.json import JsonConfig
@@ -15,6 +15,7 @@ class RunWorker(QThread):
     """Worker thread to run the scheduler without blocking the GUI."""
     finished_success = pyqtSignal(list)
     error_occurred = pyqtSignal(str)
+    progress_changed = pyqtSignal(int, int)  # current, total
 
     def __init__(self, config: JsonConfig):
         super().__init__()
@@ -22,9 +23,22 @@ class RunWorker(QThread):
 
     def run(self) -> None:
         try:
+            total = self.config.combined_config.limit  # or however many schedules expected
+            current = 0
+
+            # Hypothetical generator-based scheduler call
+
+            # Create scheduler
+            scheduler = Scheduler(self.config.combined_config)
+            schedules = []
+
+            for schedule in scheduler.get_models():
+                current += 1
+                schedules.append(schedule)
+                self.progress_changed.emit(current, total)
+
             # Run your scheduler here
-            result = run_using_config(self.config.combined_config)
-            self.finished_success.emit(result)
+            self.finished_success.emit(schedules)  # or pass real results
         except Exception as e:
             self.error_occurred.emit(str(e))
 
@@ -43,11 +57,17 @@ class LoadingDialog(QDialog):
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.progress = QProgressBar()
-        self.progress.setRange(0, 0)  # infinite animation
+        self.progress.setRange(0, 100)  # infinite animation
+        self.progress.setValue(0)
 
         layout.addWidget(self.label)
         layout.addWidget(self.progress)
         self.setLayout(layout)
+
+    def update_progress(self, current: int, total: int) -> None:
+        if total > 0:
+            self.progress.setRange(0, total)
+            self.progress.setValue(current)
 
 
 # ---- Controller ----
@@ -93,6 +113,7 @@ class GeneratorController:
             self.worker = RunWorker(self.config)
             self.worker.finished_success.connect(self._on_generation_done)
             self.worker.error_occurred.connect(self._on_generation_error)
+            self.worker.progress_changed.connect(self.loading.update_progress)
             self.worker.finished.connect(self.loading.close)
             self.worker.start()
 
