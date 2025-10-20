@@ -472,21 +472,23 @@ class SimpleTabs(QWidget):
         # --- Small reset icon button ---
         reset_button = QPushButton()
         reset_button.setToolTip("Reset all help popups")
-        reset_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation))
-        reset_button.setIconSize(QtCore.QSize(30, 30))
-        reset_button.setFixedSize(40, 40)
-        reset_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        reset_button.setFlat(True)
-        reset_button.setStyleSheet("""
-            QPushButton {
-                border: none;
-                padding: 25;
-            }
-            QPushButton:hover {
-                background-color: rgba(100, 100, 100, 30%);
-                border-radius: 4px;
-            }
-        """)
+        style = self.style()
+        if style is not None:
+            reset_button.setIcon(style.standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation))
+            reset_button.setIconSize(QtCore.QSize(30, 30))
+            reset_button.setFixedSize(40, 40)
+            reset_button.setCursor(Qt.CursorShape.PointingHandCursor)
+            reset_button.setFlat(True)
+            reset_button.setStyleSheet("""
+                QPushButton {
+                    border: none;
+                    padding: 25;
+                }
+                QPushButton:hover {
+                    background-color: rgba(100, 100, 100, 30%);
+                    border-radius: 4px;
+                }
+            """)
 
         reset_button.clicked.connect(self.reset_all_popups)
         self.tabs.setCornerWidget(reset_button, Qt.Corner.TopRightCorner)
