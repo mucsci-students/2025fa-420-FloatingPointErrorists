@@ -1,5 +1,5 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtCore import Qt, QTimer, QSettings
+from PyQt6.QtGui import QGuiApplication, QShowEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -107,6 +107,12 @@ class SimpleTabs(QWidget):
 
         generator_layout = QVBoxLayout()
         self.generator_tab.setLayout(generator_layout)
+
+        # Tab Popups
+        self.initial_popup_shown = False
+        self.generator_info_shown = False
+        self.editor_info_shown = False
+        self.viewer_info_shown = False
 
         # Dropdown code
         self.editor_combo_box = QComboBox()
@@ -458,6 +464,82 @@ class SimpleTabs(QWidget):
        
         self.main_layout.addWidget(self.tabs)
         self.setLayout(self.main_layout)
+
+        # persistent settings (stored per user/system)
+        self.settings = QSettings("Millersville", "SchedulerConfigEditor")
+
+        # --- Add reset button next to tabs ---
+        reset_button = QPushButton("Reset All Popups")
+        reset_button.setToolTip("Show all help popups again")
+        reset_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        reset_button.setStyleSheet("padding: 2px 6px; font-size: 11px;")
+
+        reset_button.clicked.connect(self.reset_all_popups)
+        self.tabs.setCornerWidget(reset_button, Qt.Corner.TopRightCorner)
+
+        # Track initial popup
+        self.initial_popup_scheduled = False
+
+        # When changing tab, show popup
+        self.tabs.currentChanged.connect(self.on_tab_changed)
+
+    def showEvent(self, event: QShowEvent | None) -> None:
+        """Called automatically when the window is first shown."""
+        super().showEvent(event)
+
+        if not self.initial_popup_shown:
+            self.initial_popup_shown = True
+            # Make sure the window is visible and sized before showing editor popup
+            QTimer.singleShot(100, lambda: self.on_tab_changed(self.tabs.currentIndex()))
+
+    def show_info_popup(self, tab_name: str, key: str) -> None:
+        """Custom popup with a 'Don't show again' checkbox."""
+        msg = QMessageBox(self)
+        msg.setWindowTitle(f"{tab_name} Tab")
+        msg.setIcon(QMessageBox.Icon.Information)
+
+        if tab_name == "Editor":
+            msg.setText("This is the Editor tab.\n\nHere, you can load, save, and edit a configuration file.\n\nUse the dropdown to select what you want to edit.")
+        elif tab_name == "Generator":
+            msg.setText("This is the Generator tab.\n\nHere you can configure optimizations, set a number of schedules to generate, and run the generator.\n\nHover over any checkbox or limit field to see a tooltip.")
+        elif tab_name == "Schedules":
+            msg.setText("This is the Schedules tab.\n\nHere, you can load, save, and view schedules that have been generated or loaded.\n\nUse the buttons at the top to format the table view.")
+
+        # Add the "Don't show again" checkbox
+        dont_show_box = QCheckBox("Don't show this message again")
+        msg.setCheckBox(dont_show_box)
+
+        msg.addButton(QPushButton("OK"), QMessageBox.ButtonRole.AcceptRole)
+        msg.exec()
+
+        # Persist setting
+        if dont_show_box.isChecked():
+            self.settings.setValue(key, False)
+
+    # When changing tabs
+    def on_tab_changed(self, index: int) -> None:
+        tab_name = self.tabs.tabText(index)
+        key = f"show_help_{tab_name.lower()}"
+        show_popup = self.settings.value(key, True, type=bool)
+
+        if not show_popup:
+            return  # User has disabled this popup
+
+        self.show_info_popup(tab_name, key)
+
+    # Reset all tab popups
+    def reset_all_popups(self) -> None:
+        """Clears stored popup preferences."""
+        reply = QMessageBox.question(
+            self,
+            "Reset Popups",
+            "Are you sure you want to re-enable all help popups?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self.settings.clear()
+            QMessageBox.information(self, "Reset Complete", "All popups will appear again.")
+            self.on_tab_changed(self.tabs.currentIndex())
 
     # Asks user for config file
     def load_config(self) -> None:
