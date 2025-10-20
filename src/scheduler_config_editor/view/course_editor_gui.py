@@ -158,9 +158,13 @@ class CoursesEditorWidget(QWidget):
             self.course_conflict_layout.addWidget(QLabel("Choose Course Conflict(s):"))
             self.course_conflicts_list = QListWidget(self)
             self.course_conflicts_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
+            seen_courses_list = {self.course_id}
             for i, courses in enumerate(self.json_config.scheduler_config.courses):
-                course = QListWidgetItem(self.json_config.scheduler_config.courses[i].course_id)
-                self.course_conflicts_list.addItem(course)
+                course_id = self.json_config.scheduler_config.courses[i].course_id
+                if course_id not in seen_courses_list:
+                    seen_courses_list.add(course_id)
+                    course = QListWidgetItem(course_id)
+                    self.course_conflicts_list.addItem(course)
             self.course_conflict_layout.addWidget(self.course_conflicts_list)
             scroll_layout.addLayout(self.course_conflict_layout)
 
