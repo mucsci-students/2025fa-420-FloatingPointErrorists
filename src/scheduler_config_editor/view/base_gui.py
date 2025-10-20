@@ -451,11 +451,11 @@ class SimpleTabs(QWidget):
         self.schedule_viewer_button.clicked.connect(load_button) 
         view_bot_right_layout.addWidget(self.schedule_viewer_button)
 
-        #end bot right sub main_layout
+        # End bot right sub main_layout
         view_bot_right_layout.addStretch()
         view_bot_layout.addLayout(view_bot_right_layout, stretch=1)
 
-        #end bot main_layout
+        # End bot main_layout
         self.schedule_layout.addLayout(view_bot_layout)
 
         # Set final main_layout
@@ -493,7 +493,7 @@ class SimpleTabs(QWidget):
             QTimer.singleShot(100, lambda: self.on_tab_changed(self.tabs.currentIndex()))
 
     def show_info_popup(self, tab_name: str, key: str) -> None:
-        """Custom popup with a 'Don't show again' checkbox."""
+        """Shows popups for each tab, including a do not show again button."""
         msg = QMessageBox(self)
         msg.setWindowTitle(f"{tab_name} Tab")
         msg.setIcon(QMessageBox.Icon.Information)
@@ -518,6 +518,7 @@ class SimpleTabs(QWidget):
 
     # When changing tabs
     def on_tab_changed(self, index: int) -> None:
+        """Called when the tab changes."""
         tab_name = self.tabs.tabText(index)
         key = f"show_help_{tab_name.lower()}"
         show_popup = self.settings.value(key, True, type=bool)
