@@ -1,5 +1,6 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QGuiApplication
+from PyQt6 import QtCore
+from PyQt6.QtCore import Qt, QTimer, QSettings
+from PyQt6.QtGui import QGuiApplication, QShowEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -15,7 +16,7 @@ from PyQt6.QtWidgets import (
     QTableWidget,
     QTabWidget,
     QVBoxLayout,
-    QWidget,
+    QWidget, QStyle,
 )
 from scheduler.models import CourseInstance
 
@@ -107,6 +108,12 @@ class SimpleTabs(QWidget):
 
         generator_layout = QVBoxLayout()
         self.generator_tab.setLayout(generator_layout)
+
+        # Tab Popups
+        self.initial_popup_shown = False
+        self.generator_info_shown = False
+        self.editor_info_shown = False
+        self.viewer_info_shown = False
 
         # Dropdown code
         self.editor_combo_box = QComboBox()
@@ -445,11 +452,11 @@ class SimpleTabs(QWidget):
         self.schedule_viewer_button.clicked.connect(load_button) 
         view_bot_right_layout.addWidget(self.schedule_viewer_button)
 
-        #end bot right sub main_layout
+        # End bot right sub main_layout
         view_bot_right_layout.addStretch()
         view_bot_layout.addLayout(view_bot_right_layout, stretch=1)
 
-        #end bot main_layout
+        # End bot main_layout
         self.schedule_layout.addLayout(view_bot_layout)
 
         # Set final main_layout
@@ -458,6 +465,98 @@ class SimpleTabs(QWidget):
        
         self.main_layout.addWidget(self.tabs)
         self.setLayout(self.main_layout)
+
+        # persistent settings (stored per user/system)
+        self.settings = QSettings("Millersville", "SchedulerConfigEditor")
+
+        # --- Small reset icon button ---
+        reset_button = QPushButton()
+        reset_button.setToolTip("Reset all help popups")
+        style = self.style()
+        if style is not None:
+            reset_button.setIcon(style.standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation))
+            reset_button.setIconSize(QtCore.QSize(30, 30))
+            reset_button.setFixedSize(40, 40)
+            reset_button.setCursor(Qt.CursorShape.PointingHandCursor)
+            reset_button.setFlat(True)
+            reset_button.setStyleSheet("""
+                QPushButton {
+                    border: none;
+                    padding: 25;
+                }
+                QPushButton:hover {
+                    background-color: rgba(100, 100, 100, 30%);
+                    border-radius: 4px;
+                }
+            """)
+
+        reset_button.clicked.connect(self.reset_all_popups)
+        self.tabs.setCornerWidget(reset_button, Qt.Corner.TopRightCorner)
+
+        # Track initial popup
+        self.initial_popup_scheduled = False
+
+        # When changing tab, show popup
+        self.tabs.currentChanged.connect(self.on_tab_changed)
+
+    def showEvent(self, event: QShowEvent | None) -> None:
+        """Called automatically when the window is first shown."""
+        super().showEvent(event)
+
+        if not self.initial_popup_shown:
+            self.initial_popup_shown = True
+            # Make sure the window is visible and sized before showing editor popup
+            QTimer.singleShot(100, lambda: self.on_tab_changed(self.tabs.currentIndex()))
+
+    def show_info_popup(self, tab_name: str, key: str) -> None:
+        """Shows popups for each tab, including a do not show again button."""
+        msg = QMessageBox(self)
+        msg.setWindowTitle(f"{tab_name} Tab")
+        msg.setIcon(QMessageBox.Icon.Information)
+
+        if tab_name == "Editor":
+            msg.setText("This is the Editor tab.\n\nHere, you can load, save, and edit a configuration file.\n\nUse the dropdown to select what you want to edit.")
+        elif tab_name == "Generator":
+            msg.setText("This is the Generator tab.\n\nHere you can configure optimizations, set a number of schedules to generate, and run the generator.\n\nHover over any checkbox or limit field to see a tooltip.")
+        elif tab_name == "Schedules":
+            msg.setText("This is the Schedules tab.\n\nHere, you can load, save, and view schedules that have been generated or loaded.\n\nUse the buttons at the top to format the table view.")
+
+        # Add the "Don't show again" checkbox
+        dont_show_box = QCheckBox("Don't show this message again")
+        msg.setCheckBox(dont_show_box)
+
+        msg.addButton(QPushButton("OK"), QMessageBox.ButtonRole.AcceptRole)
+        msg.exec()
+
+        # Persist setting
+        if dont_show_box.isChecked():
+            self.settings.setValue(key, False)
+
+    # When changing tabs
+    def on_tab_changed(self, index: int) -> None:
+        """Called when the tab changes."""
+        tab_name = self.tabs.tabText(index)
+        key = f"show_help_{tab_name.lower()}"
+        show_popup = self.settings.value(key, True, type=bool)
+
+        if not show_popup:
+            return  # User has disabled this popup
+
+        self.show_info_popup(tab_name, key)
+
+    # Reset all tab popups
+    def reset_all_popups(self) -> None:
+        """Clears stored popup preferences."""
+        reply = QMessageBox.question(
+            self,
+            "Reset Popups",
+            "Are you sure you want to re-enable all help popups?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self.settings.clear()
+            QMessageBox.information(self, "Reset Complete", "All popups will appear again.")
+            self.on_tab_changed(self.tabs.currentIndex())
 
     # Asks user for config file
     def load_config(self) -> None:

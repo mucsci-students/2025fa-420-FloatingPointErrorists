@@ -11,7 +11,6 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QDialog,
 )
-from scheduler import OptimizerFlags
 
 from typing import TYPE_CHECKING
 
@@ -48,10 +47,35 @@ class GeneratorGui(QDialog):
         flags_layout = QVBoxLayout()
 
         # Checkboxes
-        for flag in OptimizerFlags:
-            checkbox = QCheckBox(f"{flag} optimization")
+        optimizer_flags = [
+            "Faculty Course Optimization",
+            "Faculty Room Optimization",
+            "Faculty Lab Optimization",
+            "Same Room Optimization",
+            "Same Lab Optimization",
+            "Pack Rooms Optimization",
+            "Pack Labs Optimization",
+        ]
+
+        flag_descs = [
+            "Optimize faculty course assignments using preferences",
+            "Optimize faculty room assignments using preferences",
+            "Optimize faculty lab assignments using preferences",
+            "Force same room usage for courses taught by the same faculty",
+            "Force same lab usage for courses taught by the same faculty",
+            "Optimize packing of rooms for courses taught",
+            "Optimize packing of labs for courses taught",
+        ]
+
+        for flag in optimizer_flags:
+            checkbox = QCheckBox(flag)
             flags_layout.addWidget(checkbox)
             self.optimizer_checkboxes.append(checkbox)
+
+        for desc in flag_descs:
+            self.optimizer_checkboxes[flag_descs.index(desc)].setToolTip(desc)
+
+
 
         flags_group.setLayout(flags_layout)
         generator_layout.addWidget(flags_group)
@@ -63,6 +87,7 @@ class GeneratorGui(QDialog):
         limit_label = QLabel("Max schedules:")
         self.limit_input.setPlaceholderText("Enter a positive integer")
         self.limit_input.setValidator(QIntValidator(1, 99999999))  # Only allows positive ints
+        self.limit_input.setToolTip("Set a limit on number of schedules to generate. If left empty, defaults to 1.")
 
         limit_layout.addWidget(limit_label)
         limit_layout.addWidget(self.limit_input)
