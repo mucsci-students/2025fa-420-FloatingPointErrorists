@@ -1,3 +1,4 @@
+from PyQt6 import QtCore
 from PyQt6.QtCore import Qt, QTimer, QSettings
 from PyQt6.QtGui import QGuiApplication, QShowEvent
 from PyQt6.QtWidgets import (
@@ -15,7 +16,7 @@ from PyQt6.QtWidgets import (
     QTableWidget,
     QTabWidget,
     QVBoxLayout,
-    QWidget,
+    QWidget, QStyle,
 )
 from scheduler.models import CourseInstance
 
@@ -468,11 +469,24 @@ class SimpleTabs(QWidget):
         # persistent settings (stored per user/system)
         self.settings = QSettings("Millersville", "SchedulerConfigEditor")
 
-        # --- Add reset button next to tabs ---
-        reset_button = QPushButton("Reset All Popups")
-        reset_button.setToolTip("Show all help popups again")
+        # --- Small reset icon button ---
+        reset_button = QPushButton()
+        reset_button.setToolTip("Reset all help popups")
+        reset_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation))
+        reset_button.setIconSize(QtCore.QSize(30, 30))
+        reset_button.setFixedSize(40, 40)
         reset_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        reset_button.setStyleSheet("padding: 2px 6px; font-size: 11px;")
+        reset_button.setFlat(True)
+        reset_button.setStyleSheet("""
+            QPushButton {
+                border: none;
+                padding: 25;
+            }
+            QPushButton:hover {
+                background-color: rgba(100, 100, 100, 30%);
+                border-radius: 4px;
+            }
+        """)
 
         reset_button.clicked.connect(self.reset_all_popups)
         self.tabs.setCornerWidget(reset_button, Qt.Corner.TopRightCorner)
