@@ -26,8 +26,6 @@ class RunWorker(QThread):
             total = self.config.combined_config.limit  # or however many schedules expected
             current = 0
 
-            # Hypothetical generator-based scheduler call
-
             # Create scheduler
             scheduler = Scheduler(self.config.combined_config)
             schedules = []
@@ -37,8 +35,8 @@ class RunWorker(QThread):
                 schedules.append(schedule)
                 self.progress_changed.emit(current, total)
 
-            # Run your scheduler here
-            self.finished_success.emit(schedules)  # or pass real results
+            self.finished_success.emit(schedules)
+
         except Exception as e:
             self.error_occurred.emit(str(e))
 

@@ -47,16 +47,6 @@ class GeneratorGui(QDialog):
         flags_layout = QVBoxLayout()
 
         # Checkboxes
-        optimizer_flags = [
-            "Faculty Course Optimization",
-            "Faculty Room Optimization",
-            "Faculty Lab Optimization",
-            "Same Room Optimization",
-            "Same Lab Optimization",
-            "Pack Rooms Optimization",
-            "Pack Labs Optimization",
-        ]
-
         flag_descs = [
             "Optimize faculty course assignments using preferences",
             "Optimize faculty room assignments using preferences",
@@ -67,15 +57,10 @@ class GeneratorGui(QDialog):
             "Optimize packing of labs for courses taught",
         ]
 
-        for flag in optimizer_flags:
+        for flag in flag_descs:
             checkbox = QCheckBox(flag)
             flags_layout.addWidget(checkbox)
             self.optimizer_checkboxes.append(checkbox)
-
-        for desc in flag_descs:
-            self.optimizer_checkboxes[flag_descs.index(desc)].setToolTip(desc)
-
-
 
         flags_group.setLayout(flags_layout)
         generator_layout.addWidget(flags_group)
