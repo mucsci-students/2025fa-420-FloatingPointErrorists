@@ -515,11 +515,11 @@ class SimpleTabs(QWidget):
         msg.setIcon(QMessageBox.Icon.Information)
 
         if tab_name == "Editor":
-            msg.setText("This is the Editor tab.\n\nHere, you can load, save, and edit a configuration file.\n\nUse the dropdown to select what you want to edit.")
+            msg.setText("This is the Editor tab.\n\nHere, you can load, save, and edit a configuration file.\n\nUse the dropdown to select what you want to edit.\n")
         elif tab_name == "Generator":
-            msg.setText("This is the Generator tab.\n\nHere you can configure optimizations, set a number of schedules to generate, and run the generator.\n\nHover over any checkbox or limit field to see a tooltip.")
+            msg.setText("This is the Generator tab.\n\nHere you can configure optimizations, set a number of schedules to generate, and run the generator.\n")
         elif tab_name == "Schedules":
-            msg.setText("This is the Schedules tab.\n\nHere, you can load, save, and view schedules that have been generated or loaded.\n\nUse the buttons at the top to format the table view.")
+            msg.setText("This is the Schedules tab.\n\nHere, you can load, save, and view schedules that have been generated or loaded.\n\nUse the buttons at the top to format the table view.\n")
 
         # Add the "Don't show again" checkbox
         dont_show_box = QCheckBox("Don't show this message again")
