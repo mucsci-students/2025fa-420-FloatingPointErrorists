@@ -78,6 +78,7 @@ class CoursesEditorWidget(QWidget):
             self.json_config = controller.json_config
             self.course_data = course_data
             self.index = index
+            self.setWindowModality(Qt.WindowModality.ApplicationModal)
 
             if getattr(self.course_data, "course_id", None):
                 if self.course_data is not None:

@@ -1,7 +1,7 @@
 import sys
 from typing import TYPE_CHECKING, TypedDict
 
-from PyQt6.QtCore import QTime
+from PyQt6.QtCore import QTime, Qt
 from PyQt6.QtGui import QGuiApplication, QIntValidator
 from PyQt6.QtWidgets import (
     QFormLayout,
@@ -89,6 +89,7 @@ class EditFacultyWindow(QMainWindow):
         self.json_config = controller.json_config
         self.faculty_data = faculty_data
         self.parent_gui = parent_gui
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
 
         if self.faculty_data is not None:
             self.setWindowTitle("Edit Faculty: " + self.faculty_data.name)
