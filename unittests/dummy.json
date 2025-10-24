@@ -432,6 +432,7 @@
                             "end": "15:00"
                         }
                     ],
+                    "THU": [],
                     "FRI": [
                         {
                             "start": "09:00",
@@ -440,12 +441,12 @@
                     ]
                 },
                 "course_preferences": {
-                    "CMSC 330": 4,
-                    "CMSC 366": 5
+                  "CMSC 366": 5,
+                  "CMSC 330": 4
                 },
                 "room_preferences": {
-                    "Roddy 136": 1,
                     "Roddy 140": 5,
+                    "Roddy 136": 1,
                     "Roddy 147": 5
                 },
                 "lab_preferences": {
@@ -482,7 +483,8 @@
                             "start": "17:00",
                             "end": "21:00"
                         }
-                    ]
+                    ],
+                    "FRI": []
                 },
                 "course_preferences": {
                     "CMSC 161": 5
