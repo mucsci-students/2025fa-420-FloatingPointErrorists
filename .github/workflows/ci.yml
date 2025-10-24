@@ -10,8 +10,13 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install -e .[dev]
-      - run: pytest --cov=src
       - run: mypy src
+      - name: Run tests
+        run: pytest --cov=src/scheduler_config_editor/model --cov-branch --cov-report=xml
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
   test-windows:
     runs-on: windows-latest
     steps:
@@ -20,8 +25,13 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install -e .[dev]
-      - run: pytest --cov=src
       - run: mypy src
+      - name: Run tests
+        run: pytest --cov=src/scheduler_config_editor/model --cov-branch --cov-report=xml
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
   test-macos:
     runs-on: macos-latest
     steps:
@@ -30,5 +40,10 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install -e .[dev]
-      - run: pytest --cov=src
       - run: mypy src
+      - name: Run tests
+        run: pytest --cov=src/scheduler_config_editor/model --cov-branch --cov-report=xml
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
