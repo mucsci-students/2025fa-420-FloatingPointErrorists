@@ -1,7 +1,7 @@
 import sys
 from typing import TYPE_CHECKING, TypedDict
 
-from PyQt6.QtCore import QTime
+from PyQt6.QtCore import QTime, Qt
 from PyQt6.QtGui import QGuiApplication, QIntValidator
 from PyQt6.QtWidgets import (
     QFormLayout,
@@ -89,6 +89,7 @@ class EditFacultyWindow(QMainWindow):
         self.json_config = controller.json_config
         self.faculty_data = faculty_data
         self.parent_gui = parent_gui
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
 
         if self.faculty_data is not None:
             self.setWindowTitle("Edit Faculty: " + self.faculty_data.name)
@@ -184,6 +185,11 @@ class EditFacultyWindow(QMainWindow):
         self.main_layout.addLayout(self.time_layout)
         self.days = ["MON", "TUE", "WED", "THU", "FRI"]
 
+        class DayIntervalData(TypedDict):
+            container: QVBoxLayout
+            intervals: list[tuple[QTimeEdit, QTimeEdit, QPushButton]]
+
+        self.day_interval_widgets: dict[str, DayIntervalData] = {}
         for i, day in enumerate(self.days):
             self.day_layout = QVBoxLayout()
             self.day_label = QLabel(day)
@@ -193,12 +199,6 @@ class EditFacultyWindow(QMainWindow):
 
             self.day_layout.addWidget(self.day_label)
             self.day_layout.addWidget(self.add_interval_button)
-
-            class DayIntervalData(TypedDict):
-                container: QVBoxLayout
-                intervals: list[tuple[QTimeEdit, QTimeEdit, QPushButton]]
-
-            self.day_interval_widgets: dict[str, DayIntervalData] = {}
 
             self.intervals_container = QVBoxLayout()
             self.day_layout.addLayout(self.intervals_container)
@@ -325,7 +325,7 @@ class EditFacultyWindow(QMainWindow):
             h, m = map(int, start_time_str.split(":"))
             start_time.setTime(QTime(h, m))
         else:
-            start_time.setTime(start_time.time().currentTime())
+            start_time.setTime(QTime(0,0,0))
         end_time = QTimeEdit()
         end_time.setDisplayFormat("HH:mm")
         end_time.setMaximumWidth(70)
@@ -333,7 +333,7 @@ class EditFacultyWindow(QMainWindow):
             h, m = map(int, end_time_str.split(":"))
             end_time.setTime(QTime(h, m))
         else:
-            end_time.setTime(end_time.time().currentTime())
+            end_time.setTime(QTime(0,0,0))
 
         remove_button = QPushButton("🗑️")
         remove_button.setMaximumWidth(70)
