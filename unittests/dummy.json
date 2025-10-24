@@ -441,8 +441,8 @@
                     ]
                 },
                 "course_preferences": {
-                  "CMSC 366": 5,
-                  "CMSC 330": 4
+                    "CMSC 366": 5,
+                    "CMSC 330": 4
                 },
                 "room_preferences": {
                     "Roddy 140": 5,
