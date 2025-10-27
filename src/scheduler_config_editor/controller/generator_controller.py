@@ -6,7 +6,6 @@ from scheduler import OptimizerFlags, Scheduler
 from scheduler.models import CourseInstance
 
 from scheduler_config_editor.model.json import JsonConfig
-from scheduler_config_editor.model.run_scheduler import run_using_config
 from scheduler_config_editor.view.generator_gui import GeneratorGui
 
 

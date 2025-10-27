@@ -47,7 +47,7 @@ def test_lab_del_ne() -> None:
     jsonObj = obj[CONFIG_KEY]
     try:
         Lab.del_lab(jsonObj, "Test Lab")
-        assert False
+        raise AssertionError()
     except Lab.LabMissingError:
         assert True
 
@@ -68,7 +68,7 @@ def test_lab_mod_ne() -> None:
     jsonObj = obj[CONFIG_KEY]
     try:
         Lab.mod_lab(jsonObj, "Test Lab", "New Lab")
-        assert False
+        raise AssertionError()
     except Lab.LabMissingError:
         assert True
 
@@ -81,7 +81,7 @@ def test_lab_mod_dupe() -> None:
     Lab.add_lab(jsonObj, "Test Lab")
     try:
         Lab.mod_lab(jsonObj, "Test Lab", "New Lab")
-        assert False
+        raise AssertionError()
     except Lab.LabExistsError:
         assert True
 

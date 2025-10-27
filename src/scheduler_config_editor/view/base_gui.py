@@ -1,5 +1,5 @@
 from PyQt6 import QtCore
-from PyQt6.QtCore import Qt, QTimer, QSettings
+from PyQt6.QtCore import QSettings, Qt, QTimer
 from PyQt6.QtGui import QGuiApplication, QShowEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
@@ -13,10 +13,11 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QScrollArea,
+    QStyle,
     QTableWidget,
     QTabWidget,
     QVBoxLayout,
-    QWidget, QStyle,
+    QWidget,
 )
 from scheduler.models import CourseInstance
 

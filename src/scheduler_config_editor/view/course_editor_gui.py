@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import (
@@ -12,13 +14,12 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
-from typing import TYPE_CHECKING
-
 from scheduler import CourseConfig
 
 if TYPE_CHECKING:
-    from scheduler_config_editor.controller.course_editor_controller import CourseEditorController
+    from scheduler_config_editor.controller.course_editor_controller import (
+        CourseEditorController,
+    )
 
 
 class CourseEditorGUI(QWidget):
@@ -137,7 +138,7 @@ class CoursesEditorWidget(QWidget):
             self.room_layout.addWidget(QLabel("Choose Room(s):"))
             self.room_list = QListWidget(self)
             self.room_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
-            for i, rooms in enumerate(self.json_config.scheduler_config.rooms):
+            for i, _rooms in enumerate(self.json_config.scheduler_config.rooms):
                 room = QListWidgetItem(self.json_config.scheduler_config.rooms[i])
                 self.room_list.addItem(room)
             self.room_layout.addWidget(self.room_list)
@@ -148,7 +149,7 @@ class CoursesEditorWidget(QWidget):
             self.lab_layout.addWidget(QLabel("Choose Lab(s):"))
             self.lab_list = QListWidget(self)
             self.lab_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
-            for i, labs in enumerate(self.json_config.scheduler_config.labs):
+            for i, _labs in enumerate(self.json_config.scheduler_config.labs):
                 lab = QListWidgetItem(self.json_config.scheduler_config.labs[i])
                 self.lab_list.addItem(lab)
             self.lab_layout.addWidget(self.lab_list)
@@ -160,7 +161,7 @@ class CoursesEditorWidget(QWidget):
             self.course_conflicts_list = QListWidget(self)
             self.course_conflicts_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
             seen_courses_list = {self.course_id}
-            for i, courses in enumerate(self.json_config.scheduler_config.courses):
+            for i, _courses in enumerate(self.json_config.scheduler_config.courses):
                 course_id = self.json_config.scheduler_config.courses[i].course_id
                 if course_id not in seen_courses_list:
                     seen_courses_list.add(course_id)
@@ -174,7 +175,7 @@ class CoursesEditorWidget(QWidget):
             self.faculty_layout.addWidget(QLabel("Choose Faculty Member(s):"))
             self.faculty_list = QListWidget(self)
             self.faculty_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
-            for i, faculty in enumerate(self.json_config.scheduler_config.faculty):
+            for i, _faculty in enumerate(self.json_config.scheduler_config.faculty):
                 name = QListWidgetItem(self.json_config.scheduler_config.faculty[i].name)
                 self.faculty_list.addItem(name)
             self.faculty_layout.addWidget(self.faculty_list)

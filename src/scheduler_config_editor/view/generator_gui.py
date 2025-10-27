@@ -1,19 +1,17 @@
 import sys
+from typing import TYPE_CHECKING
 
 from PyQt6.QtGui import QIntValidator
 from PyQt6.QtWidgets import (
     QCheckBox,
+    QDialog,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
     QVBoxLayout,
-    QDialog,
 )
-
-from typing import TYPE_CHECKING
-
 from scheduler.models import CourseInstance
 
 if TYPE_CHECKING:

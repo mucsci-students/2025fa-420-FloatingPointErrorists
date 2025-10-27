@@ -2,28 +2,42 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  test-linux:
-    runs-on: ubuntu-latest
-    steps: &steps
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+
       - name: Install uv
         run: pip install uv
-      - run: uv pip install --system -e .[dev]
-      - run: mypy src
+
+      - name: Install dependencies
+        run: uv pip install --system -e .[dev]
+
       - name: Run tests
         run: pytest --cov=src/scheduler_config_editor/model --cov-branch --cov-report=xml
-      - name: Upload results to Codecov
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  test-windows:
-    runs-on: windows-latest
-    steps: *steps
+      - name: Check code formatting
+        run: ruff format --check .
 
-  test-macos:
-    runs-on: macos-latest
-    steps: *steps
+      - name: Lint code
+        run: ruff check .
+
+      - name: Type check
+        run: ty check src

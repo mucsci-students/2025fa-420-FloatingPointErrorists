@@ -21,10 +21,10 @@ class RoomEditorController:
     def refresh_lists(self) -> None:
         self.view.room_list.clear()
         self.view.lab_list.clear()
-        for i, room in enumerate (self.json_config.scheduler_config.rooms):
+        for i, _room in enumerate (self.json_config.scheduler_config.rooms):
             self.view.room_list.addItem(self.json_config.scheduler_config.rooms[i])
 
-        for i, lab in enumerate (self.json_config.scheduler_config.labs):
+        for i, _lab in enumerate (self.json_config.scheduler_config.labs):
             self.view.lab_list.addItem(self.json_config.scheduler_config.labs[i])
 
 

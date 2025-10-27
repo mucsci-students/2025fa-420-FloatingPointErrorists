@@ -1,7 +1,7 @@
 import sys
 from typing import TYPE_CHECKING, TypedDict
 
-from PyQt6.QtCore import QTime, Qt
+from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QGuiApplication, QIntValidator
 from PyQt6.QtWidgets import (
     QFormLayout,
@@ -75,7 +75,7 @@ class FacultyEditorGui(QMainWindow):
         self.main_layout.addWidget(self.list)
 
         # Populates list of faculty
-        for i, faculty in enumerate (self.json_config.scheduler_config.faculty):
+        for i, _faculty in enumerate (self.json_config.scheduler_config.faculty):
             self.list.addItem(self.json_config.scheduler_config.faculty[i].name)
 
         # Connecting Buttons
@@ -93,7 +93,7 @@ class EditFacultyWindow(QMainWindow):
 
         if self.faculty_data is not None:
             self.setWindowTitle("Edit Faculty: " + self.faculty_data.name)
-            for i, faculty in enumerate(self.json_config.scheduler_config.faculty):
+            for i, _faculty in enumerate(self.json_config.scheduler_config.faculty):
                 if self.json_config.scheduler_config.faculty[i].name == self.faculty_data.name:
                     self.faculty_data = self.json_config.scheduler_config.faculty[i]
                     self.name = self.faculty_data.name
@@ -222,7 +222,7 @@ class EditFacultyWindow(QMainWindow):
         self.room_layout.addWidget(QLabel("Room Preferences:"))
         self.room_list = QListWidget(self)
         self.room_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
-        for i, rooms in enumerate (self.json_config.scheduler_config.rooms):
+        for i, _rooms in enumerate (self.json_config.scheduler_config.rooms):
             room = QListWidgetItem(self.json_config.scheduler_config.rooms[i])
             self.room_list.addItem(room)
         self.room_layout.addWidget(self.room_list)
@@ -234,7 +234,7 @@ class EditFacultyWindow(QMainWindow):
         self.course_list = QListWidget(self)
         self.course_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
         seen_courses_list = set()
-        for i, courses in enumerate(self.json_config.scheduler_config.courses):
+        for i, _courses in enumerate(self.json_config.scheduler_config.courses):
             course_id = self.json_config.scheduler_config.courses[i].course_id
             if course_id not in seen_courses_list:
                 seen_courses_list.add(course_id)
@@ -249,7 +249,7 @@ class EditFacultyWindow(QMainWindow):
         self.lab_layout.addWidget(QLabel("Lab Preferences:"))
         self.lab_list = QListWidget(self)
         self.lab_list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
-        for i, labs in enumerate(self.json_config.scheduler_config.labs):
+        for i, _labs in enumerate(self.json_config.scheduler_config.labs):
             lab = QListWidgetItem(self.json_config.scheduler_config.labs[i])
             self.lab_list.addItem(lab)
         self.lab_layout.addWidget(self.lab_list)
@@ -337,7 +337,6 @@ class EditFacultyWindow(QMainWindow):
 
         remove_button = QPushButton("🗑️")
         remove_button.setMaximumWidth(70)
-        interval_tuple = start_time, end_time, remove_button
 
         def remove_interval() -> None:
             container.removeWidget(interval_widget)

@@ -47,7 +47,7 @@ def test_room_del_ne() -> None:
     jsonObj = obj[CONFIG_KEY]
     try:
         Room.del_room(jsonObj, "Test Room")
-        assert False
+        raise AssertionError()
     except Room.RoomMissingError:
         assert True
 
@@ -67,7 +67,7 @@ def test_room_mod_ne() -> None:
     jsonObj = obj[CONFIG_KEY]
     try:
         Room.mod_room(jsonObj, "Test Room", "New Room")
-        assert False
+        raise AssertionError()
     except Room.RoomMissingError:
         assert True
 
@@ -80,6 +80,6 @@ def test_room_mod_dupe() -> None:
     Room.add_room(jsonObj, "Test Room")
     try:
         Room.mod_room(jsonObj, "Test Room", "New Room")
-        assert False
+        raise AssertionError()
     except Room.RoomExistsError:
         assert True

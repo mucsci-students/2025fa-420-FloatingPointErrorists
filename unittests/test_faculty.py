@@ -55,5 +55,5 @@ class TestFaculty:
             json_config = json_config,
             name = "Dr. Test"
         )
-        for i, faculty in enumerate(json_config.scheduler_config.faculty):
+        for i, _faculty in enumerate(json_config.scheduler_config.faculty):
             assert json_config.scheduler_config.faculty[i].name != "Dr. Test"
