@@ -371,23 +371,27 @@ class SimpleTabs(QWidget):
 
         # add index box
         def schedule_index_change(i: str) -> None:
-            try:
-                newIndex = int(i)
+            if self.sc.length > 0:
+                try:
+                    newIndex = int(i)
+                except ValueError:
+                    QMessageBox.warning(
+                        self, "Error", "Non valid integer."
+                    )
+                    return
                 if newIndex < 1:
                     self.sc.index = 0
                 elif newIndex > self.sc.length:
                     self.sc.index = self.sc.length - 1
                 else:
                     self.sc.index = newIndex - 1
-
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
-
-            except:
+            else:
                 QMessageBox.warning(
-                    self, "Error", "No schedule loaded or non valid integer."
+                    self, "Error", "No schedule loaded."
                 )
 
         self.schedule_viewer_index = QLineEdit()
@@ -407,13 +411,13 @@ class SimpleTabs(QWidget):
 
         # add next_schedule button
         def schedule_forward() -> None:
-            try:
+            if self.sc.length > 0:
                 self.sc.next_schedule()
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
-            except:
+            else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
         self.schedule_viewer_button = QPushButton("-->")
@@ -442,28 +446,23 @@ class SimpleTabs(QWidget):
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
             if self.schedules:
-                try:
-                    if (
-                        not self.checkboxjson.isChecked()
-                        and not self.checkboxcsv.isChecked()
-                    ):
-                        QMessageBox.warning(self, "Error", "No file format selected.")
-                        return
-                    if self.checkboxjson.isChecked():
-                        self.sc.save_as_json(
-                            self.schedules, self.schedule_viewer_filename.text() or "_"
-                        )
-                    if self.checkboxcsv.isChecked():
-                        self.sc.save_as_csv(
-                            self.schedules, self.schedule_viewer_filename.text() or "_"
-                        )
-                    QMessageBox.information(self, "Information", "Save Complete.")
-                except:
-                    QMessageBox.warning(
-                        self, "Error", "You trying to save a non generated schedule."
+                if (
+                    not self.checkboxjson.isChecked()
+                    and not self.checkboxcsv.isChecked()
+                ):
+                    QMessageBox.warning(self, "Error", "No file format selected.")
+                    return
+                if self.checkboxjson.isChecked():
+                    self.sc.save_as_json(
+                        self.schedules, self.schedule_viewer_filename.text() or "_"
                     )
+                if self.checkboxcsv.isChecked():
+                    self.sc.save_as_csv(
+                        self.schedules, self.schedule_viewer_filename.text() or "_"
+                    )
+                QMessageBox.information(self, "Information", "Save Complete.")
             else:
-                QMessageBox.warning(self, "Error", "No or empty generated schedule")
+                QMessageBox.warning(self, "Error", "No schedules generated to save.")
 
         self.schedule_viewer_button = QPushButton("Save")
         self.schedule_viewer_button.clicked.connect(save_button)
