@@ -270,7 +270,7 @@ class SimpleTabs(QWidget):
 
         def popoutwindow() -> None:
             self.nw.show()
-            try:
+            if self.sc.length > 0:
                 # Copies schedule_table into new window's my_table
                 new_table = QTableWidget()
                 new_table.setRowCount(self.schedule_table.rowCount())
@@ -319,7 +319,7 @@ class SimpleTabs(QWidget):
                 self.nw.widget.my_table = new_table
                 self.nw.widget.scroll_area_w.setWidget(new_table)
 
-            except:
+            else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
         self.schedule_viewer_button = QPushButton("Popout Window")
@@ -351,13 +351,13 @@ class SimpleTabs(QWidget):
 
         # add prev_schedule button
         def schedule_back() -> None:
-            try:
+            if self.sc.length > 0:
                 self.sc.previous_schedule()
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
-            except:
+            else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
         self.schedule_viewer_button = QPushButton("<--")
