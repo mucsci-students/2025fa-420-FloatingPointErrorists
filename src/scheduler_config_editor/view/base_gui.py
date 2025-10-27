@@ -220,12 +220,12 @@ class SimpleTabs(QWidget):
 
         # add view_by_courses button
         def view_by_courses() -> None:
-            try:
+            if self.sc.length > 0:
                 self.sc.mode = 0
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-            except:
+            else:
                 self.schedule_viewer_label.setText(
                     """Schedule by course will be shown here"""
                 )
@@ -237,12 +237,12 @@ class SimpleTabs(QWidget):
 
         # add view_by_faulty button
         def view_by_faulty() -> None:
-            try:
+            if self.sc.length > 0:
                 self.sc.mode = 1
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-            except:
+            else:
                 set_schedule_label("""Schedule by faculty will be shown here""")
                 self.my_scroll.setWidget(self.schedule_viewer_label)
 
@@ -252,12 +252,12 @@ class SimpleTabs(QWidget):
 
         # add view_by_room button
         def view_by_room() -> None:
-            try:
+            if self.sc.length > 0:
                 self.sc.mode = 2
                 self.sc.set_table()
                 self.schedule_table = self.sc.cur_table
                 self.my_scroll.setWidget(self.schedule_table)
-            except:
+            else:
                 set_schedule_label("""Schedule by room will be shown here""")
                 self.my_scroll.setWidget(self.schedule_viewer_label)
 
