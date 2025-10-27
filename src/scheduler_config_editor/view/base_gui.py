@@ -375,9 +375,7 @@ class SimpleTabs(QWidget):
                 try:
                     newIndex = int(i)
                 except ValueError:
-                    QMessageBox.warning(
-                        self, "Error", "Non valid integer."
-                    )
+                    QMessageBox.warning(self, "Error", "Non valid integer.")
                     return
                 if newIndex < 1:
                     self.sc.index = 0
@@ -390,9 +388,7 @@ class SimpleTabs(QWidget):
                 self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
             else:
-                QMessageBox.warning(
-                    self, "Error", "No schedule loaded."
-                )
+                QMessageBox.warning(self, "Error", "No schedule loaded.")
 
         self.schedule_viewer_index = QLineEdit()
         self.schedule_viewer_index.setPlaceholderText("x")

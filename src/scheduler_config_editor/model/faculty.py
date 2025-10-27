@@ -1,7 +1,7 @@
 from _ast import Gt
-from typing import Annotated
+from typing import Annotated, Optional, cast
 
-from scheduler import FacultyConfig
+from scheduler import Day, FacultyConfig, TimeRange
 
 from .json import JsonConfig
 
@@ -18,10 +18,10 @@ class Faculty:
         maximum_credits: int,
         minimum_credits: int,
         unique_course_limit: Annotated[int, Gt()],
-        times: dict[str, list[str]] = None,
-        course_preferences: dict[str, int] = None,
-        room_preferences: dict[str, int] = None,
-        lab_preferences: dict[str, int] = None,
+        times: Optional[dict[str, list[str]]] = None,
+        course_preferences: Optional[dict[str, int]] = None,
+        room_preferences: Optional[dict[str, int]] = None,
+        lab_preferences: Optional[dict[str, int]] = None,
     ) -> None:
         """adds a new faculty member to the config file"""
         if lab_preferences is None:
@@ -32,12 +32,13 @@ class Faculty:
             course_preferences = {}
         if times is None:
             times = {}
+        times_casted = cast(dict[Day, list[TimeRange]], times)
         faculty_config = FacultyConfig(
             name=name,
             maximum_credits=maximum_credits,
             minimum_credits=minimum_credits,
             unique_course_limit=unique_course_limit,
-            times=times,
+            times=times_casted,
             course_preferences=course_preferences,
             room_preferences=room_preferences,
             lab_preferences=lab_preferences,
@@ -53,10 +54,10 @@ class Faculty:
         maximum_credits: int,
         minimum_credits: int,
         unique_course_limit: Annotated[int, Gt()],
-        times: dict[str, list[str]] = None,
-        course_preferences: dict[str, int] = None,
-        room_preferences: dict[str, int] = None,
-        lab_preferences: dict[str, int] = None,
+        times: Optional[dict[str, list[str]]] = None,
+        course_preferences: Optional[dict[str, int]] = None,
+        room_preferences: Optional[dict[str, int]] = None,
+        lab_preferences: Optional[dict[str, int]] = None,
     ) -> None:
         """modifies a current faculty member and updates their information"""
         if lab_preferences is None:
@@ -67,12 +68,13 @@ class Faculty:
             course_preferences = {}
         if times is None:
             times = {}
+        times_casted = cast(dict[Day, list[TimeRange]], times)
         faculty_config = FacultyConfig(
             name=new_name,
             maximum_credits=maximum_credits,
             minimum_credits=minimum_credits,
             unique_course_limit=unique_course_limit,
-            times=times,
+            times=times_casted,
             course_preferences=course_preferences,
             room_preferences=room_preferences,
             lab_preferences=lab_preferences,
