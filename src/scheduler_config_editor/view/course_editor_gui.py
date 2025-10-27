@@ -79,7 +79,7 @@ class CoursesEditorWidget(QWidget):
         self,
         controller: "CourseEditorController",
         course_data: CourseConfig | None = None,
-        index: int | None = None,
+        index: int = -1,
     ) -> None:
         super().__init__()
         self.controller = controller

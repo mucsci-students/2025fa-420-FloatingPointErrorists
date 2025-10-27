@@ -4,7 +4,7 @@ import os
 import re
 from collections import defaultdict
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 from scheduler.json_types import CourseInstanceJSON, TimeInstanceJSON
 from scheduler.models import CourseInstance
@@ -232,7 +232,7 @@ class ScheduleHandler:
                 course.get("lab", ""),
                 time_str,
             ]
-            rows.append(row)
+            rows.append(cast(list[str], row))
         return rows
 
     @staticmethod
