@@ -10,8 +10,9 @@ course_instance: CourseInstanceJSON = {
     "room": "101",
     "lab": "LabA",
     "times": [{"day": 1, "start": 840, "duration": 50}],
-    "lab_index": 0
+    "lab_index": 0,
 }
+
 
 def test_import_schedules_json(tmp_path):
     handler = ScheduleHandler()
@@ -20,6 +21,7 @@ def test_import_schedules_json(tmp_path):
         json.dump([[course_instance]], f)
     handler.import_schedules(str(json_path))
     assert handler.schedules == [[course_instance]]
+
 
 def test_import_schedules_csv(tmp_path):
     handler = ScheduleHandler()
@@ -30,15 +32,18 @@ def test_import_schedules_csv(tmp_path):
     handler.import_schedules(str(csv_path))
     assert handler.schedules[0][0]["course"] == "CS101"
 
+
 def test_format_schedule():
     result = ScheduleHandler.format_schedule_str([course_instance])
     assert "CS101" in result
     assert "Dr. Smith" in result
 
+
 def test_faculty_schedule():
     result = ScheduleHandler.faculty_schedule_str([course_instance])
     assert "Dr. Smith" in result
     assert "CS101" in result
+
 
 def test_room_schedule():
     result = ScheduleHandler.room_schedule_str([course_instance])

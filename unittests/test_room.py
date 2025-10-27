@@ -7,10 +7,12 @@ from scheduler_config_editor.model import Room
 
 CONFIG_KEY = "config"
 LOAD_COMMAND = "load-config"
-#Tests to run: Add new, Try to add duplicate, Delete existing, Delete nonexisting, mod existing, mod non existing
+# Tests to run: Add new, Try to add duplicate, Delete existing, Delete nonexisting, mod existing, mod non existing
+
 
 def dummy_path() -> str:
     return str(Path(__file__).parent / "dummy.json")
+
 
 def test_room_add() -> None:
     runner = CliRunner()
@@ -19,6 +21,7 @@ def test_room_add() -> None:
     jsonObj = obj[CONFIG_KEY]
     Room.add_room(jsonObj, "Test Room")
     assert jsonObj.scheduler_config.rooms.count("Test Room") == 1
+
 
 def test_room_add_dupe() -> None:
     runner = CliRunner()
@@ -31,6 +34,7 @@ def test_room_add_dupe() -> None:
     except Room.RoomExistsError:
         assert jsonObj.scheduler_config.rooms.count("Test Room") == 1
 
+
 def test_room_del() -> None:
     runner = CliRunner()
     obj = {}
@@ -39,6 +43,7 @@ def test_room_del() -> None:
     Room.add_room(jsonObj, "Test Room")
     Room.del_room(jsonObj, "Test Room")
     assert jsonObj.scheduler_config.rooms.count("Test Room") == 0
+
 
 def test_room_del_ne() -> None:
     runner = CliRunner()
@@ -51,6 +56,7 @@ def test_room_del_ne() -> None:
     except Room.RoomMissingError:
         assert True
 
+
 def test_room_mod() -> None:
     runner = CliRunner()
     obj = {}
@@ -59,6 +65,7 @@ def test_room_mod() -> None:
     Room.add_room(jsonObj, "Test Room")
     Room.mod_room(jsonObj, "Test Room", "New Room")
     assert jsonObj.scheduler_config.rooms.count("New Room") == 1
+
 
 def test_room_mod_ne() -> None:
     runner = CliRunner()
@@ -70,6 +77,7 @@ def test_room_mod_ne() -> None:
         raise AssertionError()
     except Room.RoomMissingError:
         assert True
+
 
 def test_room_mod_dupe() -> None:
     runner = CliRunner()
