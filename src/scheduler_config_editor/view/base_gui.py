@@ -1,4 +1,4 @@
-from PyQt6 import QtCore
+from PyQt6 import QtCore, QtGui
 from PyQt6.QtCore import Qt, QTimer, QSettings
 from PyQt6.QtGui import QGuiApplication, QShowEvent
 from PyQt6.QtWidgets import (
@@ -53,6 +53,8 @@ class SimpleGUI(QMainWindow):
 
         # Set window title and size
         self.setWindowTitle("Scheduler App")
+        window_icon = QtGui.QPixmap("dripGoku.png")
+        self.setWindowIcon(QtGui.QIcon(window_icon))
         self.resize(int(screen_width * 0.5), int(screen_height * 0.5))
 
         # Centering the tabs widget
@@ -468,6 +470,33 @@ class SimpleTabs(QWidget):
 
         # persistent settings (stored per user/system)
         self.settings = QSettings("Millersville", "SchedulerConfigEditor")
+
+        # Jarvis Button
+
+        jarvis_button = QPushButton()
+        jarvis_button.setToolTip("Open J.A.R.V.I.S")
+        jarvis_icon = QtGui.QPixmap("jarvis.png")
+        style = self.style()
+        if style is not None:
+            jarvis_button.setIcon(QtGui.QIcon(jarvis_icon))
+            jarvis_button.setIconSize(QtCore.QSize(80, 80))
+            jarvis_button.setFixedSize(80, 80)
+            jarvis_button.setCursor(Qt.CursorShape.PointingHandCursor)
+            jarvis_button.setFlat(True)
+            jarvis_button.setStyleSheet(
+                """
+                QPushButton {
+                    border: none;
+                    padding: 25;
+                }
+                QPushButton:hover {
+                    background-color: rgba(100, 100, 100, 30%);
+                    border-radius: 4px;
+                }
+            """)
+
+        #jarvis_button.clicked.connect(self.activate_jarvis)
+        self.tabs.setCornerWidget(jarvis_button, Qt.Corner.TopLeftCorner)
 
         # --- Small reset icon button ---
         reset_button = QPushButton()
