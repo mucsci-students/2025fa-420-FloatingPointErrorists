@@ -11,7 +11,7 @@ jobs:
           python-version: "3.13"
       - name: Install uv
         run: pip install uv
-      - run: uv pip install -e .[dev]
+      - run: uv pip install --system -e .[dev]
       - run: mypy src
       - name: Run tests
         run: pytest --cov=src/scheduler_config_editor/model --cov-branch --cov-report=xml
