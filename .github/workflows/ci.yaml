@@ -9,7 +9,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.13"
-      - run: pip install -e .[dev]
+      - run: uv pip install -e .[dev]
       - run: mypy src
       - name: Run tests
         run: pytest --cov=src/scheduler_config_editor/model --cov-branch --cov-report=xml
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.13"
-      - run: pip install -e .[dev]
+      - run: uv pip install -e .[dev]
       - run: mypy src
       - name: Run tests
         run: pytest --cov=src/scheduler_config_editor/model --cov-branch --cov-report=xml
@@ -39,7 +39,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.13"
-      - run: pip install -e .[dev]
+      - run: uv pip install -e .[dev]
       - run: mypy src
       - name: Run tests
         run: pytest --cov=src/scheduler_config_editor/model --cov-branch --cov-report=xml
