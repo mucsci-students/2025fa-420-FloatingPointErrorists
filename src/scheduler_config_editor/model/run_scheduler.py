@@ -24,7 +24,7 @@ def run_using_config(usr_config: CombinedConfig) -> list[list["CourseInstance"]]
 # write a schedule in json format to data folder
 def write_as_json(slist: list[list["CourseInstance"]], name: str) -> None:
     # make new file
-    path = "schedules/" + name + ".json"
+    path = os.path.join("schedules", f"{name}.json")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     file = open(path, "w")
     # writing for json
@@ -37,7 +37,7 @@ def write_as_json(slist: list[list["CourseInstance"]], name: str) -> None:
 # write a schedule in json format to data folder
 def write_as_csv(slist: list[list["CourseInstance"]], name: str) -> None:
     # make new file
-    path = "schedules/" + name + ".csv"
+    path = os.path.join("schedules", f"{name}.csv")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     file = open(path, "w")
     # writing for csv
