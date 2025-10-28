@@ -43,4 +43,4 @@ jobs:
         run: ruff check .
 
       - name: Type check
-        run: ty check src
+        run: uv run ty check src
