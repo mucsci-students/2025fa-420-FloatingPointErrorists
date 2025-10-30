@@ -1,6 +1,6 @@
 from scheduler_config_editor.model.schedule_handler import ScheduleHandler
 from scheduler_config_editor.model.run_scheduler import write_as_csv, write_as_json
-from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem
+from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QScrollArea, QLabel
 from scheduler.models import CourseInstance
 
 class SchedulerController:
@@ -54,6 +54,14 @@ class SchedulerController:
             item = QTableWidgetItem(value)
             self.cur_table.setItem(row_position, column, item)
 
+    def set_scroll_area(self, scrollable: QScrollArea) -> None:
+        #make a layout
+        #for each table
+            #make temp table
+            #fill said table
+            #add to layout
+        #set scroll area to layout
+        pass #ttemp code
 
     @staticmethod
     def save_as_json(my_schedules: list[list[CourseInstance]], name: str) -> None:
