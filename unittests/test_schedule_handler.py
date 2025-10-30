@@ -1,11 +1,6 @@
-# language: python
 import sys
 from pathlib import Path
 import json
-import csv
-import os
-import re
-import io
 import pytest
 
 # Ensure project's src is importable (adjust relative to tests directory)
@@ -16,6 +11,7 @@ from scheduler_config_editor.model.schedule_handler import ScheduleHandler
 
 class DummyCourseInstance:
     """Minimal stand-in for CourseInstance with model_dump."""
+
     def __init__(self, data):
         self._data = data
 
@@ -96,7 +92,11 @@ def test_load_csv_schedules_raises_when_parse_block_fails(tmp_path, monkeypatch)
     # Create a valid CSV file but monkeypatch _parse_block to raise
     csv_file = tmp_path / "bad.csv"
     csv_file.write_text("A,B,C,D,MON 09:00-10:00\n")
-    monkeypatch.setattr(ScheduleHandler, "_parse_block", staticmethod(lambda x: (_ for _ in ()).throw(Exception("boom"))))
+    monkeypatch.setattr(
+        ScheduleHandler,
+        "_parse_block",
+        staticmethod(lambda x: (_ for _ in ()).throw(Exception("boom"))),
+    )
     handler = ScheduleHandler()
     with pytest.raises(ValueError) as excinfo:
         handler._load_csv_schedules(str(csv_file))
@@ -147,7 +147,6 @@ def test_import_schedules_variants(tmp_path):
 
 
 def test_faculty_and_room_rows_and_strings():
-    handler = ScheduleHandler()
     course = {
         "course": "CS101",
         "faculty": "ProfX",
