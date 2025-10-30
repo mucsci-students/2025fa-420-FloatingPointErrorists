@@ -10,7 +10,8 @@ dependencies = [
     "click-shell",
     "PyQt6",
     "tabulate",
-    "types-tabulate"
+    "types-tabulate",
+    "alive-progress"
 ]
 
 [project.optional-dependencies]
