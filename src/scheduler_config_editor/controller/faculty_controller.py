@@ -1,9 +1,13 @@
 from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QMessageBox, QListWidget, QListWidgetItem, QWidget
+from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
 from scheduler import TimeRange
 
-from scheduler_config_editor.model import Faculty,JsonConfig
-from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui, EditFacultyWindow
+from scheduler_config_editor.model import Faculty, JsonConfig
+from scheduler_config_editor.view.faculty_editor_gui import (
+    EditFacultyWindow,
+    FacultyEditorGui,
+)
+
 
 class FacultyEditorController:
     """
@@ -20,13 +24,13 @@ class FacultyEditorController:
 
     def refresh_list(self) -> None:
         self.view.list.clear()
-        for i, faculty in enumerate(self.json_config.scheduler_config.faculty):
+        for i, _faculty in enumerate(self.json_config.scheduler_config.faculty):
             self.view.list.addItem(self.json_config.scheduler_config.faculty[i].name)
         self.view.list.clearSelection()
 
     def open_edit_faculty_window(self, item: QListWidgetItem) -> None:
         name = item.text()
-        for i, faculty in enumerate(self.json_config.scheduler_config.faculty):
+        for i, _faculty in enumerate(self.json_config.scheduler_config.faculty):
             if self.json_config.scheduler_config.faculty[i].name == name:
                 index = i
                 break
@@ -42,9 +46,10 @@ class FacultyEditorController:
     def delete_faculty(self, edit_window: EditFacultyWindow) -> None:
         name = edit_window.name_edit.text()
         confirm = QMessageBox.question(
-            edit_window, "Confirm Delete Faculty",
+            edit_window,
+            "Confirm Delete Faculty",
             f"Are you sure you want to delete faculty member: {name}?",
-            QMessageBox.StandardButton.Yes  | QMessageBox.StandardButton.No
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
 
         if confirm == QMessageBox.StandardButton.Yes:
@@ -60,10 +65,13 @@ class FacultyEditorController:
                 edit_window.close()
 
             except Exception as error:
-                QMessageBox.warning(edit_window, "Error", f"Failed to delete faculty member: {name}: {error}")
+                QMessageBox.warning(
+                    edit_window,
+                    "Error",
+                    f"Failed to delete faculty member: {name}: {error}",
+                )
 
-
-    def save_faculty (self, edit_window: EditFacultyWindow) -> None:
+    def save_faculty(self, edit_window: EditFacultyWindow) -> None:
         try:
             # Validate input
             name = edit_window.name_edit.text()
@@ -71,14 +79,16 @@ class FacultyEditorController:
             maximum_creds = int(edit_window.max_credits_edit.text())
             course_limit = int(edit_window.course_limit_edit.text())
 
-            if 0 > minimum_creds or minimum_creds > 21:
-                raise ValueError("Minimum credits must be between 0 and 21 credits.")
-            if 0 > maximum_creds or maximum_creds > 21:
-                raise ValueError("Maximum credits must be between 0 and 21 credits.")
-            if 0 > course_limit or course_limit > 21:
-                raise ValueError("Course limit must be between 0 and 21 courses.")
+            if 0 > maximum_creds:
+                raise ValueError("Maximum credits must be greater than or equal to 0.")
+            if 0 > minimum_creds:
+                raise ValueError("Minimum credits must be greater than or equal to 0.")
             if minimum_creds > maximum_creds:
-                raise ValueError("Minimum credits must be less than maximum credits.")
+                raise ValueError(
+                    "Minimum credits must be less than or equal to maximum credits."
+                )
+            if 1 > course_limit:
+                raise ValueError("Course limit must be a positive integer.")
 
             times = {}
             for day, widgets in edit_window.day_interval_widgets.items():
@@ -87,12 +97,26 @@ class FacultyEditorController:
                     start = start_edit.time()
                     end = end_edit.time()
                     if start >= end:
-                        QMessageBox.warning(edit_window, "Error", f"On {day}, start time must be before end time.")
+                        QMessageBox.warning(
+                            edit_window,
+                            "Error",
+                            f"On {day}, start time must be before end time.",
+                        )
                         return
-                    interval = TimeRange(start = start.toString("HH:mm"), end = end.toString("HH:mm"))
+                    interval = TimeRange(
+                        start=start.toString("HH:mm"), end=end.toString("HH:mm")
+                    )
                     intervals.append(interval)
                 if intervals:
                     times[day] = intervals
+
+            if len(times) == 0:
+                QMessageBox.warning(
+                    edit_window,
+                    "Error",
+                    "Faculty must have at least one available time interval.",
+                )
+                return
 
             room_preferences = {
                 room: edit_window.room_preference_input[room].value()
@@ -105,32 +129,35 @@ class FacultyEditorController:
             }
 
             lab_preferences = {
-                    lab: edit_window.lab_preference_input[lab].value()
-                    for lab in edit_window.lab_preference_input
+                lab: edit_window.lab_preference_input[lab].value()
+                for lab in edit_window.lab_preference_input
             }
 
             if edit_window.faculty_data:
                 old_name = edit_window.faculty_data.name
-                Faculty.mod_faculty(self.json_config,
-                    old_name = old_name,
-                    new_name = name,
+                Faculty.mod_faculty(
+                    self.json_config,
+                    old_name=old_name,
+                    new_name=name,
                     maximum_credits=int(edit_window.max_credits_edit.text()),
-                    minimum_credits = int(edit_window.min_credits_edit.text()),
-                    unique_course_limit = int(edit_window.course_limit_edit.text()),
-                    times = times,
-                    course_preferences = course_preferences,
-                    room_preferences = room_preferences,
-                    lab_preferences = lab_preferences)
+                    minimum_credits=int(edit_window.min_credits_edit.text()),
+                    unique_course_limit=int(edit_window.course_limit_edit.text()),
+                    times=times,
+                    course_preferences=course_preferences,
+                    room_preferences=room_preferences,
+                    lab_preferences=lab_preferences,
+                )
             else:
-                Faculty.add_faculty(self.json_config,
-                    name = name,
+                Faculty.add_faculty(
+                    self.json_config,
+                    name=name,
                     maximum_credits=int(edit_window.max_credits_edit.text()),
-                    minimum_credits = int(edit_window.min_credits_edit.text()),
-                    unique_course_limit = int(edit_window.course_limit_edit.text()),
-                    times = times,
-                    course_preferences = course_preferences,
-                    room_preferences = room_preferences,
-                    lab_preferences = lab_preferences,
+                    minimum_credits=int(edit_window.min_credits_edit.text()),
+                    unique_course_limit=int(edit_window.course_limit_edit.text()),
+                    times=times,
+                    course_preferences=course_preferences,
+                    room_preferences=room_preferences,
+                    lab_preferences=lab_preferences,
                 )
             self.json_config.save()
 
@@ -148,5 +175,3 @@ class FacultyEditorController:
 
         except ValueError as error:
             QMessageBox.warning(edit_window, "Input Error", str(error))
-
-

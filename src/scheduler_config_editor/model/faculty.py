@@ -1,7 +1,10 @@
 from _ast import Gt
-from typing import Annotated
-from scheduler import FacultyConfig
+from typing import Annotated, Optional, cast
+
+from scheduler import Day, FacultyConfig, TimeRange
+
 from .json import JsonConfig
+
 
 class Faculty:
     """
@@ -9,62 +12,102 @@ class Faculty:
     """
 
     @staticmethod
-    def add_faculty(json_config: JsonConfig, name: str, maximum_credits: int, minimum_credits: int,
-                    unique_course_limit: Annotated[int, Gt()],
-                    times: dict[str, list[str]] = {}, course_preferences: dict[str, int] = {},
-                    room_preferences: dict[str, int] = {}, lab_preferences: dict[str, int] = {}) -> None:
+    def add_faculty(
+        json_config: JsonConfig,
+        name: str,
+        maximum_credits: int,
+        minimum_credits: int,
+        unique_course_limit: Annotated[int, Gt()],
+        times: Optional[dict[str, list[str]]] = None,
+        course_preferences: Optional[dict[str, int]] = None,
+        room_preferences: Optional[dict[str, int]] = None,
+        lab_preferences: Optional[dict[str, int]] = None,
+    ) -> None:
         """adds a new faculty member to the config file"""
+        if lab_preferences is None:
+            lab_preferences = {}
+        if room_preferences is None:
+            room_preferences = {}
+        if course_preferences is None:
+            course_preferences = {}
+        if times is None:
+            times = {}
+        times_casted = cast(dict[Day, list[TimeRange]], times)
         faculty_config = FacultyConfig(
             name=name,
             maximum_credits=maximum_credits,
             minimum_credits=minimum_credits,
             unique_course_limit=unique_course_limit,
-            times=times,
+            times=times_casted,
             course_preferences=course_preferences,
             room_preferences=room_preferences,
-            lab_preferences=lab_preferences
+            lab_preferences=lab_preferences,
         )
         """adds the new faculty config to the scheduler config"""
         json_config.scheduler_config.faculty.append(faculty_config)
 
     @staticmethod
-    def mod_faculty(json_config: JsonConfig, old_name: str,  new_name: str, maximum_credits: int, minimum_credits: int,
-                    unique_course_limit: Annotated[int, Gt()],
-                    times: dict[str, list[str]] = {}, course_preferences: dict[str, int] = {},
-                    room_preferences: dict[str, int] = {}, lab_preferences: dict[str, int] = {}) -> None:
+    def mod_faculty(
+        json_config: JsonConfig,
+        old_name: str,
+        new_name: str,
+        maximum_credits: int,
+        minimum_credits: int,
+        unique_course_limit: Annotated[int, Gt()],
+        times: Optional[dict[str, list[str]]] = None,
+        course_preferences: Optional[dict[str, int]] = None,
+        room_preferences: Optional[dict[str, int]] = None,
+        lab_preferences: Optional[dict[str, int]] = None,
+    ) -> None:
         """modifies a current faculty member and updates their information"""
+        if lab_preferences is None:
+            lab_preferences = {}
+        if room_preferences is None:
+            room_preferences = {}
+        if course_preferences is None:
+            course_preferences = {}
+        if times is None:
+            times = {}
+        times_casted = cast(dict[Day, list[TimeRange]], times)
         faculty_config = FacultyConfig(
             name=new_name,
             maximum_credits=maximum_credits,
             minimum_credits=minimum_credits,
             unique_course_limit=unique_course_limit,
-            times=times,
+            times=times_casted,
             course_preferences=course_preferences,
             room_preferences=room_preferences,
-            lab_preferences=lab_preferences
+            lab_preferences=lab_preferences,
         )
         for course in json_config.scheduler_config.courses:
-            if old_name in course.faculty and course.course_id not in course_preferences:
+            if (
+                old_name in course.faculty
+                and course.course_id not in course_preferences
+            ):
                 if len(course.faculty) == 1:
-                    raise ValueError(f"Cannot remove {course.course_id} from course preferences as {old_name} is the only faculty assigned to it.")
+                    raise ValueError(
+                        f"Cannot remove {course.course_id} from course preferences as {old_name} is the only faculty who can teach it."
+                    )
                 course.faculty.remove(old_name)
         """finds the faculty within the scheduler and replaces it with the updated one"""
-        for i, faculty in enumerate(json_config.scheduler_config.faculty):
+        for i, _faculty in enumerate(json_config.scheduler_config.faculty):
             if json_config.scheduler_config.faculty[i].name == old_name:
                 json_config.scheduler_config.faculty[i] = faculty_config
-        for i, courses in enumerate(json_config.scheduler_config.courses):
-                for f, faculty in enumerate(json_config.scheduler_config.courses[i].faculty):
-                    if json_config.scheduler_config.courses[i].faculty[f] == old_name:
-                        json_config.scheduler_config.courses[i].faculty[f] = new_name
-                        break
+        for i, _courses in enumerate(json_config.scheduler_config.courses):
+            for f, _faculty in enumerate(
+                json_config.scheduler_config.courses[i].faculty
+            ):
+                if json_config.scheduler_config.courses[i].faculty[f] == old_name:
+                    json_config.scheduler_config.courses[i].faculty[f] = new_name
+                    break
 
     @staticmethod
     def del_faculty(json_config: JsonConfig, name: str) -> None:
         """finds the faculty within the scheduler and removes it"""
-        for i, faculty in enumerate(json_config.scheduler_config.faculty):
+        for i, _faculty in enumerate(json_config.scheduler_config.faculty):
             if json_config.scheduler_config.faculty[i].name == name:
                 del json_config.scheduler_config.faculty[i]
-        for i, courses in enumerate(json_config.scheduler_config.courses):
-                if name in json_config.scheduler_config.courses[i].faculty:
-                    json_config.scheduler_config.courses[i].faculty.remove(name)
-                    break
+        for i, _courses in enumerate(json_config.scheduler_config.courses):
+            if name in json_config.scheduler_config.courses[i].faculty:
+                json_config.scheduler_config.courses[i].faculty.remove(name)
+                break

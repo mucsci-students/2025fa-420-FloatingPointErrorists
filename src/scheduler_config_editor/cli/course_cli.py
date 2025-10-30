@@ -1,5 +1,6 @@
 import click
 from click_shell import shell
+
 from ..model.courses import Course
 from ..model.json import JsonConfig
 from .base_cli import clear, get_json_config, run, save, show
@@ -18,14 +19,19 @@ To utilize it for a command:
 To read up on how to use click, visit: https://click.palletsprojects.com/en/stable/
 """
 
+
 # ===== Course Shell =====
-@shell(prompt="courses> ", intro="You may now add, modify, or delete courses.\nType 'help' to see available commands, 'quit' to exit.\n") # type: ignore
+@shell(
+    prompt="courses> ",
+    intro="You may now add, modify, or delete courses.\nType 'help' to see available commands, 'quit' to exit.\n",
+)  # type: ignore
 def courses() -> None:
     """Manage courses."""
     courses.add_command(show)
     courses.add_command(clear)
     courses.add_command(run)
     courses.add_command(save)
+
 
 def get_course_index(json_config: JsonConfig, prompt_text: str) -> int:
     """Helper function to get a valid course index from the user."""
@@ -36,47 +42,66 @@ def get_course_index(json_config: JsonConfig, prompt_text: str) -> int:
             return index
         click.echo(f"Invalid index. Please enter a number between 0 and {max_index}.")
 
+
 def add_new_rooms(valid_rooms: list[str], default: bool) -> list[str]:
     """Helper function to add rooms to a course."""
-    room = click.prompt("Enter room name", type=click.Choice(valid_rooms), show_choices=False)
+    room = click.prompt(
+        "Enter room name", type=click.Choice(valid_rooms), show_choices=False
+    )
     rooms = [room]
     valid_rooms.remove(room)
     while click.confirm("Add more rooms?", default=default):
-        room = click.prompt("Enter room name", type=click.Choice(valid_rooms), show_choices=False)
+        room = click.prompt(
+            "Enter room name", type=click.Choice(valid_rooms), show_choices=False
+        )
         rooms.append(room)
         valid_rooms.remove(room)
     return rooms
+
 
 def add_new_labs(valid_labs: list[str], default: bool) -> list[str]:
     """Helper function to add labs to a course."""
     labs = []
     while click.confirm("Add labs(s)?", default=default):
-        lab = click.prompt("Enter lab name", type=click.Choice(valid_labs), show_choices=False)
+        lab = click.prompt(
+            "Enter lab name", type=click.Choice(valid_labs), show_choices=False
+        )
         labs.append(lab)
         valid_labs.remove(lab)
     return labs
+
 
 def add_new_conflicts(valid_courses: list[str], default: bool) -> list[str]:
     """Helper function to add course conflicts to a course."""
     conflicts = []
     while click.confirm("Add conflict(s)?", default=default):
-        conflict = click.prompt("Enter course conflict", type=click.Choice(valid_courses), show_choices=False)
+        conflict = click.prompt(
+            "Enter course conflict",
+            type=click.Choice(valid_courses),
+            show_choices=False,
+        )
         conflicts.append(conflict)
         valid_courses.remove(conflict)
     return conflicts
 
+
 def add_new_faculty(valid_faculty: list[str], default: bool) -> list[str]:
     """Helper function to add faculty to a course."""
-    new_faculty = click.prompt("Enter faculty name", type=click.Choice(valid_faculty), show_choices=False)
+    new_faculty = click.prompt(
+        "Enter faculty name", type=click.Choice(valid_faculty), show_choices=False
+    )
     faculty = [new_faculty]
     valid_faculty.remove(new_faculty)
     while click.confirm("Add another faculty?", default=default):
-        new_faculty = click.prompt("Enter faculty name", type=click.Choice(valid_faculty), show_choices=False)
+        new_faculty = click.prompt(
+            "Enter faculty name", type=click.Choice(valid_faculty), show_choices=False
+        )
         faculty.append(new_faculty)
         valid_faculty.remove(new_faculty)
     return faculty
 
-@courses.command() # type: ignore
+
+@courses.command()  # type: ignore
 @click.pass_context
 def add(ctx: click.Context) -> None:
     """Add a course."""
@@ -91,8 +116,11 @@ def add(ctx: click.Context) -> None:
     lab = add_new_labs(lab_ids, False)
     conflicts = add_new_conflicts(course_ids, False)
     faculty = add_new_faculty(faculty_names, False)
-    Course.add_course(json_config, course_id, course_credits, room, lab, conflicts, faculty)
+    Course.add_course(
+        json_config, course_id, course_credits, room, lab, conflicts, faculty
+    )
     click.echo(f"{course_id} added.")
+
 
 @courses.command()  # type: ignore
 @click.pass_context
@@ -112,6 +140,7 @@ def delete(ctx: click.Context) -> None:
         Course.del_course(index, json_config)
         click.echo(f"course number {index} deleted.")
 
+
 @courses.command()  # type: ignore
 @click.pass_context
 def modify(ctx: click.Context) -> None:
@@ -124,7 +153,9 @@ def modify(ctx: click.Context) -> None:
     index = get_course_index(json_config, "Enter the number of the course to modify")
     old_course = json_config.scheduler_config.courses[index]
     course_id = click.prompt("Enter course ID", type=str, default=old_course.course_id)
-    course_credits = click.prompt("Enter course credits", type=click.IntRange(min=1), default=old_course.credits)
+    course_credits = click.prompt(
+        "Enter course credits", type=click.IntRange(min=1), default=old_course.credits
+    )
     room = old_course.room.copy()
     lab = old_course.lab.copy()
     conflicts = old_course.conflicts
@@ -132,13 +163,24 @@ def modify(ctx: click.Context) -> None:
     valid_faculty = [f.name for f in json_config.scheduler_config.faculty]
     valid_courses = [c.course_id for c in json_config.scheduler_config.courses]
     valid_courses.remove(old_course.course_id)
-    if click.confirm("Modify course rooms? (you will create a new set from scratch)", default=False):
+    if click.confirm(
+        "Modify course rooms? (you will create a new set from scratch)", default=False
+    ):
         room = add_new_rooms(json_config.scheduler_config.rooms, True)
-    if click.confirm("Modify course labs? (you will create a new set from scratch)", default=False):
+    if click.confirm(
+        "Modify course labs? (you will create a new set from scratch)", default=False
+    ):
         lab = add_new_labs(json_config.scheduler_config.labs, True)
-    if click.confirm("Modify course conflicts? (you will create a new set from scratch)", default=False):
+    if click.confirm(
+        "Modify course conflicts? (you will create a new set from scratch)",
+        default=False,
+    ):
         conflicts = add_new_conflicts(valid_courses, True)
-    if click.confirm("Modify course faculty? (you will create a new set from scratch)", default=False):
+    if click.confirm(
+        "Modify course faculty? (you will create a new set from scratch)", default=False
+    ):
         faculty = add_new_faculty(valid_faculty, True)
-    Course.mod_course(index, json_config, course_id, course_credits, room, lab, conflicts, faculty)
+    Course.mod_course(
+        index, json_config, course_id, course_credits, room, lab, conflicts, faculty
+    )
     click.echo(f"course number {index} modified.")

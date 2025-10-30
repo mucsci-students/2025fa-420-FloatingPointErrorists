@@ -1,4 +1,5 @@
 import os
+
 from scheduler import (
     CombinedConfig,
     OptimizerFlags,
@@ -6,6 +7,7 @@ from scheduler import (
     TimeSlotConfig,
     load_config_from_file,
 )
+
 
 class JsonConfig:
     """
@@ -31,11 +33,13 @@ class JsonConfig:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         # Check if file exists and is empty. If it is empty, populate it with default.json. If it doesn't exist, create it and populate it with default.json
         if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
-            with open("data/default.json", 'r', encoding='utf-8') as default_config:
+            with open("data/default.json", encoding="utf-8") as default_config:
                 default_data = default_config.read()
-            with open(file_path, 'w', encoding='utf-8') as target_file:
+            with open(file_path, "w", encoding="utf-8") as target_file:
                 target_file.write(default_data)
-        self._combined_config: CombinedConfig = load_config_from_file(CombinedConfig, file_path)
+        self._combined_config: CombinedConfig = load_config_from_file(
+            CombinedConfig, file_path
+        )
         self._scheduler_config: SchedulerConfig = self._combined_config.config
         self._time_slot_config: TimeSlotConfig = self._combined_config.time_slot_config
 
@@ -89,11 +93,15 @@ class JsonConfig:
         lines.append("\nFaculty:")
         for faculty in scheduler_config.faculty:
             lines.append(f"  - {faculty.name}")
-            lines.append(f"\tCredits: {faculty.maximum_credits}-{faculty.maximum_credits}")
+            lines.append(
+                f"\tCredits: {faculty.maximum_credits}-{faculty.maximum_credits}"
+            )
             lines.append(f"\tUnique course limit: {faculty.unique_course_limit}")
             lines.append("\tTimes:")
             for day in faculty.times:
-                lines.append(f"\t  {day}: {', '.join(str(t) for t in faculty.times[day])}")
+                lines.append(
+                    f"\t  {day}: {', '.join(str(t) for t in faculty.times[day])}"
+                )
             if faculty.course_preferences:
                 lines.append(f"\tCourse preferences: {faculty.course_preferences}")
             if faculty.room_preferences:
@@ -109,7 +117,9 @@ class JsonConfig:
         for day, slots in time_slot_config.times.items():
             lines.append(f"  {day}:")
             for slot in slots:
-                lines.append(f"    - Start: {slot.start}, End: {slot.end}, Spacing: {slot.spacing}")
+                lines.append(
+                    f"    - Start: {slot.start}, End: {slot.end}, Spacing: {slot.spacing}"
+                )
         lines.append("\nClasses:")
         for cls in time_slot_config.classes:
             meetings_str = ", ".join(
@@ -122,8 +132,11 @@ class JsonConfig:
     def __str__(self) -> str:
         """String representation of the entire configuration."""
         combined_config = self._combined_config
-        lines = [self.scheduler_str(), f"\nLimit: {getattr(combined_config, 'limit', None)}",
-                 "\nOptimizer Flags:"]
+        lines = [
+            self.scheduler_str(),
+            f"\nLimit: {getattr(combined_config, 'limit', None)}",
+            "\nOptimizer Flags:",
+        ]
         for flag in getattr(combined_config, "optimizer_flags", []):
             lines.append(f"  - {flag}")
         return "\n".join(lines)

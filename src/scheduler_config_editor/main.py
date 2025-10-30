@@ -1,7 +1,10 @@
 import sys
+
 import click
+
 from .cli import apply_signal_handlers, base_cli
 from .view import view
+
 
 def run_shell() -> None:
     """
@@ -16,6 +19,7 @@ def run_shell() -> None:
         base_cli()
     finally:
         sys.argv = argv_backup
+
 
 @click.command()
 @click.option("--cli", is_flag=True, help="Run in CLI mode.")

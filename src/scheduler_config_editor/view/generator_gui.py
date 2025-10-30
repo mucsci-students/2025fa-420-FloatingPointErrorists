@@ -1,23 +1,37 @@
 import sys
+from typing import TYPE_CHECKING
 
-from PyQt6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QLabel, QCheckBox,
-    QLineEdit, QPushButton, QGroupBox, QWidget
-)
 from PyQt6.QtGui import QIntValidator
-from scheduler import OptimizerFlags
+from PyQt6.QtWidgets import (
+    QCheckBox,
+    QDialog,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QVBoxLayout,
+)
+from scheduler.models import CourseInstance
+
+if TYPE_CHECKING:
+    from scheduler_config_editor.controller.generator_controller import (
+        GeneratorController,
+    )
+
 from scheduler_config_editor.model.json import JsonConfig
 
-sys.path.append('../controller')
+sys.path.append("../controller")
 
-class GeneratorGui(QWidget):
-    def __init__(self, controller) -> None:
+
+class GeneratorGui(QDialog):
+    def __init__(self, controller: "GeneratorController") -> None:
         super().__init__()
         self.controller = controller
         self.json_config = controller.config
         self.generator_layout = QVBoxLayout()
-        self.schedules = []
-        self.optimizer_checkboxes = []
+        self.schedules: list[list[CourseInstance]] = []
+        self.optimizer_checkboxes: list[QCheckBox] = []
         self.limit_input = QLineEdit()
         self.setup_generator_tab()
 
@@ -32,8 +46,18 @@ class GeneratorGui(QWidget):
         flags_layout = QVBoxLayout()
 
         # Checkboxes
-        for flag in OptimizerFlags:
-            checkbox = QCheckBox(f"{flag} optimization")
+        flag_descs = [
+            "Optimize faculty course assignments using preferences",
+            "Optimize faculty room assignments using preferences",
+            "Optimize faculty lab assignments using preferences",
+            "Force same room usage for courses taught by the same faculty",
+            "Force same lab usage for courses taught by the same faculty",
+            "Optimize packing of rooms for courses taught",
+            "Optimize packing of labs for courses taught",
+        ]
+
+        for flag in flag_descs:
+            checkbox = QCheckBox(flag)
             flags_layout.addWidget(checkbox)
             self.optimizer_checkboxes.append(checkbox)
 
@@ -46,7 +70,12 @@ class GeneratorGui(QWidget):
 
         limit_label = QLabel("Max schedules:")
         self.limit_input.setPlaceholderText("Enter a positive integer")
-        self.limit_input.setValidator(QIntValidator(1, 99999999))  # Only allows positive ints
+        self.limit_input.setValidator(
+            QIntValidator(1, 99999999)
+        )  # Only allows positive ints
+        self.limit_input.setToolTip(
+            "Set a limit on number of schedules to generate. If left empty, defaults to 1."
+        )
 
         limit_layout.addWidget(limit_label)
         limit_layout.addWidget(self.limit_input)
