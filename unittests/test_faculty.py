@@ -1,7 +1,9 @@
 import os
+from types import SimpleNamespace
+from typing import cast
 
 import pytest
-from scheduler import TimeRange
+from scheduler import TimeRange, CourseConfig
 
 from scheduler_config_editor.model import Faculty, JsonConfig
 
@@ -41,7 +43,9 @@ class TestFaculty:
             minimum_credits=0,
             unique_course_limit=1,
         )
-        f = next(f for f in json_config.scheduler_config.faculty if f.name == "Defaulted")
+        f = next(
+            f for f in json_config.scheduler_config.faculty if f.name == "Defaulted"
+        )
         assert getattr(f, "times", {}) == {}
         assert getattr(f, "course_preferences", {}) == {}
         assert getattr(f, "room_preferences", {}) == {}
@@ -68,7 +72,9 @@ class TestFaculty:
         assert faculty_mod.maximum_credits == 7
         assert faculty_mod.room_preferences == {"Roddy 140": 3}
 
-    def test_mod_faculty_raises_when_course_has_only_that_faculty(self, json_config: JsonConfig):
+    def test_mod_faculty_raises_when_course_has_only_that_faculty(
+        self, json_config: JsonConfig
+    ):
         # add faculty and a course that references only that faculty -> should raise
         Faculty.add_faculty(
             json_config=json_config,
@@ -78,13 +84,11 @@ class TestFaculty:
             unique_course_limit=1,
         )
 
-        # minimal course-like object
-        class C:
-            pass
-
-        c = C()
+        # create a minimal course-like object and cast it to CourseConfig for typing
+        c = cast(CourseConfig, SimpleNamespace())
         c.course_id = "ONLY1"
         c.faculty = ["SoloFaculty"]
+        c.credits = 3
         json_config.scheduler_config.courses.append(c)
 
         with pytest.raises(ValueError):
@@ -101,7 +105,9 @@ class TestFaculty:
                 lab_preferences={},
             )
 
-    def test_mod_faculty_no_raise_when_course_in_course_preferences(slef, json_config: JsonConfig):
+    def test_mod_faculty_no_raise_when_course_in_course_preferences(
+        self, json_config: JsonConfig
+    ):
         Faculty.add_faculty(
             json_config=json_config,
             name="KeepPref",
@@ -110,11 +116,11 @@ class TestFaculty:
             unique_course_limit=1,
         )
 
-        class C: pass
-
-        c = C()
+        # minimal course-like object typed as CourseConfig
+        c = cast(CourseConfig, SimpleNamespace())
         c.course_id = "P1"
         c.faculty = ["KeepPref"]
+        c.credits = 3
         json_config.scheduler_config.courses.append(c)
 
         # include the course id in course_preferences so the removal branch is skipped (no ValueError)
@@ -144,10 +150,12 @@ class TestFaculty:
         before = list(json_config.scheduler_config.faculty)
         Faculty.del_faculty(json_config=json_config, name="NotPresent")
         # no change when name not found
-        assert [f.name for f in json_config.scheduler_config.faculty] == [f.name for f in before]
+        assert [f.name for f in json_config.scheduler_config.faculty] == [
+            f.name for f in before
+        ]
 
     def test_del_faculty_course_reference_removed(self, json_config: JsonConfig):
-        # add faculty and two courses that both reference it
+        # add faculty and a course that references it
         Faculty.add_faculty(
             json_config=json_config,
             name="ToRemove",
@@ -156,15 +164,17 @@ class TestFaculty:
             unique_course_limit=1,
         )
 
-        class C:
-            pass
-
-        c1 = C()
+        # minimal course object cast to CourseConfig
+        c1 = cast(CourseConfig, SimpleNamespace())
         c1.course_id = "A"
         c1.faculty = ["ToRemove"]
+        c1.credits = 3
         json_config.scheduler_config.courses.extend([c1])
 
         Faculty.del_faculty(json_config=json_config, name="ToRemove")
 
-        assert all(getattr(f, "name", None) != "ToRemove" for f in json_config.scheduler_config.faculty)
+        assert all(
+            getattr(f, "name", None) != "ToRemove"
+            for f in json_config.scheduler_config.faculty
+        )
         assert "ToRemove" not in json_config.scheduler_config.courses[0].faculty
