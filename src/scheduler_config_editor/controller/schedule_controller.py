@@ -1,10 +1,6 @@
-<<<<<<< HEAD
 from scheduler_config_editor.model.schedule_handler import ScheduleHandler
 from scheduler_config_editor.model.run_scheduler import write_as_csv, write_as_json
 from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QScrollArea, QLabel
-=======
-from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem
->>>>>>> develop
 from scheduler.models import CourseInstance
 
 from scheduler_config_editor.model.run_scheduler import write_as_csv, write_as_json
@@ -86,6 +82,9 @@ class SchedulerController:
         for row_data in data:
             self.add_row(row_data)
 
+        self.cur_table.resizeColumnsToContents()
+        self.cur_table.resizeRowsToContents()
+
     def add_row(self, rowdata: list[str]) -> None:
         row_position = self.cur_table.rowCount()
         self.cur_table.insertRow(row_position)
@@ -95,6 +94,7 @@ class SchedulerController:
             self.cur_table.setItem(row_position, column, item)
 
     def set_scroll_area(self, scrollable: QScrollArea) -> None:
+        
         #make a layout
         #for each table
             #make temp table

@@ -316,6 +316,8 @@ class SimpleTabs(QWidget):
                         if item:
                             new_table.setItem(i, j, item.clone())
 
+                new_table.resizeColumnsToContents()
+                new_table.resizeRowsToContents()
                 self.nw.widget.my_table = new_table
                 self.nw.widget.scroll_area_w.setWidget(new_table)
 
@@ -460,9 +462,10 @@ class SimpleTabs(QWidget):
             else:
                 QMessageBox.warning(self, "Error", "No schedules generated to save.")
 
-        self.schedule_viewer_button = QPushButton("Save")
-        self.schedule_viewer_button.clicked.connect(save_button)
-        view_bot_right_layout.addWidget(self.schedule_viewer_button)
+        self.schedule_viewer_savebutton = QPushButton("Save")
+        self.schedule_viewer_savebutton.clicked.connect(save_button)
+        self.schedule_viewer_savebutton.setEnabled(False)
+        view_bot_right_layout.addWidget(self.schedule_viewer_savebutton)
 
         # Load button
         def load_button() -> None:
@@ -486,6 +489,10 @@ class SimpleTabs(QWidget):
                 self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
                 self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
+
+                #Disable Save Button
+                self.schedule_viewer_savebutton.setEnabled(False)
+        
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"{e}")
 
@@ -682,3 +689,6 @@ class SimpleTabs(QWidget):
 
             # save as list[list[courseinstance]]
             self.schedules = schedules
+
+            #enable button
+            self.schedule_viewer_savebutton.setEnabled(True)
