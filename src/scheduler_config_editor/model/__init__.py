@@ -4,6 +4,7 @@ from .json import JsonConfig
 from .lab import Lab
 from .room import Room
 from .schedule_handler import ScheduleHandler
+from .schedule_writer import ScheduleWriter
 
 __all__ = [
     "JsonConfig",
@@ -13,4 +14,5 @@ __all__ = [
     "Lab",
     "JsonConfig",
     "ScheduleHandler",
+    "ScheduleWriter",
 ]

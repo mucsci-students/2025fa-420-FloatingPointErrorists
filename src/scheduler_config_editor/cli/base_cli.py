@@ -1,14 +1,15 @@
+import logging
 import os
 import signal
 import types
 
 import click
 from click_shell import shell
-from scheduler import OptimizerFlags
+from scheduler import OptimizerFlags, Scheduler, CombinedConfig
 from scheduler.models import CourseInstance
 
 from ..model.json import JsonConfig
-from ..model.run_scheduler import run_using_config, write_as_csv, write_as_json
+from ..model.schedule_writer import ScheduleWriter
 from ..model.schedule_handler import ScheduleHandler
 
 """
@@ -161,7 +162,6 @@ def run(ctx: click.Context) -> None:
     config = get_json_config(ctx)
     check_valid_config(config)
     set_scheduler_options(config)
-    click.echo("Running scheduler, please give it up to a minute...")
     schedule_list = run_using_config(config.combined_config)
     schedule_handler = ScheduleHandler()
     schedule_handler.load_schedules(schedule_list)
@@ -183,6 +183,24 @@ def set_scheduler_options(config: JsonConfig) -> None:
             default=config.combined_config.limit,
         )
     )
+
+
+def run_using_config(combined_config: CombinedConfig) -> list[list["CourseInstance"]]:
+    scheduler = Scheduler(combined_config)
+    schedule_list = []
+    # Temporarily silence all logging
+    logging.disable(logging.CRITICAL)
+    try:
+        with click.progressbar(
+            scheduler.get_models(),
+            label="Generating schedules...",
+            length=combined_config.limit,
+        ) as bar:
+            for schedule in bar:
+                schedule_list.append(schedule)
+    finally:
+        logging.disable(logging.NOTSET)
+    return schedule_list
 
 
 def select_optimizations() -> list[OptimizerFlags]:
@@ -220,13 +238,13 @@ def handle_schedule_saving(schedule_list: list[list[CourseInstance]]) -> None:
     name = click.prompt("Enter the filename (without extension)", default="schedules")
     if typing in ("json", "both"):
         try:
-            write_as_json(schedule_list, name)
+            ScheduleWriter.write_as_json(schedule_list, name)
             click.echo(f"Schedules saved as {name}.json")
         except Exception as e:
             click.echo(f"An error occurred while writing JSON: {e}")
     if typing in ("csv", "both"):
         try:
-            write_as_csv(schedule_list, name)
+            ScheduleWriter.write_as_csv(schedule_list, name)
             click.echo(f"Schedules saved as {name}.csv")
         except Exception as e:
             click.echo(f"An error occurred while writing CSV: {e}")

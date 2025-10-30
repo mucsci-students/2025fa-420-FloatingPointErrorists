@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem
 from scheduler.models import CourseInstance
 
-from scheduler_config_editor.model.run_scheduler import write_as_csv, write_as_json
-from scheduler_config_editor.model.schedule_handler import ScheduleHandler
+from scheduler_config_editor.model import ScheduleWriter
+from scheduler_config_editor.model import ScheduleHandler
 
 
 class SchedulerController:
@@ -90,8 +90,8 @@ class SchedulerController:
 
     @staticmethod
     def save_as_json(my_schedules: list[list[CourseInstance]], name: str) -> None:
-        write_as_json(my_schedules, name)
+        ScheduleWriter.write_as_json(my_schedules, name)
 
     @staticmethod
     def save_as_csv(my_schedules: list[list[CourseInstance]], name: str) -> None:
-        write_as_csv(my_schedules, name)
+        ScheduleWriter.write_as_csv(my_schedules, name)
