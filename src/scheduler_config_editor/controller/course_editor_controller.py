@@ -1,4 +1,3 @@
-
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QListWidgetItem, QMessageBox
 
@@ -48,9 +47,10 @@ class CourseEditorController:
     def delete_course(self, edit_window: CoursesEditorWidget) -> None:
         course_id = edit_window.course_id_line_edit.text()
         confirm = QMessageBox.question(
-            edit_window, "Confirm Delete Course",
+            edit_window,
+            "Confirm Delete Course",
             f"Are you sure you want to delete course: {course_id}?",
-            QMessageBox.StandardButton.Yes  | QMessageBox.StandardButton.No
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
 
         if confirm == QMessageBox.StandardButton.Yes:
@@ -67,10 +67,13 @@ class CourseEditorController:
                     edit_window.close()
 
             except Exception as error:
-                QMessageBox.warning(edit_window, "Error", f"Failed to delete course: {course_id}: {error}")
+                QMessageBox.warning(
+                    edit_window,
+                    "Error",
+                    f"Failed to delete course: {course_id}: {error}",
+                )
 
-
-    def save_course (self, edit_window: CoursesEditorWidget) -> None:
+    def save_course(self, edit_window: CoursesEditorWidget) -> None:
         try:
             course_id = edit_window.course_id_line_edit.text()
             course_credits = int(edit_window.course_credits_line_edit.text())
@@ -78,27 +81,32 @@ class CourseEditorController:
             # Stores selected rooms, labs, faculty, conflicts
             rooms = [item.text() for item in edit_window.room_list.selectedItems()]
             labs = [item.text() for item in edit_window.lab_list.selectedItems()]
-            conflicts = [item.text() for item in edit_window.course_conflicts_list.selectedItems()]
+            conflicts = [
+                item.text()
+                for item in edit_window.course_conflicts_list.selectedItems()
+            ]
             faculty = [item.text() for item in edit_window.faculty_list.selectedItems()]
 
             if edit_window.course_data and edit_window.index is not None:
-                Course.mod_course(index = edit_window.index,
+                Course.mod_course(
+                    index=edit_window.index,
                     json_config=self.json_config,
                     course_id=course_id,
                     course_credits=course_credits,
-                    room = rooms,
-                    lab = labs,
-                    conflicts = conflicts,
-                    faculty = faculty
+                    room=rooms,
+                    lab=labs,
+                    conflicts=conflicts,
+                    faculty=faculty,
                 )
             else:
-                Course.add_course(json_config = self.json_config,
-                    course_id = course_id,
-                    course_credits = course_credits,
-                    room = rooms,
-                    lab = labs,
-                    conflicts = conflicts,
-                    faculty = faculty
+                Course.add_course(
+                    json_config=self.json_config,
+                    course_id=course_id,
+                    course_credits=course_credits,
+                    room=rooms,
+                    lab=labs,
+                    conflicts=conflicts,
+                    faculty=faculty,
                 )
             self.json_config.save()
 

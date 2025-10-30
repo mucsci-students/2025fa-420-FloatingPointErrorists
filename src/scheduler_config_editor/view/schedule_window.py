@@ -21,17 +21,14 @@ class newWindow(QMainWindow):
         self.setCentralWidget(self.widget)
 
 
-
 class newWidget(QWidget):
-
     def __init__(self, parent: newWindow) -> None:
-
         super(QWidget, self).__init__(parent)
 
         self.my_widget = QWidget()
         self.my_table = QTableWidget()
         self.scroll_area_w = QScrollArea()
-    
+
         self.scroll_area_w.setWidgetResizable(True)
 
         self.my_layout = QVBoxLayout()

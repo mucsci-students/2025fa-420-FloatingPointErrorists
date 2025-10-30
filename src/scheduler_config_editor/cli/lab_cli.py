@@ -18,14 +18,19 @@ To utilize it for a command:
 To read up on how to use click, visit: https://click.palletsprojects.com/en/stable/
 """
 
+
 # ===== Labs shell =====
-@shell(prompt="labs> ", intro="You may now add, modify, or delete labs.\n Type 'help' to see available commands, 'quit' to exit.\n") # type: ignore
+@shell(
+    prompt="labs> ",
+    intro="You may now add, modify, or delete labs.\n Type 'help' to see available commands, 'quit' to exit.\n",
+)  # type: ignore
 def labs() -> None:
     """Manage rooms."""
     labs.add_command(show)
     labs.add_command(clear)
     labs.add_command(save)
     labs.add_command(run)
+
 
 @labs.command()  # type: ignore
 @click.pass_context
@@ -43,6 +48,7 @@ def add(ctx: click.Context) -> None:
             lab_list.remove(lb)
     click.echo(f"Added {lab_list}.")
 
+
 @labs.command()  # type: ignore
 @click.pass_context
 def delete(ctx: click.Context) -> None:
@@ -56,9 +62,12 @@ def delete(ctx: click.Context) -> None:
     Lab.del_lab(json_config, lb)
     click.echo(f"{lb} deleted")
     while click.confirm("Delete another?", default=False):
-        lb = click.prompt("Enter lab name", type=click.Choice(lab_ids), show_choices=False)
+        lb = click.prompt(
+            "Enter lab name", type=click.Choice(lab_ids), show_choices=False
+        )
         Lab.del_lab(json_config, lb)
         click.echo(f"{lb} deleted.")
+
 
 @labs.command()  # type: ignore
 @click.pass_context
@@ -69,7 +78,9 @@ def modify(ctx: click.Context) -> None:
     if len(lab_ids) == 0:
         click.echo("No labs to modify.")
         return
-    lb = click.prompt("Enter lab name to modify", type=click.Choice(lab_ids), show_choices=False)
+    lb = click.prompt(
+        "Enter lab name to modify", type=click.Choice(lab_ids), show_choices=False
+    )
     lb2 = click.prompt("New lab name", type=str)
     Lab.mod_lab(json_config, lb, lb2)
     click.echo(f"{lb} is now {lb2}.")
