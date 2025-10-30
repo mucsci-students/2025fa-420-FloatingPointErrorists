@@ -63,6 +63,9 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
     * ```show``` to display and navigate between the schedules.
     * ```show-faculty``` to display schedules for each faculty member.
     * ```show-room``` to display schedules for each room.
+## Running Tests
+* Running tests can be invoked by running:
+```pytest```
 ## Authors:
 
 * Andrew Elko
