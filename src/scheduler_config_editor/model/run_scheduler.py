@@ -1,5 +1,7 @@
+import logging
 import os
 
+from alive_progress import alive_bar
 from scheduler import (
     CombinedConfig,
     Scheduler,
@@ -9,16 +11,21 @@ from scheduler.writers import CSVWriter, JSONWriter
 
 
 def run_using_config(usr_config: CombinedConfig) -> list[list["CourseInstance"]]:
-    # Create scheduler
     scheduler = Scheduler(usr_config)
-    scheduleList = []
-
-    # Prints schedules
-    for schedule in scheduler.get_models():
-        # adds to a list to not repeat calling get_models()
-        scheduleList.append(schedule)
-
-    return scheduleList
+    schedule_list = []
+    total = usr_config.limit
+    # Temporarily silence all logging
+    logging.disable(logging.CRITICAL)
+    try:
+        with alive_bar(
+            total, title="Generating Schedules", bar="bubbles", spinner="crab"
+        ) as bar:
+            for schedule in scheduler.get_models():
+                schedule_list.append(schedule)
+                bar()
+    finally:
+        logging.disable(logging.NOTSET)
+    return schedule_list
 
 
 # write a schedule in json format to data folder
