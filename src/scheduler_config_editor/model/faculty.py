@@ -86,7 +86,7 @@ class Faculty:
             ):
                 if len(course.faculty) == 1:
                     raise ValueError(
-                        f"Cannot remove {course.course_id} from course preferences as {old_name} is the only faculty assigned to it."
+                        f"Cannot remove {course.course_id} from course preferences as {old_name} is the only faculty who can teach it."
                     )
                 course.faculty.remove(old_name)
         """finds the faculty within the scheduler and replaces it with the updated one"""
