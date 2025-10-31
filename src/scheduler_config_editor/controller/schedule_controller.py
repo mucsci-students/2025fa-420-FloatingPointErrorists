@@ -1,5 +1,3 @@
-from scheduler_config_editor.model.schedule_handler import ScheduleHandler
-from scheduler_config_editor.model.schedule_writer import ScheduleWriter
 from PyQt6.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
@@ -7,7 +5,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QSizePolicy,
-    QHeaderView
+    QHeaderView,
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFontMetrics
@@ -23,7 +21,7 @@ class SchedulerController:
 
         self.cur_widgets = QWidget()
         self.cur_wid_layout = QVBoxLayout(self.cur_widgets)
-        #seperate variable for popout window
+        # seperate variable for popout window
         self.popup_widget = QWidget()
         self.popup_widget_layout = QVBoxLayout(self.popup_widget)
 
@@ -191,22 +189,34 @@ class SchedulerController:
             total_width += self.cur_table.columnWidth(i)
         total_width += self.cur_table.frameWidth() * 2
 
-        #get the width of the stupid vertical index thats not considered a vertical header
+        # get the width of the stupid vertical index thats not considered a vertical header
         digits = len(str(self.cur_table.model().rowCount()))
         metrics = QFontMetrics(self.cur_table.font())
-        total_width += metrics.horizontalAdvance("9" * digits) + 10 #10 is width of whitespace 5 behind, 5 in front
+        total_width += (
+            metrics.horizontalAdvance("9" * digits) + 10
+        )  # 10 is width of whitespace 5 behind, 5 in front
 
         self.cur_table.setFixedHeight(total_height)
         self.cur_table.setFixedWidth(total_width)
         self.popup_table.setFixedHeight(total_height)
         self.popup_table.setFixedWidth(total_width)
-        
-        self.cur_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
-        self.cur_table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
-        self.popup_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
-        self.popup_table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+
+        self.cur_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Fixed
+        )
+        self.cur_table.verticalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Fixed
+        )
+        self.popup_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Fixed
+        )
+        self.popup_table.verticalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Fixed
+        )
         self.cur_table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.popup_table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.popup_table.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
+        )
 
         self.cur_wid_layout.addWidget(self.cur_table)
         self.popup_widget_layout.addWidget(self.popup_table)
