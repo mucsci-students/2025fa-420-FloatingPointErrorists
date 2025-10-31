@@ -1,7 +1,16 @@
 from scheduler_config_editor.model.schedule_handler import ScheduleHandler
 from scheduler_config_editor.model.schedule_writer import ScheduleWriter
-from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QSizePolicy
+from PyQt6.QtWidgets import (
+    QTableWidget,
+    QTableWidgetItem,
+    QLabel,
+    QVBoxLayout,
+    QWidget,
+    QSizePolicy,
+    QHeaderView
+)
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFontMetrics
 from scheduler.models import CourseInstance
 
 from scheduler_config_editor.model import ScheduleWriter
@@ -14,6 +23,7 @@ class SchedulerController:
 
         self.cur_widgets = QWidget()
         self.cur_wid_layout = QVBoxLayout(self.cur_widgets)
+        #seperate variable for popout window
         self.popup_widget = QWidget()
         self.popup_widget_layout = QVBoxLayout(self.popup_widget)
 
@@ -45,7 +55,6 @@ class SchedulerController:
         self.popup_widget = QWidget()
         self.popup_widget_layout = QVBoxLayout(self.popup_widget)
 
-
         if self.mode == 0:
             self.cur_table = QTableWidget()
             self.popup_table = QTableWidget()
@@ -69,11 +78,10 @@ class SchedulerController:
             dataList = ScheduleHandler.faculty_schedule_rows(
                 self.cur_schedules.schedules[self.index]
             )
-            
+
             for dataset in dataList:
                 match dataset:
                     case (fac_name, data):
-
                         temp_fac_name = QLabel()
                         temp_fac_name.setAlignment(Qt.AlignmentFlag.AlignTop)
                         temp_fac_name.setText(fac_name)
@@ -121,14 +129,13 @@ class SchedulerController:
             for dataset in dataList:
                 match dataset:
                     case (room_name, data):
-
                         temp_room_name = QLabel()
                         temp_room_name.setAlignment(Qt.AlignmentFlag.AlignTop)
                         temp_room_name.setText(room_name)
                         pop_temp_room_name = QLabel()
                         pop_temp_room_name.setAlignment(Qt.AlignmentFlag.AlignTop)
                         pop_temp_room_name.setText(room_name)
-                        
+
                         self.cur_wid_layout.addWidget(temp_room_name)
                         self.popup_widget_layout.addWidget(pop_temp_room_name)
 
@@ -180,17 +187,26 @@ class SchedulerController:
         total_height += self.cur_table.frameWidth() * 2
 
         total_width = 0
-        ver_header = self.cur_table.verticalHeader()
-        if ver_header is not None:
-            total_width += ver_header.width()
         for i in range(self.cur_table.columnCount()):
             total_width += self.cur_table.columnWidth(i)
         total_width += self.cur_table.frameWidth() * 2
 
+        #get the width of the stupid vertical index thats not considered a vertical header
+        digits = len(str(self.cur_table.model().rowCount()))
+        metrics = QFontMetrics(self.cur_table.font())
+        total_width += metrics.horizontalAdvance("9" * digits) + 10 #10 is width of whitespace 5 behind, 5 in front
 
         self.cur_table.setFixedHeight(total_height)
         self.cur_table.setFixedWidth(total_width)
+        self.popup_table.setFixedHeight(total_height)
+        self.popup_table.setFixedWidth(total_width)
+        
+        self.cur_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self.cur_table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self.popup_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self.popup_table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         self.cur_table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.popup_table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.cur_wid_layout.addWidget(self.cur_table)
         self.popup_widget_layout.addWidget(self.popup_table)
@@ -205,7 +221,6 @@ class SchedulerController:
             pop_item = QTableWidgetItem(value)
             self.cur_table.setItem(row_position, column, item)
             self.popup_table.setItem(row_position, column, pop_item)
-
 
     @staticmethod
     def save_as_json(my_schedules: list[list[CourseInstance]], name: str) -> None:

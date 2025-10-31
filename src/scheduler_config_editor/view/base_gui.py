@@ -442,9 +442,9 @@ class SimpleTabs(QWidget):
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
                 self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
 
-                #Disable Save Button
+                # Disable Save Button
                 self.schedule_viewer_savebutton.setEnabled(False)
-        
+
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"{e}")
 
@@ -642,6 +642,5 @@ class SimpleTabs(QWidget):
             # save as list[list[courseinstance]]
             self.schedules = schedules
 
-            #enable button
+            # enable button
             self.schedule_viewer_savebutton.setEnabled(True)
-

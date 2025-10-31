@@ -35,6 +35,3 @@ class newWidget(QWidget):
         self.my_layout = QVBoxLayout()
         self.my_layout.addWidget(self.scroll_area_w)
         self.setLayout(self.my_layout)
-    
-
-
