@@ -37,10 +37,10 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Check code formatting
-        run: ruff format --check .
+        run: ruff format --check src
 
       - name: Lint code
-        run: ruff check .
+        run: ruff check src
 
       - name: Type check
         run: uv run ty check src

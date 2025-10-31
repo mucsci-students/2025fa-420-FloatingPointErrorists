@@ -97,7 +97,7 @@ class SimpleTabs(QWidget):
         QTabWidget::tab-bar {
             alignment: center; 
         }"""
-            """QTabBar::tab { height: 100px; width: 500px; }"""
+            """QTabBar::tab { height: 50px; width: 250px; }"""
         )
 
         # Adding the tabs
