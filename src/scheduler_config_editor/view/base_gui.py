@@ -223,8 +223,8 @@ class SimpleTabs(QWidget):
             if self.sc.length > 0:
                 self.sc.mode = 0
                 self.sc.set_tables()
-                self.schedule_tables = self.sc.cur_tables
-                self.my_scroll.setWidget(self.schedule_tables)
+                self.schedule_table_widgets = self.sc.cur_widgets
+                self.my_scroll.setWidget(self.sc.cur_widgets)
             else:
                 self.schedule_viewer_label.setText(
                     """Schedule by course will be shown here"""
@@ -240,8 +240,8 @@ class SimpleTabs(QWidget):
             if self.sc.length > 0:
                 self.sc.mode = 1
                 self.sc.set_tables()
-                self.schedule_tables = self.sc.cur_tables
-                self.my_scroll.setWidget(self.schedule_tables)
+                self.schedule_table_widgets = self.sc.cur_widgets
+                self.my_scroll.setWidget(self.sc.cur_widgets)
             else:
                 set_schedule_label("""Schedule by faculty will be shown here""")
                 self.my_scroll.setWidget(self.schedule_viewer_label)
@@ -255,8 +255,8 @@ class SimpleTabs(QWidget):
             if self.sc.length > 0:
                 self.sc.mode = 2
                 self.sc.set_tables()
-                self.schedule_tables = self.sc.cur_tables
-                self.my_scroll.setWidget(self.schedule_tables)
+                self.schedule_table_widgets = self.sc.cur_widgets
+                self.my_scroll.setWidget(self.sc.cur_widgets)
             else:
                 set_schedule_label("""Schedule by room will be shown here""")
                 self.my_scroll.setWidget(self.schedule_viewer_label)
@@ -271,77 +271,9 @@ class SimpleTabs(QWidget):
         def popoutwindow() -> None:
             self.nw.show()
             if self.sc.length > 0:
-                new_layout = QVBoxLayout()
-                
-                # Iterate through the items in the original layout
-                for i in range(self.schedule_tables.count()):
-                    item = self.schedule_tables.itemAt(i)
+                self.nw.widget.my_widget = self.sc.popup_widget
+                self.nw.widget.scroll_area_w.setWidget(self.nw.widget.my_widget)
 
-                    # Create a new instance of the widget and add it
-                    cur_widget = item.widget()
-                    new_widget = type(cur_widget)()
-
-                    #QLabel
-                    if isinstance(cur_widget, QLabel):
-                        new_widget.setText(cur_widget.text())
-
-                    #Table
-                    elif isinstance(cur_widget, QTableWidget):            
-                        new_table = QTableWidget()
-                        new_table.setRowCount(cur_widget.rowCount())
-                        new_table.setColumnCount(cur_widget.columnCount())
-
-                        #by course
-                        if self.sc.mode == 0:
-                            new_table.setColumnCount(5)
-                            new_table.setHorizontalHeaderLabels(
-                                ["Course", "Faculty", "Room", "Lab", "Times"]
-                            )
-                        #by faculty
-                        elif self.sc.mode == 1:
-                            new_table.setColumnCount(7)
-                            new_table.setHorizontalHeaderLabels(
-                                [
-                                    "Course",
-                                    "Room (Lab)",
-                                    "Monday",
-                                    "Tuesday",
-                                    "Wednesday",
-                                    "Thursday",
-                                    "Friday",
-                                ]
-                            )
-                        #by room
-                        else:
-                            new_table.setColumnCount(7)
-                            new_table.setHorizontalHeaderLabels(
-                                [
-                                    "Course",
-                                    "Faculty",
-                                    "Monday",
-                                    "Tuesday",
-                                    "Wednesday",
-                                    "Thursday",
-                                    "Friday",
-                                ]
-                            )
-
-                        #populate table
-                        for i in range(cur_widget.rowCount()):
-                            for j in range(cur_widget.columnCount()):
-                                element = cur_widget.item(i, j)
-                                if element:
-                                    new_table.setItem(i, j, element.clone())
-
-                        #resize table
-                        new_table.resizeColumnsToContents()
-                        new_table.resizeRowsToContents()
-                    #end table if
-
-                    new_layout.addWidget(new_widget)
-
-                self.nw.widget.my_tables = new_layout
-                self.nw.widget.scroll_area_w.setWidget(new_layout)
             else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
@@ -355,7 +287,6 @@ class SimpleTabs(QWidget):
 
         # scroll area for schedule
         self.my_scroll = QScrollArea()
-        self.my_scroll.setWidgetResizable(True)
         self.schedule_layout.addWidget(self.my_scroll, stretch=2)
 
         # text for Schedule Viewer Tab
@@ -377,8 +308,8 @@ class SimpleTabs(QWidget):
             if self.sc.length > 0:
                 self.sc.previous_schedule()
                 self.sc.set_tables()
-                self.schedule_tables = self.sc.cur_tables
-                self.my_scroll.setWidget(self.schedule_tables)
+                self.schedule_table_widgets = self.sc.cur_widgets
+                self.my_scroll.setWidget(self.sc.cur_widgets)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
             else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
@@ -407,8 +338,8 @@ class SimpleTabs(QWidget):
                 else:
                     self.sc.index = newIndex - 1
                 self.sc.set_tables()
-                self.schedule_tables = self.sc.cur_tables
-                self.my_scroll.setWidget(self.schedule_tables)
+                self.schedule_table_widgets = self.sc.cur_widgets
+                self.my_scroll.setWidget(self.sc.cur_widgets)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
             else:
                 QMessageBox.warning(self, "Error", "No schedule loaded.")
@@ -433,8 +364,8 @@ class SimpleTabs(QWidget):
             if self.sc.length > 0:
                 self.sc.next_schedule()
                 self.sc.set_tables()
-                self.schedule_tables = self.sc.cur_tables
-                self.my_scroll.setWidget(self.schedule_tables)
+                self.schedule_table_widgets = self.sc.cur_widgets
+                self.my_scroll.setWidget(self.sc.cur_widgets)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
             else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
@@ -506,8 +437,8 @@ class SimpleTabs(QWidget):
 
                 # show first schedule
                 self.sc.set_tables()
-                self.schedule_tables = self.sc.cur_tables
-                self.my_scroll.setWidget(self.schedule_tables)
+                self.schedule_table_widgets = self.sc.cur_widgets
+                self.my_scroll.setWidget(self.schedule_table_widgets)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
                 self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
 
@@ -703,8 +634,8 @@ class SimpleTabs(QWidget):
 
             # show first schedule
             self.sc.set_tables()
-            self.schedule_tables = self.sc.cur_tables
-            self.my_scroll.setWidget(self.schedule_tables)
+            self.schedule_table_widgets = self.sc.cur_widgets
+            self.my_scroll.setWidget(self.sc.cur_widgets)
             self.schedule_viewer_index.setText(str(self.sc.index + 1))
             self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
 
@@ -713,3 +644,4 @@ class SimpleTabs(QWidget):
 
             #enable button
             self.schedule_viewer_savebutton.setEnabled(True)
+
