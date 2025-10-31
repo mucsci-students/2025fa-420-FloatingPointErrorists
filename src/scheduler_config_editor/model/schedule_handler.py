@@ -245,7 +245,7 @@ class ScheduleHandler:
     @staticmethod
     def faculty_schedule_rows(
         schedule: list[CourseInstanceJSON],
-    ) -> list[tuple[str, list[str]]]:
+    ) -> list[tuple[str, list[list[str]]]]:
         """Build rows for the faculty schedule table."""
         faculty_map = ScheduleHandler._group_by(schedule, lambda c: c["faculty"])
         faculty_schedules = []
@@ -260,7 +260,7 @@ class ScheduleHandler:
     @staticmethod
     def room_schedule_rows(
         schedule: list[CourseInstanceJSON],
-    ) -> list[tuple[str, list[str]]]:
+    ) -> list[tuple[str, list[list[str]]]]:
         """Build rows for the room schedule table."""
         room_map: dict[str, list[CourseInstanceJSON]] = defaultdict(list)
         for course in schedule:

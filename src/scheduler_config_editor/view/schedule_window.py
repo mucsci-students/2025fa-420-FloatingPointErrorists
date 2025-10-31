@@ -1,5 +1,5 @@
 from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtWidgets import QMainWindow, QScrollArea, QTableWidget, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QMainWindow, QScrollArea, QVBoxLayout, QWidget
 
 
 class newWindow(QMainWindow):
@@ -26,9 +26,10 @@ class newWidget(QWidget):
         super(QWidget, self).__init__(parent)
 
         self.my_widget = QWidget()
-        self.my_table = QTableWidget()
-        self.scroll_area_w = QScrollArea()
+        self.my_widget_layout = QVBoxLayout(self.my_widget)
 
+        self.scroll_area_w = QScrollArea()
+        self.scroll_area_w.setWidget(self.my_widget)
         self.scroll_area_w.setWidgetResizable(True)
 
         self.my_layout = QVBoxLayout()
