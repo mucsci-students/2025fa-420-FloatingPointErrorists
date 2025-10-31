@@ -243,18 +243,24 @@ class ScheduleHandler:
         return rows
 
     @staticmethod
-    def faculty_schedule_rows(schedule: list[CourseInstanceJSON]) -> list[tuple[str, list[str]]]:
+    def faculty_schedule_rows(
+        schedule: list[CourseInstanceJSON],
+    ) -> list[tuple[str, list[str]]]:
         """Build rows for the faculty schedule table."""
         faculty_map = ScheduleHandler._group_by(schedule, lambda c: c["faculty"])
         faculty_schedules = []
         for faculty, courses in faculty_map.items():
             sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
-            rows = ScheduleHandler._build_rows(sorted_courses, ScheduleHandler._faculty_row, DAYS)
+            rows = ScheduleHandler._build_rows(
+                sorted_courses, ScheduleHandler._faculty_row, DAYS
+            )
             faculty_schedules.append((faculty, rows))
         return faculty_schedules
 
     @staticmethod
-    def room_schedule_rows(schedule: list[CourseInstanceJSON]) -> list[tuple[str, list[str]]]:
+    def room_schedule_rows(
+        schedule: list[CourseInstanceJSON],
+    ) -> list[tuple[str, list[str]]]:
         """Build rows for the room schedule table."""
         room_map: dict[str, list[CourseInstanceJSON]] = defaultdict(list)
         for course in schedule:
@@ -267,7 +273,10 @@ class ScheduleHandler:
         room_schedules = []
         for room, courses in room_map.items():
             sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
-            rows = [ScheduleHandler._room_row(course, DAYS, room) for course in sorted_courses]
+            rows = [
+                ScheduleHandler._room_row(course, DAYS, room)
+                for course in sorted_courses
+            ]
             room_schedules.append((room, rows))
         return room_schedules
 
@@ -287,7 +296,9 @@ class ScheduleHandler:
             sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
             final_str += f"\n{faculty}:\n"
             headers = ["Course", "Room (Lab)"] + DAYS
-            rows = ScheduleHandler._build_rows(sorted_courses, ScheduleHandler._faculty_row, DAYS)
+            rows = ScheduleHandler._build_rows(
+                sorted_courses, ScheduleHandler._faculty_row, DAYS
+            )
             final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
         return final_str
 
@@ -307,6 +318,9 @@ class ScheduleHandler:
             sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
             final_str += f"\n{room}:\n"
             headers = ["Course", "Faculty"] + DAYS
-            rows = [ScheduleHandler._room_row(course, DAYS, room) for course in sorted_courses]
+            rows = [
+                ScheduleHandler._room_row(course, DAYS, room)
+                for course in sorted_courses
+            ]
             final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
         return final_str
