@@ -26,7 +26,7 @@ class newWidget(QWidget):
         super(QWidget, self).__init__(parent)
 
         self.my_widget = QWidget()
-        self.my_table = QTableWidget()
+        self.my_tables = QVBoxLayout()
         self.scroll_area_w = QScrollArea()
 
         self.scroll_area_w.setWidgetResizable(True)
