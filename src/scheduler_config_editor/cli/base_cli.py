@@ -175,7 +175,10 @@ def run(ctx: click.Context) -> None:
 @click.pass_context
 def chat(ctx: click.Context) -> None:
     """Chat with Jarvis to modify the configuration."""
-    langchain_client = LangchainClient(get_json_config(ctx))
+    try:
+        langchain_client = LangchainClient(get_json_config(ctx))
+    except ValueError as e:
+        raise click.ClickException(f"{e}") from e
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
     while True:

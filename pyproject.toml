@@ -12,7 +12,8 @@ dependencies = [
     "tabulate",
     "types-tabulate",
     "dotenv",
-    "langchain-openai"
+    "langchain-openai",
+    "langchain"
 ]
 
 [project.optional-dependencies]
