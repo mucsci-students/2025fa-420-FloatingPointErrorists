@@ -392,6 +392,7 @@ class LangchainClient:
     Attributes:
         __client: The Langchain React agent client.
     """
+
     def __init__(self, json_config: JsonConfig, api_key: str = "") -> None:
         """Initializes the LangchainClient with a React agent for modifying the configuration file."""
         load_dotenv()
