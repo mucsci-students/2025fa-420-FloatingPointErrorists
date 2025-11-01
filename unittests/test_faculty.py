@@ -24,7 +24,7 @@ class TestFaculty:
             times={"MON": ["09:00-15:00"]},
             course_preferences={"CMSC 162": 5},
             room_preferences={"Roddy 136": 3},
-            lab_preferences={"Mac Lab": 7},
+            lab_preferences={"Mac": 7},
         )
         faculty_added = json_config.scheduler_config.faculty[
             len(json_config.scheduler_config.faculty) - 1
@@ -42,11 +42,11 @@ class TestFaculty:
             maximum_credits=1,
             minimum_credits=0,
             unique_course_limit=1,
+            times={"MON": ["09:00-15:00"]}
         )
         f = next(
             f for f in json_config.scheduler_config.faculty if f.name == "Defaulted"
         )
-        assert getattr(f, "times", {}) == {}
         assert getattr(f, "course_preferences", {}) == {}
         assert getattr(f, "room_preferences", {}) == {}
         assert getattr(f, "lab_preferences", {}) == {}
@@ -63,7 +63,7 @@ class TestFaculty:
             times={"MON": ["09:00-15:00"]},
             course_preferences={"CMSC 162": 5},
             room_preferences={"Roddy 140": 3},
-            lab_preferences={"Mac Lab": 7},
+            lab_preferences={"Mac": 7},
         )
         faculty_mod = json_config.scheduler_config.faculty[
             len(json_config.scheduler_config.faculty) - 1
@@ -82,6 +82,7 @@ class TestFaculty:
             maximum_credits=2,
             minimum_credits=0,
             unique_course_limit=1,
+            times={"MON": ["09:00-15:00"]}
         )
 
         # create a minimal course-like object and cast it to CourseConfig for typing
@@ -114,6 +115,7 @@ class TestFaculty:
             maximum_credits=3,
             minimum_credits=0,
             unique_course_limit=1,
+            times={"MON": ["09:00-15:00"]}
         )
 
         # minimal course-like object typed as CourseConfig
@@ -162,6 +164,7 @@ class TestFaculty:
             maximum_credits=4,
             minimum_credits=0,
             unique_course_limit=1,
+            times={"MON": ["09:00-15:00"]}
         )
 
         # minimal course object cast to CourseConfig

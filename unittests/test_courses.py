@@ -27,11 +27,12 @@ class DummyFaculty:
         )
         # Other fields from JsonConfig.json() are not required by courses.py
 
-
 class DummySchedulerConfig:
-    def __init__(self, courses=None, faculty=None):
+    def __init__(self, courses=None, faculty=None, rooms=None, labs=None):
         self.courses = [] if courses is None else list(courses)
         self.faculty = [] if faculty is None else list(faculty)
+        self.rooms = [] if rooms is None else list(rooms)
+        self.labs = [] if labs is None else list(labs)
 
 
 class DummyJsonConfig:
@@ -67,7 +68,7 @@ def test_add_course_appends_and_updates_faculty_preferences(import_courses_modul
 
     alice = DummyFaculty("Alice")
     bob = DummyFaculty("Bob")
-    sched = DummySchedulerConfig(courses=[], faculty=[alice, bob])
+    sched = DummySchedulerConfig(courses=[], faculty=[alice, bob], rooms=["R1"])
     json_cfg = DummyJsonConfig(sched)
 
     courses_mod.Course.add_course(
@@ -75,7 +76,7 @@ def test_add_course_appends_and_updates_faculty_preferences(import_courses_modul
         course_id="CS101",
         course_credits=3,
         room=["R1"],
-        lab=["L1"],
+        lab=[],
         conflicts=[],
         faculty=["Alice"],
     )
@@ -85,7 +86,6 @@ def test_add_course_appends_and_updates_faculty_preferences(import_courses_modul
     assert created.course_id == "CS101"
     assert created.credits == 3
     assert created.room == ["R1"]
-    assert created.lab == ["L1"]
     assert created.conflicts == []
     assert created.faculty == ["Alice"]
 
@@ -103,7 +103,7 @@ def test_mod_course_changes_id_updates_faculty_and_conflicts(import_courses_modu
         course_id="OTHER", credits=2, room=[], lab=[], conflicts=["OLD101"], faculty=[]
     )
     fac = DummyFaculty("DrX", course_preferences={"OLD101": 7})
-    sched = DummySchedulerConfig(courses=[c_old, c_other], faculty=[fac])
+    sched = DummySchedulerConfig(courses=[c_old, c_other], faculty=[fac], rooms=["RmA"], labs=["LabA"])
     json_cfg = DummyJsonConfig(sched)
 
     courses_mod.Course.mod_course(
@@ -139,7 +139,7 @@ def test_mod_course_same_id_adds_new_faculty_preference(import_courses_module):
     )
     existing_fac = DummyFaculty("Known", course_preferences={"MATH1": 8})
     new_fac = DummyFaculty("Newbie")
-    sched = DummySchedulerConfig(courses=[c], faculty=[existing_fac, new_fac])
+    sched = DummySchedulerConfig(courses=[c], faculty=[existing_fac, new_fac], rooms=["R2"])
     json_cfg = DummyJsonConfig(sched)
 
     courses_mod.Course.mod_course(
@@ -195,7 +195,7 @@ def test_courses_string_formats_list(import_courses_module):
         conflicts=[],
         faculty=["F2", "F3"],
     )
-    sched = DummySchedulerConfig(courses=[c1, c2], faculty=[])
+    sched = DummySchedulerConfig(courses=[c1, c2], faculty=[], rooms=["R1", "R2"], labs=["L2"])
     json_cfg = DummyJsonConfig(sched)
 
     s = courses_mod.Course.courses_string(json_cfg)

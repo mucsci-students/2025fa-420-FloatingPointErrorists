@@ -116,10 +116,11 @@ def add(ctx: click.Context) -> None:
     lab = add_new_labs(lab_ids, False)
     conflicts = add_new_conflicts(course_ids, False)
     faculty = add_new_faculty(faculty_names, False)
-    Course.add_course(
-        json_config, course_id, course_credits, room, lab, conflicts, faculty
+    click.echo(
+        Course.add_course(
+            json_config, course_id, course_credits, room, faculty, lab, conflicts
+        )
     )
-    click.echo(f"{course_id} added.")
 
 
 @courses.command()  # type: ignore
@@ -132,13 +133,11 @@ def delete(ctx: click.Context) -> None:
         return
     click.echo(Course.courses_string(json_config))
     index = get_course_index(json_config, "Enter the number of the course to delete")
-    Course.del_course(index, json_config)
-    click.echo(f"course number {index} deleted")
+    click.echo(Course.del_course(index, json_config))
     while click.confirm("Delete another?", default=False):
         click.echo(Course.courses_string(json_config))
         index = click.prompt("Enter the number course to delete", type=int)
-        Course.del_course(index, json_config)
-        click.echo(f"course number {index} deleted.")
+        click.echo(Course.del_course(index, json_config))
 
 
 @courses.command()  # type: ignore
@@ -183,4 +182,8 @@ def modify(ctx: click.Context) -> None:
     Course.mod_course(
         index, json_config, course_id, course_credits, room, lab, conflicts, faculty
     )
-    click.echo(f"course number {index} modified.")
+    click.echo(
+        Course.mod_course(
+            index, json_config, course_id, course_credits, room, lab, conflicts, faculty
+        )
+    )

@@ -59,14 +59,12 @@ def delete(ctx: click.Context) -> None:
         click.echo("No labs to delete.")
         return
     lb = click.prompt("Enter lab name", type=click.Choice(lab_ids), show_choices=False)
-    Lab.del_lab(json_config, lb)
-    click.echo(f"{lb} deleted")
+    click.echo(Lab.del_lab(json_config, lb))
     while click.confirm("Delete another?", default=False):
         lb = click.prompt(
             "Enter lab name", type=click.Choice(lab_ids), show_choices=False
         )
-        Lab.del_lab(json_config, lb)
-        click.echo(f"{lb} deleted.")
+        click.echo(Lab.del_lab(json_config, lb))
 
 
 @labs.command()  # type: ignore
@@ -82,5 +80,4 @@ def modify(ctx: click.Context) -> None:
         "Enter lab name to modify", type=click.Choice(lab_ids), show_choices=False
     )
     lb2 = click.prompt("New lab name", type=str)
-    Lab.mod_lab(json_config, lb, lb2)
-    click.echo(f"{lb} is now {lb2}.")
+    click.echo(Lab.mod_lab(json_config, lb, lb2))

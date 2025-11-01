@@ -73,7 +73,7 @@ def enable_configuration_commands() -> None:
     base_cli.add_command(courses)  # Add courses sub-shell
     base_cli.add_command(rooms)  # Add rooms sub-shell
     base_cli.add_command(labs)  # Add labs sub-shell
-    base_cli.add_command(chat) # Add chat command
+    base_cli.add_command(chat)  # Add chat command
 
 
 def check_valid_config(json_config: JsonConfig) -> None:
@@ -171,6 +171,7 @@ def run(ctx: click.Context) -> None:
     show_schedule_viewer(ctx)
     handle_schedule_saving(schedule_list)
 
+
 @click.command()
 @click.pass_context
 def chat(ctx: click.Context) -> None:
@@ -187,6 +188,7 @@ def chat(ctx: click.Context) -> None:
             click.echo("Exiting chat.")
             break
         click.echo(langchain_client.send_query(command))
+
 
 def set_scheduler_options(config: JsonConfig) -> None:
     """Set scheduler options interactively."""

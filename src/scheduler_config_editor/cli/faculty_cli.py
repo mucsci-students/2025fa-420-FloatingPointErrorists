@@ -132,18 +132,19 @@ def add(ctx: click.Context) -> None:
     course_preferences = add_course_preferences(json_config, False)
     room_preferences = add_room_preferences(json_config, False)
     lab_preferences = add_lab_preferences(json_config, False)
-    Faculty.add_faculty(
-        json_config,
-        name,
-        maximum_credits,
-        minimum_credits,
-        unique_course_limit,
-        times,
-        course_preferences,
-        room_preferences,
-        lab_preferences,
+    click.echo(
+        Faculty.add_faculty(
+            json_config,
+            name,
+            maximum_credits,
+            minimum_credits,
+            unique_course_limit,
+            times,
+            course_preferences,
+            room_preferences,
+            lab_preferences,
+        )
     )
-    click.echo(f"Faculty '{name}' added.")
 
 
 @faculty.command()  # type: ignore
@@ -160,8 +161,7 @@ def delete(ctx: click.Context) -> None:
     if not faculty_obj:
         click.echo(f"Faculty '{name}' not found.")
         return
-    Faculty.del_faculty(json_config, name)
-    click.echo(f"Faculty '{name}' deleted.")
+    click.echo(Faculty.del_faculty(json_config, name))
 
 
 @faculty.command()  # type: ignore
@@ -221,19 +221,20 @@ def modify(ctx: click.Context) -> None:
     ):
         lab_preferences = add_lab_preferences(json_config, True)
     try:
-        Faculty.mod_faculty(
-            json_config,
-            name,
-            new_name,
-            maximum_credits,
-            minimum_credits,
-            unique_course_limit,
-            times,
-            course_preferences,
-            room_preferences,
-            lab_preferences,
+        click.echo(
+            Faculty.mod_faculty(
+                json_config,
+                name,
+                new_name,
+                maximum_credits,
+                minimum_credits,
+                unique_course_limit,
+                times,
+                course_preferences,
+                room_preferences,
+                lab_preferences,
+            )
         )
     except ValueError as e:
         click.echo(f"Error: {e}")
         return
-    click.echo(f"Faculty '{name}' modified.")
