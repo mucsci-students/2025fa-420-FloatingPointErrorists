@@ -393,14 +393,15 @@ class LangchainClient:
         __client: The Langchain React agent client.
     """
 
-    def __init__(self, json_config: JsonConfig, api_key: str = "") -> None:
+    def __init__(self, json_config: JsonConfig, api_key: Optional[str] = None) -> None:
         """Initializes the LangchainClient with a React agent for modifying the configuration file."""
         load_dotenv()
-        if not os.environ.get("OPENAI_API_KEY"):
-            if api_key is None:
+        if api_key is None:
+            if not os.environ.get("OPENAI_API_KEY"):
                 raise ValueError(
                     "API key must be provided if OPENAI_API_KEY is not set in the environment."
                 )
+        else:
             os.environ["OPENAI_API_KEY"] = api_key
         model = init_chat_model("gpt-5-mini", model_provider="openai")
         tool_list = get_tool_list(json_config)
