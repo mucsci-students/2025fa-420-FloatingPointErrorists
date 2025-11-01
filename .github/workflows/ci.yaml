@@ -28,6 +28,8 @@ jobs:
         run: uv pip install --system -e ".[dev]"
 
       - name: Run tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: pytest --cov=src/scheduler_config_editor/model --cov-branch --cov-report=xml
 
       - name: Upload coverage to Codecov

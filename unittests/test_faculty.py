@@ -42,7 +42,7 @@ class TestFaculty:
             maximum_credits=1,
             minimum_credits=0,
             unique_course_limit=1,
-            times={"MON": ["09:00-15:00"]}
+            times={"MON": ["09:00-15:00"]},
         )
         f = next(
             f for f in json_config.scheduler_config.faculty if f.name == "Defaulted"
@@ -82,7 +82,7 @@ class TestFaculty:
             maximum_credits=2,
             minimum_credits=0,
             unique_course_limit=1,
-            times={"MON": ["09:00-15:00"]}
+            times={"MON": ["09:00-15:00"]},
         )
 
         # create a minimal course-like object and cast it to CourseConfig for typing
@@ -115,7 +115,7 @@ class TestFaculty:
             maximum_credits=3,
             minimum_credits=0,
             unique_course_limit=1,
-            times={"MON": ["09:00-15:00"]}
+            times={"MON": ["09:00-15:00"]},
         )
 
         # minimal course-like object typed as CourseConfig
@@ -164,7 +164,7 @@ class TestFaculty:
             maximum_credits=4,
             minimum_credits=0,
             unique_course_limit=1,
-            times={"MON": ["09:00-15:00"]}
+            times={"MON": ["09:00-15:00"]},
         )
 
         # minimal course object cast to CourseConfig

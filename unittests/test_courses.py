@@ -27,6 +27,7 @@ class DummyFaculty:
         )
         # Other fields from JsonConfig.json() are not required by courses.py
 
+
 class DummySchedulerConfig:
     def __init__(self, courses=None, faculty=None, rooms=None, labs=None):
         self.courses = [] if courses is None else list(courses)
@@ -103,7 +104,9 @@ def test_mod_course_changes_id_updates_faculty_and_conflicts(import_courses_modu
         course_id="OTHER", credits=2, room=[], lab=[], conflicts=["OLD101"], faculty=[]
     )
     fac = DummyFaculty("DrX", course_preferences={"OLD101": 7})
-    sched = DummySchedulerConfig(courses=[c_old, c_other], faculty=[fac], rooms=["RmA"], labs=["LabA"])
+    sched = DummySchedulerConfig(
+        courses=[c_old, c_other], faculty=[fac], rooms=["RmA"], labs=["LabA"]
+    )
     json_cfg = DummyJsonConfig(sched)
 
     courses_mod.Course.mod_course(
@@ -139,7 +142,9 @@ def test_mod_course_same_id_adds_new_faculty_preference(import_courses_module):
     )
     existing_fac = DummyFaculty("Known", course_preferences={"MATH1": 8})
     new_fac = DummyFaculty("Newbie")
-    sched = DummySchedulerConfig(courses=[c], faculty=[existing_fac, new_fac], rooms=["R2"])
+    sched = DummySchedulerConfig(
+        courses=[c], faculty=[existing_fac, new_fac], rooms=["R2"]
+    )
     json_cfg = DummyJsonConfig(sched)
 
     courses_mod.Course.mod_course(
@@ -195,7 +200,9 @@ def test_courses_string_formats_list(import_courses_module):
         conflicts=[],
         faculty=["F2", "F3"],
     )
-    sched = DummySchedulerConfig(courses=[c1, c2], faculty=[], rooms=["R1", "R2"], labs=["L2"])
+    sched = DummySchedulerConfig(
+        courses=[c1, c2], faculty=[], rooms=["R1", "R2"], labs=["L2"]
+    )
     json_cfg = DummyJsonConfig(sched)
 
     s = courses_mod.Course.courses_string(json_cfg)
