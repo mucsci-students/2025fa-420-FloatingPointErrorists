@@ -18,11 +18,11 @@ class Faculty:
         maximum_credits: int,
         minimum_credits: int,
         unique_course_limit: Annotated[int, Gt()],
-        times: Optional[dict[str, list[str]]] = None,
+        times: dict[str, list[str]],
         course_preferences: Optional[dict[str, int]] = None,
         room_preferences: Optional[dict[str, int]] = None,
         lab_preferences: Optional[dict[str, int]] = None,
-    ) -> None:
+    ) -> str:
         """adds a new faculty member to the config file"""
         if lab_preferences is None:
             lab_preferences = {}
@@ -30,8 +30,6 @@ class Faculty:
             room_preferences = {}
         if course_preferences is None:
             course_preferences = {}
-        if times is None:
-            times = {}
         times_casted = cast(dict[Day, list[TimeRange]], times)
         faculty_config = FacultyConfig(
             name=name,
@@ -45,6 +43,7 @@ class Faculty:
         )
         """adds the new faculty config to the scheduler config"""
         json_config.scheduler_config.faculty.append(faculty_config)
+        return f"Faculty member {name} added successfully."
 
     @staticmethod
     def mod_faculty(
@@ -102,12 +101,16 @@ class Faculty:
                     break
 
     @staticmethod
-    def del_faculty(json_config: JsonConfig, name: str) -> None:
+    def del_faculty(json_config: JsonConfig, name: str) -> str:
         """finds the faculty within the scheduler and removes it"""
+        found = False
         for i, _faculty in enumerate(json_config.scheduler_config.faculty):
             if json_config.scheduler_config.faculty[i].name == name:
                 del json_config.scheduler_config.faculty[i]
+                found = True
+                break
         for i, _courses in enumerate(json_config.scheduler_config.courses):
             if name in json_config.scheduler_config.courses[i].faculty:
                 json_config.scheduler_config.courses[i].faculty.remove(name)
                 break
+        return f"Faculty member {name} deleted successfully." if found else f"Faculty member {name} not found."

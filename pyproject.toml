@@ -10,7 +10,9 @@ dependencies = [
     "click-shell",
     "PyQt6",
     "tabulate",
-    "types-tabulate"
+    "types-tabulate",
+    "dotenv",
+    "langchain-openai"
 ]
 
 [project.optional-dependencies]

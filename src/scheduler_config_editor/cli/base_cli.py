@@ -7,6 +7,7 @@ import click
 from click_shell import shell
 from scheduler import OptimizerFlags, Scheduler, CombinedConfig
 from scheduler.models import CourseInstance
+from scheduler_config_editor.model.langchain_client import LangchainClient
 
 from ..model.json import JsonConfig
 from ..model.schedule_writer import ScheduleWriter
@@ -72,6 +73,7 @@ def enable_configuration_commands() -> None:
     base_cli.add_command(courses)  # Add courses sub-shell
     base_cli.add_command(rooms)  # Add rooms sub-shell
     base_cli.add_command(labs)  # Add labs sub-shell
+    base_cli.add_command(chat) # Add chat command
 
 
 def check_valid_config(json_config: JsonConfig) -> None:
@@ -169,6 +171,19 @@ def run(ctx: click.Context) -> None:
     show_schedule_viewer(ctx)
     handle_schedule_saving(schedule_list)
 
+@click.command()
+@click.pass_context
+def chat(ctx: click.Context) -> None:
+    """Chat with Jarvis to modify the configuration."""
+    langchain_client = LangchainClient(get_json_config(ctx))
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    while True:
+        command = click.prompt("Enter a prompt")
+        if command.lower() in ("exit", "quit"):
+            click.echo("Exiting chat.")
+            break
+        click.echo(langchain_client.send_query(command))
 
 def set_scheduler_options(config: JsonConfig) -> None:
     """Set scheduler options interactively."""
