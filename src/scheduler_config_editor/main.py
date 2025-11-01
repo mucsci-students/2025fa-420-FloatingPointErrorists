@@ -20,6 +20,7 @@ def run_shell() -> None:
     finally:
         sys.argv = argv_backup
 
+
 @click.command()
 @click.option("--cli", is_flag=True, help="Run in CLI mode.")
 def main(cli: bool) -> None:

@@ -5,6 +5,7 @@ class Lab:
     """
     Module for handling Labs in the config files
     """
+
     @staticmethod
     def add_lab(json_config: JsonConfig, new_lab: str) -> None:
         """Takes in a new lab and adds it to the config"""
@@ -20,14 +21,18 @@ class Lab:
         if json_config.scheduler_config.labs.count(new_lab) == 1:
             raise Lab.LabExistsError(f"Lab {new_lab} already exists.")
         try:
-            json_config.scheduler_config.labs[json_config.scheduler_config.labs.index(lab)] = new_lab
+            json_config.scheduler_config.labs[
+                json_config.scheduler_config.labs.index(lab)
+            ] = new_lab
             for course in json_config.scheduler_config.courses:
                 if course.lab.count(lab) == 1:
                     course.lab[course.lab.index(lab)] = new_lab
                     course.lab.sort()
             for faculty_member in json_config.scheduler_config.faculty:
                 if lab in faculty_member.lab_preferences:
-                    faculty_member.lab_preferences[new_lab] = faculty_member.lab_preferences.pop(lab)
+                    faculty_member.lab_preferences[new_lab] = (
+                        faculty_member.lab_preferences.pop(lab)
+                    )
             json_config.scheduler_config.labs.sort()
         except ValueError:
             raise Lab.LabMissingError(f"Lab {lab} does not exist.")

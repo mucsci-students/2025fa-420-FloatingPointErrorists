@@ -1,19 +1,17 @@
 import sys
+from typing import TYPE_CHECKING
 
 from PyQt6.QtGui import QIntValidator
 from PyQt6.QtWidgets import (
     QCheckBox,
+    QDialog,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
     QVBoxLayout,
-    QDialog,
 )
-
-from typing import TYPE_CHECKING
-
 from scheduler.models import CourseInstance
 
 if TYPE_CHECKING:
@@ -23,7 +21,8 @@ if TYPE_CHECKING:
 
 from scheduler_config_editor.model.json import JsonConfig
 
-sys.path.append('../controller')
+sys.path.append("../controller")
+
 
 class GeneratorGui(QDialog):
     def __init__(self, controller: "GeneratorController") -> None:
@@ -71,8 +70,12 @@ class GeneratorGui(QDialog):
 
         limit_label = QLabel("Max schedules:")
         self.limit_input.setPlaceholderText("Enter a positive integer")
-        self.limit_input.setValidator(QIntValidator(1, 99999999))  # Only allows positive ints
-        self.limit_input.setToolTip("Set a limit on number of schedules to generate. If left empty, defaults to 1.")
+        self.limit_input.setValidator(
+            QIntValidator(1, 99999999)
+        )  # Only allows positive ints
+        self.limit_input.setToolTip(
+            "Set a limit on number of schedules to generate. If left empty, defaults to 1."
+        )
 
         limit_layout.addWidget(limit_label)
         limit_layout.addWidget(self.limit_input)

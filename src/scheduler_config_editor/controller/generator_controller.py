@@ -6,13 +6,13 @@ from scheduler import OptimizerFlags, Scheduler
 from scheduler.models import CourseInstance
 
 from scheduler_config_editor.model.json import JsonConfig
-from scheduler_config_editor.model.run_scheduler import run_using_config
 from scheduler_config_editor.view.generator_gui import GeneratorGui
 
 
 # ---- Worker Thread (runs the heavy computation) ----
 class RunWorker(QThread):
     """Worker thread to run the scheduler without blocking the GUI."""
+
     finished_success = pyqtSignal(list)
     error_occurred = pyqtSignal(str)
     progress_changed = pyqtSignal(int, int)  # current, total
@@ -23,7 +23,9 @@ class RunWorker(QThread):
 
     def run(self) -> None:
         try:
-            total = self.config.combined_config.limit  # or however many schedules expected
+            total = (
+                self.config.combined_config.limit
+            )  # or however many schedules expected
             current = 0
 
             # Create scheduler
@@ -44,6 +46,7 @@ class RunWorker(QThread):
 # ---- Simple Popup with Loading Bar ----
 class LoadingDialog(QDialog):
     """A simple modal dialog with a loading bar."""
+
     def __init__(self, parent: QDialog | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Generating schedules...")
@@ -73,11 +76,14 @@ class GeneratorController:
     """
     Controller for the schedule generator GUI
     """
+
     def __init__(self, config: JsonConfig | None) -> None:
         self.config = config
         self.view = GeneratorGui(self)
         self.schedules: list[list[CourseInstance]] = []
-        self.on_schedules_generated: Callable[[list[list[CourseInstance]]], None] | None = None  # callback
+        self.on_schedules_generated: (
+            Callable[[list[list[CourseInstance]]], None] | None
+        ) = None  # callback
         self.worker: RunWorker
         self.loading: LoadingDialog
 
@@ -126,14 +132,14 @@ class GeneratorController:
             QMessageBox.information(
                 self.view,
                 "No Solutions Found",
-                "No schedules could be generated with the current configuration."
+                "No schedules could be generated with the current configuration.",
             )
             return
 
         QMessageBox.information(
             self.view,
             "Generation Complete",
-            "Schedules have been generated successfully."
+            "Schedules have been generated successfully.",
         )
 
         if self.on_schedules_generated:
@@ -151,4 +157,5 @@ class GeneratorController:
 # ---- Custom Exception ----
 class ConfigMissingError(Exception):
     """Raised when config is missing for generation"""
+
     pass

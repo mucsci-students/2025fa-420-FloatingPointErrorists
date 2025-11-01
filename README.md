@@ -63,6 +63,10 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
     * ```show``` to display and navigate between the schedules.
     * ```show-faculty``` to display schedules for each faculty member.
     * ```show-room``` to display schedules for each room.
+## Running Tests
+* Prior to running tests, run: ```uv pip install -e ".[dev]"```, to ensure the required dependencies are installed for testing.
+* Running tests can be invoked by running:
+```pytest```
 ## Authors:
 
 * Andrew Elko

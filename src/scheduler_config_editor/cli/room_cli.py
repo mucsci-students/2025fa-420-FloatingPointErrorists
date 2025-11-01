@@ -18,8 +18,12 @@ To utilize it for a command:
 To read up on how to use click, visit: https://click.palletsprojects.com/en/stable/
 """
 
+
 # ===== Rooms shell =====
-@shell(prompt="rooms> ", intro="You may now add, modify, or delete rooms.\n Type 'help' to see available commands, 'quit' to exit.\n") # type: ignore
+@shell(
+    prompt="rooms> ",
+    intro="You may now add, modify, or delete rooms.\n Type 'help' to see available commands, 'quit' to exit.\n",
+)  # type: ignore
 def rooms() -> None:
     """Manage rooms."""
     rooms.add_command(show)
@@ -27,7 +31,8 @@ def rooms() -> None:
     rooms.add_command(save)
     rooms.add_command(run)
 
-@rooms.command() # type: ignore
+
+@rooms.command()  # type: ignore
 @click.pass_context
 def add(ctx: click.Context) -> None:
     """Add a room."""
@@ -43,7 +48,8 @@ def add(ctx: click.Context) -> None:
             rms.remove(room)
     click.echo(f"{rms} added.")
 
-@rooms.command() # type: ignore
+
+@rooms.command()  # type: ignore
 @click.pass_context
 def delete(ctx: click.Context) -> None:
     """Delete a room."""
@@ -52,15 +58,26 @@ def delete(ctx: click.Context) -> None:
     if len(room_ids) == 0:
         click.echo("No rooms to delete.")
         return
-    rm = click.prompt("Enter room name", type=click.Choice(room_ids), show_default=False, show_choices=False)
+    rm = click.prompt(
+        "Enter room name",
+        type=click.Choice(room_ids),
+        show_default=False,
+        show_choices=False,
+    )
     Room.del_room(json_config, rm)
     click.echo(f"{rm} deleted.")
     while click.confirm("Delete another?", default=False):
-        rm = click.prompt("Enter room name", type=click.Choice(room_ids), show_default=False, show_choices=False)
+        rm = click.prompt(
+            "Enter room name",
+            type=click.Choice(room_ids),
+            show_default=False,
+            show_choices=False,
+        )
         Room.del_room(json_config, rm)
         click.echo(f"{rm} deleted.")
 
-@rooms.command() # type: ignore
+
+@rooms.command()  # type: ignore
 @click.pass_context
 def modify(ctx: click.Context) -> None:
     """Modify a room."""
@@ -69,7 +86,12 @@ def modify(ctx: click.Context) -> None:
     if len(room_ids) == 0:
         click.echo("No rooms to modify.")
         return
-    rm = click.prompt("Enter room name to modify", type=click.Choice(room_ids), show_default=False, show_choices=False)
+    rm = click.prompt(
+        "Enter room name to modify",
+        type=click.Choice(room_ids),
+        show_default=False,
+        show_choices=False,
+    )
     rm2 = click.prompt("New room name", type=str)
     Room.mod_room(json_config, rm, rm2)
     click.echo(f"{rm} is now {rm2}.")
