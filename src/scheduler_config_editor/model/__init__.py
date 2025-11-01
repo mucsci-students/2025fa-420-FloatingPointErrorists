@@ -16,5 +16,5 @@ __all__ = [
     "JsonConfig",
     "ScheduleHandler",
     "ScheduleWriter",
-    "LangchainClient"
+    "LangchainClient",
 ]
