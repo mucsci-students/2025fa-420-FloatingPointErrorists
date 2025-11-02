@@ -29,6 +29,9 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 ```deactivate```
 * To install development packages, run:
 ```uv pip install -e ".[dev]"```
+* Running tests can be invoked by running:
+```pytest```
+* You must have dev packages installed to run tests.
 
 ### Executing + Using the Program In CLI Mode
 
@@ -43,6 +46,7 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 * Once a configuration file is loaded, you can use the following commands:
     * `help` to bring up a list of commands.
     * `exit`, `quit` or ctrl+c to exit the program.
+    * `chat` to enter chat mode with the AI assistant who can modify the configuration for you.
     * `show` to display the current configuration.
     * `save` to save the current configuration to the loaded file.
     * `clear` to clear the terminal screen.
@@ -63,10 +67,6 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
     * ```show``` to display and navigate between the schedules.
     * ```show-faculty``` to display schedules for each faculty member.
     * ```show-room``` to display schedules for each room.
-## Running Tests
-* Prior to running tests, run: ```uv pip install -e ".[dev]"```, to ensure the required dependencies are installed for testing.
-* Running tests can be invoked by running:
-```pytest```
 ## Authors:
 
 * Andrew Elko

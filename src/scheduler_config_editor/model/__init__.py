@@ -5,6 +5,7 @@ from .lab import Lab
 from .room import Room
 from .schedule_handler import ScheduleHandler
 from .schedule_writer import ScheduleWriter
+from .langchain_client import LangchainClient
 
 __all__ = [
     "JsonConfig",
@@ -15,4 +16,5 @@ __all__ = [
     "JsonConfig",
     "ScheduleHandler",
     "ScheduleWriter",
+    "LangchainClient",
 ]
