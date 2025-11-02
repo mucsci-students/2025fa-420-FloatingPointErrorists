@@ -94,7 +94,7 @@ class JsonConfig:
         for faculty in scheduler_config.faculty:
             lines.append(f"  - {faculty.name}")
             lines.append(
-                f"\tCredits: {faculty.maximum_credits}-{faculty.maximum_credits}"
+                f"\tCredits: {faculty.minimum_credits}-{faculty.maximum_credits}"
             )
             lines.append(f"\tUnique course limit: {faculty.unique_course_limit}")
             lines.append("\tTimes:")

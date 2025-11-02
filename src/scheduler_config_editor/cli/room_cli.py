@@ -46,7 +46,7 @@ def add(ctx: click.Context) -> None:
         except ValueError as e:
             click.echo(f"{e}")
             rms.remove(room)
-    click.echo(f"{rms} added.")
+    click.echo(f"Added {rms}.")
 
 
 @rooms.command()  # type: ignore
@@ -64,8 +64,7 @@ def delete(ctx: click.Context) -> None:
         show_default=False,
         show_choices=False,
     )
-    Room.del_room(json_config, rm)
-    click.echo(f"{rm} deleted.")
+    click.echo(Room.del_room(json_config, rm))
     while click.confirm("Delete another?", default=False):
         rm = click.prompt(
             "Enter room name",
@@ -73,8 +72,7 @@ def delete(ctx: click.Context) -> None:
             show_default=False,
             show_choices=False,
         )
-        Room.del_room(json_config, rm)
-        click.echo(f"{rm} deleted.")
+        click.echo(Room.del_room(json_config, rm))
 
 
 @rooms.command()  # type: ignore
@@ -93,5 +91,4 @@ def modify(ctx: click.Context) -> None:
         show_choices=False,
     )
     rm2 = click.prompt("New room name", type=str)
-    Room.mod_room(json_config, rm, rm2)
-    click.echo(f"{rm} is now {rm2}.")
+    click.echo(Room.mod_room(json_config, rm, rm2))
