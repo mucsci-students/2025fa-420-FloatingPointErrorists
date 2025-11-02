@@ -68,7 +68,7 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
     * ```show-faculty``` to display schedules for each faculty member.
     * ```show-room``` to display schedules for each room.
 
-## Design Patterns
+## Design Patterns:
 
 * Model-View-Controller:
     * Keep files for separate features separate and also for organization. This allows us to keep separation of concerns present in our code.
