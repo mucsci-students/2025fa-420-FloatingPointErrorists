@@ -17,7 +17,7 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 ### Installing
 
 * Clone the repository using:
-```git clone https://github.com/mucsci/Scheduler.git```, and navigate to the project directory.
+```git clone https://github.com/mucsci-students/2025fa-420-FloatingPointErrorists.git```, and navigate to the project directory.
 * Install dependencies and create a virtual environment by running:
 ```uv sync```
 * Activate the virtual environment:
