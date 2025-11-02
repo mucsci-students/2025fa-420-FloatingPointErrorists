@@ -8,7 +8,6 @@ from PyQt6.QtWidgets import (
 )
 
 
-
 class JarvisGUI(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
