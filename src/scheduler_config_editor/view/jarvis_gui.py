@@ -1,21 +1,12 @@
-from PyQt6 import QtCore, QtGui
+from PyQt6 import QtGui
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QGuiApplication, QPixmap
 from PyQt6.QtWidgets import (
-    QFormLayout,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
-    QListWidget,
-    QListWidgetItem,
-    QPushButton,
-    QScrollArea,
-    QVBoxLayout,
-    QWidget,
     QMainWindow,
 )
 
-from typing import TYPE_CHECKING
 
 
 class JarvisGUI(QMainWindow):
