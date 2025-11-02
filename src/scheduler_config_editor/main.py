@@ -27,5 +27,4 @@ def main(cli: bool) -> None:
         run_shell()
     else:
         from .view import view
-
         view()
