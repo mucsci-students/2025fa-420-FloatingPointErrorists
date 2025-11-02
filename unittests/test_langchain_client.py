@@ -20,25 +20,15 @@ def client(json_config: JsonConfig):
     yield LangchainClient(json_config)
 
 
-def test_add_faculty(json_config: JsonConfig, client: LangchainClient) -> None:
-    response = client.send_query(
-        "Jarvis, add a faculty named Dr. Test with maximum credits 9 and minimum credits 3, unique course limit 2, available times on MON from 09:00 to 15:00."
+def test_add_course(json_config: JsonConfig, client: LangchainClient) -> None:
+    client.send_query(
+        "Jarvis, add a course with id: CMSC 455, credits: 4, room: Roddy 136, faculty: Hogg "
     )
-    faculty_added = json_config.scheduler_config.faculty[
-        len(json_config.scheduler_config.faculty) - 1
-    ]
-    assert response == "\nFaculty member Dr. Test added successfully."
-    assert faculty_added.name == "Dr. Test"
-    assert faculty_added.maximum_credits == 9
-    assert faculty_added.minimum_credits == 3
-    assert faculty_added.unique_course_limit == 2
-    assert faculty_added.times == {
-        "MON": [TimeRange(start="09:00", end="15:00")],
-        "TUE": [],
-        "WED": [],
-        "THU": [],
-        "FRI": [],
-    }
+    course = json_config.scheduler_config.courses[-1]
+    assert course.course_id == "CMSC 455"
+    assert course.faculty[0] == "Hogg"
+    assert course.credits == 4
+    assert course.room[0] == "Roddy 136"
 
 
 def test_langchain_client_initialization(json_config: JsonConfig) -> None:
