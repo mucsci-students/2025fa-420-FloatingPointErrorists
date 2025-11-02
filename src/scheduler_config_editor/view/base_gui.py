@@ -1,5 +1,5 @@
-from PyQt6 import QtCore
-from PyQt6.QtCore import QSettings, Qt, QTimer
+from PyQt6 import QtCore, QtGui
+from PyQt6.QtCore import Qt, QTimer, QSettings
 from PyQt6.QtGui import QGuiApplication, QShowEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
@@ -34,6 +34,7 @@ from scheduler_config_editor.model.json import JsonConfig
 from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
 from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
 from scheduler_config_editor.view.schedule_window import newWindow
+from scheduler_config_editor.view.jarvis_gui import JarvisGUI
 
 """Simple Gui Window Initializer"""
 
@@ -54,6 +55,8 @@ class SimpleGUI(QMainWindow):
 
         # Set window title and size
         self.setWindowTitle("Scheduler App")
+        window_icon = QtGui.QPixmap("dripGoku.png")
+        self.setWindowIcon(QtGui.QIcon(window_icon))
         self.resize(int(screen_width * 0.5), int(screen_height * 0.5))
 
         # Centering the tabs widget
@@ -469,6 +472,34 @@ class SimpleTabs(QWidget):
         # persistent settings (stored per user/system)
         self.settings = QSettings("Millersville", "SchedulerConfigEditor")
 
+        # Jarvis Button
+
+        jarvis_button = QPushButton()
+        jarvis_button.setToolTip("Open J.A.R.V.I.S")
+        jarvis_icon = QtGui.QPixmap("jarvis.png")
+        style = self.style()
+        if style is not None:
+            jarvis_button.setIcon(QtGui.QIcon(jarvis_icon))
+            jarvis_button.setIconSize(QtCore.QSize(80, 80))
+            jarvis_button.setFixedSize(80, 80)
+            jarvis_button.setCursor(Qt.CursorShape.PointingHandCursor)
+            jarvis_button.setFlat(True)
+            jarvis_button.setStyleSheet(
+                """
+                QPushButton {
+                    border: none;
+                    padding: 25;
+                }
+                QPushButton:hover {
+                    background-color: rgba(100, 100, 100, 30%);
+                    border-radius: 4px;
+                }
+            """
+            )
+
+        jarvis_button.clicked.connect(self.activate_jarvis)
+        self.tabs.setCornerWidget(jarvis_button, Qt.Corner.TopLeftCorner)
+
         # --- Small reset icon button ---
         reset_button = QPushButton()
         reset_button.setToolTip("Reset all help popups")
@@ -553,6 +584,11 @@ class SimpleTabs(QWidget):
             return  # User has disabled this popup
 
         self.show_info_popup(tab_name, key)
+
+    # Open Jarvis
+    def activate_jarvis(self) -> None:
+        self.jarvis_gui = JarvisGUI()
+        self.jarvis_gui.show()
 
     # Reset all tab popups
     def reset_all_popups(self) -> None:
