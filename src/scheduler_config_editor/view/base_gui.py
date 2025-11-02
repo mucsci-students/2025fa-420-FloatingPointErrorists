@@ -157,6 +157,9 @@ class SimpleTabs(QWidget):
             self.handle_schedules_generated
         )
 
+        # Jarvis Placeholder
+        self.jarvis_gui: JarvisGUI | None = None
+
         # Add the generator_gui into the generator_tab's main_layout
         generator_layout.addWidget(self.generator_gui)
 
@@ -463,7 +466,6 @@ class SimpleTabs(QWidget):
         self.schedule_layout.addLayout(view_bot_layout)
 
         # Set final main_layout
-
         self.schedule_viewer_tab.setLayout(self.schedule_layout)
 
         self.main_layout.addWidget(self.tabs)
@@ -473,7 +475,6 @@ class SimpleTabs(QWidget):
         self.settings = QSettings("Millersville", "SchedulerConfigEditor")
 
         # Jarvis Button
-
         jarvis_button = QPushButton()
         jarvis_button.setToolTip("Open J.A.R.V.I.S")
         jarvis_icon = QtGui.QPixmap("jarvis.png")
@@ -587,7 +588,6 @@ class SimpleTabs(QWidget):
 
     # Open Jarvis
     def activate_jarvis(self) -> None:
-        self.jarvis_gui = JarvisGUI()
         self.jarvis_gui.show()
 
     # Reset all tab popups
@@ -629,27 +629,32 @@ class SimpleTabs(QWidget):
             self.generator_controller.update_config(self.config)
             self.generator_gui.update_config(self.config)
             self.room_controller = RoomEditorController(self.config)
+            self.jarvis_gui = JarvisGUI(self.config)
 
-            # Enables save button
+            # Enables save and jarvis button
             self.save_config_button.setEnabled(True)
+            #self.jarvis_button.setEnabled(True)
 
             # refresh GUI
-            while self.editor_content_area.count():
-                item = self.editor_content_area.takeAt(0)
-                if item is not None:
-                    widget = item.widget()
-                    if widget:
-                        self.editor_content_area.removeWidget(widget)
-                        widget.setParent(None)
-            if self.editor_combo_box.currentText() == "Faculty":
-                self.editor_content_area.addWidget(self.faculty_controller.view)
-            elif self.editor_combo_box.currentText() == "Room/Lab":
-                self.editor_content_area.addWidget(self.room_controller.view)
-            else:
-                self.editor_content_area.addWidget(self.course_controller.view)
+            self.refresh()
+
         except Exception as error:
             QMessageBox.critical(self, "Load Error", str(error))
 
+    def refresh(self) -> None:
+        while self.editor_content_area.count():
+            item = self.editor_content_area.takeAt(0)
+            if item is not None:
+                widget = item.widget()
+                if widget:
+                    self.editor_content_area.removeWidget(widget)
+                    widget.setParent(None)
+        if self.editor_combo_box.currentText() == "Faculty":
+            self.editor_content_area.addWidget(self.faculty_controller.view)
+        elif self.editor_combo_box.currentText() == "Room/Lab":
+            self.editor_content_area.addWidget(self.room_controller.view)
+        else:
+            self.editor_content_area.addWidget(self.course_controller.view)
     # Saves config file
     def save_config(self) -> None:
         if not self.config:
