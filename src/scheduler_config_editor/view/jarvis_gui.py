@@ -12,10 +12,11 @@ from PyQt6.QtWidgets import (
     QScrollArea,
     QVBoxLayout,
     QWidget,
-    QMainWindow
+    QMainWindow,
 )
 
 from typing import TYPE_CHECKING
+
 
 class JarvisGUI(QMainWindow):
     def __init__(self) -> None:
@@ -29,7 +30,7 @@ class JarvisGUI(QMainWindow):
 
         # Set window title and size
         self.setWindowTitle("J.A.R.V.I.S")
-        self.setWindowIcon(QtGui.QIcon('jarvis.png'))
+        self.setWindowIcon(QtGui.QIcon("jarvis.png"))
         window_width = screen_width * 0.1
         window_height = screen_height * 0.5
         self.resize(int(window_width), int(window_height))

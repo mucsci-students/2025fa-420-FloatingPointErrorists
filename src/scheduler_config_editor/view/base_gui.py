@@ -494,7 +494,8 @@ class SimpleTabs(QWidget):
                     background-color: rgba(100, 100, 100, 30%);
                     border-radius: 4px;
                 }
-            """)
+            """
+            )
 
         jarvis_button.clicked.connect(self.activate_jarvis)
         self.tabs.setCornerWidget(jarvis_button, Qt.Corner.TopLeftCorner)
@@ -583,12 +584,12 @@ class SimpleTabs(QWidget):
             return  # User has disabled this popup
 
         self.show_info_popup(tab_name, key)
-    
+
     # Open Jarvis
     def activate_jarvis(self) -> None:
         self.jarvis_gui = JarvisGUI()
         self.jarvis_gui.show()
-      
+
     # Reset all tab popups
     def reset_all_popups(self) -> None:
         """Clears stored popup preferences."""
