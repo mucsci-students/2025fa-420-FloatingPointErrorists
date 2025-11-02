@@ -8,7 +8,6 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QScrollArea,
-    QFrame,
     QHBoxLayout,
     QSizePolicy,
 )
@@ -89,21 +88,24 @@ class JarvisGUI(QMainWindow):
 
     def add_message(self, query: str, sender: str) -> QLabel:
         # Adds chat bubbles layout
-        chat_bubble = QFrame()
-        chat_layout = QHBoxLayout(chat_bubble)
+        chat_bubble = QWidget()
+        chat_bubble.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
+        bubble_layout = QHBoxLayout(chat_bubble)
 
         # Bubble format and coloring
         label = QLabel(query)
         label.setWordWrap(True)
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        label.setMaximumWidth(int(self.width() * 0.6))
+        label.setMaximumWidth(int(self.width() * 0.7))
 
         if sender == "user":
             label.setStyleSheet(
-                "background-color: gray; color: white; padding: 10px 14px; border-radius: 15px"
+                "background-color: gray; color: white; padding: 5px 10px; border-radius: 15px"
             )
-            chat_layout.addStretch()
-            chat_layout.addWidget(label, 0, Qt.AlignmentFlag.AlignRight)
+            bubble_layout.addStretch()
+            bubble_layout.addWidget(label, 0, Qt.AlignmentFlag.AlignRight)
         if sender == "jarvis":
             # Jarvis logo
             jarvis_logo = QLabel()
@@ -114,14 +116,11 @@ class JarvisGUI(QMainWindow):
 
             # Style and layout
             label.setStyleSheet(
-                "background-color: lightgray; color: black; padding: 8px 12px;border-radius: 15px;"
+                "background-color: lightgray; color: black; padding: 5px 10px;border-radius: 15px;"
             )
-            label.setSizePolicy(
-                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
-            )
-            chat_layout.addWidget(jarvis_logo, 0, Qt.AlignmentFlag.AlignBottom)
-            chat_layout.addWidget(label)
-            chat_layout.addStretch()
+            bubble_layout.addWidget(jarvis_logo, 0, Qt.AlignmentFlag.AlignBottom)
+            bubble_layout.addWidget(label, 0, Qt.AlignmentFlag.AlignVCenter)
+            bubble_layout.addStretch()
 
         self.chat_layout.addWidget(chat_bubble)
         self.scroll_area.verticalScrollBar().setValue(
