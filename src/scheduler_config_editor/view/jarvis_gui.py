@@ -1,19 +1,29 @@
 from PyQt6 import QtGui
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QGuiApplication, QPixmap
 from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
-    QMainWindow, QWidget, QVBoxLayout, QScrollArea, QFrame, QHBoxLayout, QSizePolicy,
+    QMainWindow,
+    QWidget,
+    QVBoxLayout,
+    QScrollArea,
+    QFrame,
+    QHBoxLayout,
+    QSizePolicy,
 )
 
 from scheduler_config_editor.model.langchain_client import LangchainClient
 from scheduler_config_editor.model import JsonConfig
 
+
 class JarvisGUI(QMainWindow):
+    data_changed = pyqtSignal()
+
     def __init__(self, json_config: JsonConfig) -> None:
         super().__init__()
-
+        print("data_changed type:", type(self.data_changed))
+        print("has emit:", hasattr(self.data_changed, "emit"))
         # Grabbing dimensions of user's primary screen
         screen = QGuiApplication.primaryScreen()
         if screen is not None:
@@ -58,7 +68,6 @@ class JarvisGUI(QMainWindow):
         self.langchain_client = LangchainClient(json_config=json_config)
 
     def use_input(self):
-        from scheduler_config_editor.view.base_gui import SimpleTabs
         query = self.input_field.text()
         if not query:
             return
@@ -72,9 +81,11 @@ class JarvisGUI(QMainWindow):
             response = self.langchain_client.send_query(query)
         except Exception as e:
             response = f"Error: {e}"
-        self.refresh()
+        self.data_changed.emit()
         self.add_message(response, sender="jarvis")
-        self.scroll_area.verticalScrollBar().setValue(self.scroll_area.verticalScrollBar().maximum())
+        self.scroll_area.verticalScrollBar().setValue(
+            self.scroll_area.verticalScrollBar().maximum()
+        )
 
     def add_message(self, query: str, sender: str) -> QLabel:
         # Adds chat bubbles layout
@@ -85,26 +96,35 @@ class JarvisGUI(QMainWindow):
         label = QLabel(query)
         label.setWordWrap(True)
         label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        if sender == "user":
-            label.setStyleSheet("background-color: gray; color: white; padding: 8px 12px; border-radius: 15px")
-            chat_layout.addStretch()
-            chat_layout.addWidget(label)
-        if sender == "jarvis":
-            jarvis_scroll = QScrollArea()
-            jarvis_scroll.setWidgetResizable(True)
-            jarvis_scroll.setMaximumHeight(150)
-            jarvis_scroll.setFrameShape(QFrame.Shape.NoFrame)
-            label.setStyleSheet("background-color: lightgray; color: black; padding: 8px 12px;border-radius: 15px;")
+        label.setMaximumWidth(int(self.width() * 0.6))
 
-            jarvis_scroll.setWidget(label)
-            # Jarvis logo and layout
+        if sender == "user":
+            label.setStyleSheet(
+                "background-color: gray; color: white; padding: 10px 14px; border-radius: 15px"
+            )
+            chat_layout.addStretch()
+            chat_layout.addWidget(label, 0, Qt.AlignmentFlag.AlignRight)
+        if sender == "jarvis":
+            # Jarvis logo
             jarvis_logo = QLabel()
             jarvis_pixmap = QPixmap("jarvis.png")
-            jarvis_logo.setPixmap(jarvis_pixmap.scaled(30, 30, Qt.AspectRatioMode.KeepAspectRatio))
-            chat_layout.addWidget(jarvis_logo)
-            chat_layout.addWidget(jarvis_scroll)
+            jarvis_logo.setPixmap(
+                jarvis_pixmap.scaled(35, 35, Qt.AspectRatioMode.KeepAspectRatio)
+            )
+
+            # Style and layout
+            label.setStyleSheet(
+                "background-color: lightgray; color: black; padding: 8px 12px;border-radius: 15px;"
+            )
+            label.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+            )
+            chat_layout.addWidget(jarvis_logo, 0, Qt.AlignmentFlag.AlignBottom)
+            chat_layout.addWidget(label)
             chat_layout.addStretch()
 
         self.chat_layout.addWidget(chat_bubble)
-        self.scroll_area.verticalScrollBar().setValue(self.scroll_area.verticalScrollBar().maximum())
+        self.scroll_area.verticalScrollBar().setValue(
+            self.scroll_area.verticalScrollBar().maximum()
+        )
         return label

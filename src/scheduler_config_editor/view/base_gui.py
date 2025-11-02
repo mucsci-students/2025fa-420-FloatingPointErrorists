@@ -208,6 +208,33 @@ class SimpleTabs(QWidget):
 
         editor_layout.addLayout(bottom_buttons_layout, 99, 0, 1, 2)
 
+        # Jarvis Button
+        self.jarvis_button = QPushButton()
+        self.jarvis_button.setToolTip("Open J.A.R.V.I.S")
+        self.jarvis_icon = QtGui.QPixmap("jarvis.png")
+        style = self.style()
+        if style is not None:
+            self.jarvis_button.setIcon(QtGui.QIcon(self.jarvis_icon))
+            self.jarvis_button.setIconSize(QtCore.QSize(80, 80))
+            self.jarvis_button.setFixedSize(80, 80)
+            self.jarvis_button.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.jarvis_button.setFlat(True)
+            self.jarvis_button.setStyleSheet(
+                """
+                QPushButton {
+                    border: none;
+                    padding: 25;
+                }
+                QPushButton:hover {
+                    background-color: rgba(100, 100, 100, 30%);
+                    border-radius: 4px;
+                }
+            """
+            )
+
+        self.jarvis_button.clicked.connect(self.activate_jarvis)
+        self.jarvis_button.setEnabled(False)
+
         # Schedule Viewer Tab #########################################################################################
 
         self.sc = SchedulerController()
@@ -468,38 +495,11 @@ class SimpleTabs(QWidget):
         # Set final main_layout
         self.schedule_viewer_tab.setLayout(self.schedule_layout)
 
-        self.main_layout.addWidget(self.tabs)
+        # self.main_layout.addWidget(self.tabs)
         self.setLayout(self.main_layout)
 
         # persistent settings (stored per user/system)
         self.settings = QSettings("Millersville", "SchedulerConfigEditor")
-
-        # Jarvis Button
-        jarvis_button = QPushButton()
-        jarvis_button.setToolTip("Open J.A.R.V.I.S")
-        jarvis_icon = QtGui.QPixmap("jarvis.png")
-        style = self.style()
-        if style is not None:
-            jarvis_button.setIcon(QtGui.QIcon(jarvis_icon))
-            jarvis_button.setIconSize(QtCore.QSize(80, 80))
-            jarvis_button.setFixedSize(80, 80)
-            jarvis_button.setCursor(Qt.CursorShape.PointingHandCursor)
-            jarvis_button.setFlat(True)
-            jarvis_button.setStyleSheet(
-                """
-                QPushButton {
-                    border: none;
-                    padding: 25;
-                }
-                QPushButton:hover {
-                    background-color: rgba(100, 100, 100, 30%);
-                    border-radius: 4px;
-                }
-            """
-            )
-
-        jarvis_button.clicked.connect(self.activate_jarvis)
-        self.tabs.setCornerWidget(jarvis_button, Qt.Corner.TopLeftCorner)
 
         # --- Small reset icon button ---
         reset_button = QPushButton()
@@ -525,7 +525,21 @@ class SimpleTabs(QWidget):
             """)
 
         reset_button.clicked.connect(self.reset_all_popups)
-        self.tabs.setCornerWidget(reset_button, Qt.Corner.TopRightCorner)
+
+        # Layout for tabs, Jarvis, and help info
+        top_layout = QVBoxLayout()
+        top_buttons_layout = QHBoxLayout()
+        top_buttons_layout.addWidget(
+            self.jarvis_button, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        top_buttons_layout.addStretch()
+        top_buttons_layout.addWidget(
+            reset_button, alignment=Qt.AlignmentFlag.AlignRight
+        )
+        top_layout.addLayout(top_buttons_layout)
+        top_layout.addWidget(self.tabs)
+
+        self.main_layout.addLayout(top_layout)
 
         # Track initial popup
         self.initial_popup_scheduled = False
@@ -630,10 +644,11 @@ class SimpleTabs(QWidget):
             self.generator_gui.update_config(self.config)
             self.room_controller = RoomEditorController(self.config)
             self.jarvis_gui = JarvisGUI(self.config)
+            self.jarvis_gui.data_changed.connect(self.refresh)
 
             # Enables save and jarvis button
             self.save_config_button.setEnabled(True)
-            #self.jarvis_button.setEnabled(True)
+            self.jarvis_button.setEnabled(True)
 
             # refresh GUI
             self.refresh()
@@ -642,6 +657,11 @@ class SimpleTabs(QWidget):
             QMessageBox.critical(self, "Load Error", str(error))
 
     def refresh(self) -> None:
+        if self.config is None:
+            return
+        self.faculty_controller = FacultyEditorController(self.config)
+        self.course_controller = CourseEditorController(self.config)
+        self.room_controller = RoomEditorController(self.config)
         while self.editor_content_area.count():
             item = self.editor_content_area.takeAt(0)
             if item is not None:
@@ -655,6 +675,7 @@ class SimpleTabs(QWidget):
             self.editor_content_area.addWidget(self.room_controller.view)
         else:
             self.editor_content_area.addWidget(self.course_controller.view)
+
     # Saves config file
     def save_config(self) -> None:
         if not self.config:
