@@ -27,9 +27,11 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
    ```source .venv/bin/activate```
 * If you want to deactivate the virtual environment later, simply run:
 ```deactivate```
+* To use AI features, set up your OpenAI API key as an environment variable:
+   - Create a `.env` from `.env.example` and add your OpenAI API key to it.
 * To install development packages, run:
 ```uv pip install -e ".[dev]"```
-* Running tests can be invoked by running:
+* You can run tests using:
 ```pytest```
 * You must have dev packages installed to run tests.
 
@@ -71,17 +73,17 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 ## Design Patterns:
 
 * Model-View-Controller:
-    * Keep files for separate features separate and also for organization. This allows us to keep separation of concerns present in our code.
+    * Keep files for separate features distinguished and also for organization. This allows us to keep separation of concerns present in our code.
     * Files: All the files in the labeled folders under the src/scheduler_config_editor directory
 * Adapter: 
-    * The schedules are either loaded as a JSON or CSV, but they need to be presented as a table string. So we have a class that will convert the schedules into a table string format so they can be presented in the gui.
+    * The schedules are either loaded as a JSON or CSV, but they are operated on as CourseInstanceJSON objects. So we have a class that will convert the schedules into lists of CourseInstanceJSON so they can be presented in a readable format.
     * File: scheduler_handler.py
 * Command:
     * We needed to queue up multiple schedules to be created
     * File: generator_controller.py
 * Memento:
-    * When we open up the editor, we don't want the changes to be committed until we explicitly click the save button. So when an editor window opens, it opens up a copy of the object.
-    * Files: The course, faculty, room, and lab editors
+    * When we open up the editor, we don't want the changes to be committed until we explicitly save them. So when we operate on the configuration, we do so on a copy of the original configuration. When we save, we overwrite the original configuration with the modified copy.
+    * File: json.py
 
 ## Authors:
 

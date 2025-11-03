@@ -26,6 +26,11 @@ def main(cli: bool) -> None:
     if cli:
         run_shell()
     else:
-        from .view import view
+        try:
+            from .view import view
 
-        view()
+            view()
+        except ImportError:
+            click.echo(
+                "GUI dependencies are not installed. Please install the required packages to run the GUI."
+            )

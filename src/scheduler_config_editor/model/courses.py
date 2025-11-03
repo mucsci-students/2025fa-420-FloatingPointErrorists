@@ -11,18 +11,31 @@ class Course:
     """
 
     @staticmethod
-    def check_fields_exist(
+    def check_values(
         json_config: JsonConfig,
+        course_id: str,
+        course_credits: int,
         room: Optional[list[str]] = None,
         faculty: Optional[list[str]] = None,
         lab: Optional[list[str]] = None,
         conflicts: Optional[list[str]] = None,
-    ):
+    ) -> None:
+        """checks that the values provided are valid"""
+        if not course_id:
+            raise ValueError("Course ID cannot be empty.")
+        if course_credits <= 0:
+            raise ValueError("Course credits must be greater than 0.")
         if room is not None:
+            if not room:
+                raise ValueError("At least one room must be assigned to a course.")
             for r in room:
                 if r not in json_config.scheduler_config.rooms:
                     raise ValueError(f"Room {r} does not exist in the configuration.")
         if faculty is not None:
+            if not faculty:
+                raise ValueError(
+                    "At least one faculty member must be assigned to a course."
+                )
             for f in faculty:
                 if f not in [fac.name for fac in json_config.scheduler_config.faculty]:
                     raise ValueError(
@@ -54,7 +67,9 @@ class Course:
         conflicts: Optional[list[str]] = None,
     ) -> str:
         """adds a new course to the config file"""
-        Course.check_fields_exist(json_config, room, faculty, lab, conflicts)
+        Course.check_values(
+            json_config, course_id, course_credits, room, faculty, lab, conflicts
+        )
         if lab is None:
             lab = []
         if conflicts is None:
@@ -89,7 +104,6 @@ class Course:
         """modifies a current course and updates their information"""
         if index < 0 or index >= len(json_config.scheduler_config.courses):
             raise IndexError("Course index out of range.")
-        Course.check_fields_exist(json_config, room, faculty, lab, conflicts)
         old_course = json_config.scheduler_config.courses[index]
         course_config = CourseConfig(
             course_id=course_id if course_id is not None else old_course.course_id,
@@ -100,6 +114,15 @@ class Course:
             lab=lab if lab is not None else old_course.lab,
             conflicts=conflicts if conflicts is not None else old_course.conflicts,
             faculty=faculty if faculty is not None else old_course.faculty,
+        )
+        Course.check_values(
+            json_config,
+            course_config.course_id,
+            course_config.credits,
+            course_config.room,
+            course_config.faculty,
+            course_config.lab,
+            course_config.conflicts,
         )
         old_course_id = old_course.course_id
         course_id = course_config.course_id
