@@ -55,7 +55,7 @@ class SimpleGUI(QMainWindow):
 
         # Set window title and size
         self.setWindowTitle("Scheduler App")
-        window_icon = QtGui.QPixmap("dripGoku.png")
+        window_icon = QtGui.QPixmap("assets/dripGoku.png")
         self.setWindowIcon(QtGui.QIcon(window_icon))
         self.resize(int(screen_width * 0.5), int(screen_height * 0.5))
 
@@ -211,7 +211,7 @@ class SimpleTabs(QWidget):
         # Jarvis Button
         self.jarvis_button = QPushButton()
         self.jarvis_button.setToolTip("Open J.A.R.V.I.S")
-        self.jarvis_icon = QtGui.QPixmap("jarvis.png")
+        self.jarvis_icon = QtGui.QPixmap("assets/jarvis.png")
         style = self.style()
         if style is not None:
             self.jarvis_button.setIcon(QtGui.QIcon(self.jarvis_icon))

@@ -36,7 +36,7 @@ class JarvisGUI(QMainWindow):
 
         # Set window title and size
         self.setWindowTitle("J.A.R.V.I.S")
-        self.setWindowIcon(QtGui.QIcon("jarvis.png"))
+        self.setWindowIcon(QtGui.QIcon("assets/jarvis.png"))
         window_width = screen_width * 0.4
         window_height = screen_height * 0.75
         self.resize(int(window_width), int(window_height))
@@ -109,7 +109,7 @@ class JarvisGUI(QMainWindow):
         if sender == "jarvis":
             # Jarvis logo
             jarvis_logo = QLabel()
-            jarvis_pixmap = QPixmap("jarvis.png")
+            jarvis_pixmap = QPixmap("assets/jarvis.png")
             jarvis_logo.setPixmap(
                 jarvis_pixmap.scaled(35, 35, Qt.AspectRatioMode.KeepAspectRatio)
             )

@@ -27,6 +27,8 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
    ```source .venv/bin/activate```
 * If you want to deactivate the virtual environment later, simply run:
 ```deactivate```
+* To use AI features, set up your OpenAI API key as an environment variable:
+   - Create a `.env` from `.env.example` and add your OpenAI API key to it.
 * To install development packages, run:
 ```uv pip install -e ".[dev]"```
 * You can run tests using:
