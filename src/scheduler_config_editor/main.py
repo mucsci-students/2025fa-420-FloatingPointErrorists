@@ -31,4 +31,6 @@ def main(cli: bool) -> None:
 
             view()
         except ImportError:
-            click.echo("GUI dependencies are not installed. Please install the required packages to run the GUI.")
+            click.echo(
+                "GUI dependencies are not installed. Please install the required packages to run the GUI."
+            )
