@@ -19,7 +19,8 @@ class Course:
         faculty: Optional[list[str]] = None,
         lab: Optional[list[str]] = None,
         conflicts: Optional[list[str]] = None,
-    ):
+    ) -> None:
+        """checks that the values provided are valid"""
         if not course_id:
             raise ValueError("Course ID cannot be empty.")
         if course_credits <= 0:

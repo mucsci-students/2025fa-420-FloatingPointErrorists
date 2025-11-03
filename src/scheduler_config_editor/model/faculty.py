@@ -22,6 +22,7 @@ class Faculty:
         room_preferences: Optional[dict[str, int]] = None,
         lab_preferences: Optional[dict[str, int]] = None,
     ) -> None:
+        """checks that the values provided are valid"""
         if not name:
             raise ValueError("Faculty name cannot be empty.")
         if (
