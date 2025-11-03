@@ -96,14 +96,13 @@ def test_add_course_appends_and_updates_faculty_preferences(import_courses_modul
 
 def test_mod_course_changes_id_updates_faculty_and_conflicts(import_courses_module):
     courses_mod = import_courses_module
-
+    fac = DummyFaculty("DrX", course_preferences={"OLD101": 7})
     c_old = DummyCourseConfig(
-        course_id="OLD101", credits=3, room=[], lab=[], conflicts=[], faculty=[]
+        course_id="OLD101", credits=3, room=[], lab=[], conflicts=[], faculty=["DrX"]
     )
     c_other = DummyCourseConfig(
-        course_id="OTHER", credits=2, room=[], lab=[], conflicts=["OLD101"], faculty=[]
+        course_id="OTHER", credits=2, room=[], lab=[], conflicts=["OLD101"], faculty=["DrX"]
     )
-    fac = DummyFaculty("DrX", course_preferences={"OLD101": 7})
     sched = DummySchedulerConfig(
         courses=[c_old, c_other], faculty=[fac], rooms=["RmA"], labs=["LabA"]
     )
@@ -117,7 +116,6 @@ def test_mod_course_changes_id_updates_faculty_and_conflicts(import_courses_modu
         room=["RmA"],
         lab=["LabA"],
         conflicts=["OTHER"],
-        faculty=[],
     )
 
     updated = json_cfg.scheduler_config.courses[0]
