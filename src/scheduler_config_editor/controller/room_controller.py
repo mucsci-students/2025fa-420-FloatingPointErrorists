@@ -1,10 +1,19 @@
-from PyQt6.QtWidgets import QMessageBox, QListWidgetItem, QVBoxLayout, QPushButton, QTextEdit, QWidget
+from PyQt6.QtWidgets import (
+    QListWidgetItem,
+    QMessageBox,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
-from scheduler_config_editor.model import Room, Lab,JsonConfig
+from scheduler_config_editor.model import JsonConfig, Lab, Room
+
 
 class RoomEditorController:
     def __init__(self, json_config: JsonConfig) -> None:
         from scheduler_config_editor.view.room_editor_gui import RoomEditorGui
+
         self.json_config = json_config
         self.view = RoomEditorGui(self)
         self.refresh_lists()
@@ -13,12 +22,11 @@ class RoomEditorController:
     def refresh_lists(self) -> None:
         self.view.room_list.clear()
         self.view.lab_list.clear()
-        for i, room in enumerate (self.json_config.scheduler_config.rooms):
+        for i, _room in enumerate(self.json_config.scheduler_config.rooms):
             self.view.room_list.addItem(self.json_config.scheduler_config.rooms[i])
 
-        for i, lab in enumerate (self.json_config.scheduler_config.labs):
+        for i, _lab in enumerate(self.json_config.scheduler_config.labs):
             self.view.lab_list.addItem(self.json_config.scheduler_config.labs[i])
-
 
     def show_editor(self, item: QListWidgetItem, group: str) -> None:
         editor_box = self.get_editor(item, group)
@@ -33,7 +41,7 @@ class RoomEditorController:
                     if old_widget is not None:
                         old_widget.setParent(None)
                         old_widget.deleteLater()
-        
+
             # add new editor content
             container_layout.addWidget(editor_box)
 
@@ -85,6 +93,7 @@ class RoomEditorController:
         # Defines a function for deleting from the json
         def delete() -> None:
             from scheduler_config_editor.view.room_editor_gui import RoomEditorGui
+
             if group == RoomEditorGui.ROOM:
                 try:
                     Room.del_room(self.json_config, name)
@@ -109,11 +118,12 @@ class RoomEditorController:
         editor_cancel_button.clicked.connect(cancel)
         editor_layout.addWidget(editor_cancel_button)
 
-        #self.my_layout.addWidget(editor_box)
+        # self.my_layout.addWidget(editor_box)
         return editor_widget
 
     def write_out(self, name: str, oName: str, group: str) -> None:
         from scheduler_config_editor.view.room_editor_gui import RoomEditorGui
+
         if group == RoomEditorGui.ROOM:
             if oName != "":
                 try:
@@ -136,7 +146,7 @@ class RoomEditorController:
                     Lab.add_lab(self.json_config, name)
                 except Lab.LabExistsError as e:
                     self.show_error(group, e)
-            
+
     def show_error(self, group: str, error: Exception) -> None:
         error_box = QMessageBox()
         error_box.setWindowTitle(f"{group} Error")

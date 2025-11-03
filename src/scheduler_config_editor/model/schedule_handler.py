@@ -3,13 +3,17 @@ import json
 import os
 import re
 from collections import defaultdict
-from typing import Callable, Any
+from collections.abc import Callable
+from typing import Any, cast
+
 from scheduler.json_types import CourseInstanceJSON, TimeInstanceJSON
 from scheduler.models import CourseInstance
 from tabulate import tabulate
 
 DAY_TO_INDEX = {"MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5}
 INDEX_TO_DAY = {1: "MON", 2: "TUE", 3: "WED", 4: "THU", 5: "FRI"}
+DAYS = ["MON", "TUE", "WED", "THU", "FRI"]
+
 
 class ScheduleHandler:
     """
@@ -20,6 +24,7 @@ class ScheduleHandler:
     Attributes:
         schedules (list[list[CourseInstanceJSON]]): The loaded schedules.
     """
+
     def __init__(self) -> None:
         self._schedules: list[list[CourseInstanceJSON]] = []
 
@@ -34,7 +39,9 @@ class ScheduleHandler:
         for other_schedule in schedules:
             new_schedule = []
             for course_instance in other_schedule:
-                new_schedule.append(course_instance.model_dump(by_alias=True, exclude_none=True))
+                new_schedule.append(
+                    course_instance.model_dump(by_alias=True, exclude_none=True)
+                )
             self._schedules.append(new_schedule)
 
     def import_schedules(self, file_path: str) -> None:
@@ -46,7 +53,7 @@ class ScheduleHandler:
             file_path,
             f"schedules/{file_path}",
             f"schedules/{file_path}.json",
-            f"schedules/{file_path}.csv"
+            f"schedules/{file_path}.csv",
         ]
         for path in possible_paths:
             if os.path.exists(path):
@@ -63,8 +70,12 @@ class ScheduleHandler:
         try:
             with open(file_path, encoding="utf-8") as f:
                 data = json.load(f)
-                if not isinstance(data, list) or not all(isinstance(s, list) for s in data):
-                    raise ValueError("JSON file does not match expected schedule format.")
+                if not isinstance(data, list) or not all(
+                    isinstance(s, list) for s in data
+                ):
+                    raise ValueError(
+                        "JSON file does not match expected schedule format."
+                    )
                 self._schedules = data
         except (json.JSONDecodeError, ValueError) as e:
             raise ValueError(f"Invalid JSON format in {file_path}: {e}") from e
@@ -72,7 +83,7 @@ class ScheduleHandler:
     def _load_csv_schedules(self, file_path: str) -> None:
         """Load schedules from a CSV file."""
         try:
-            with open(file_path, newline='') as csvfile:
+            with open(file_path, newline="") as csvfile:
                 lines = csvfile.read().splitlines()
             blocks = ScheduleHandler._split_blocks(lines)
             schedules = [ScheduleHandler._parse_block(block) for block in blocks]
@@ -110,7 +121,7 @@ class ScheduleHandler:
             lab_index = None
             time_instances = []
             for i, time in enumerate(times):
-                if time.endswith('^'):
+                if time.endswith("^"):
                     lab_index = i
                 time_instances.append(ScheduleHandler._parse_csv_time(time))
             course_instance: CourseInstanceJSON = {
@@ -119,7 +130,7 @@ class ScheduleHandler:
                 "room": room.strip() if room.strip() and room != "None" else None,
                 "lab": lab.strip() if lab.strip() and lab != "None" else None,
                 "times": time_instances,
-                "lab_index": lab_index
+                "lab_index": lab_index,
             }
             schedule.append(course_instance)
         return schedule
@@ -127,7 +138,7 @@ class ScheduleHandler:
     @staticmethod
     def _parse_csv_time(time_str: str) -> TimeInstanceJSON:
         """Parse a time string in the format "DAY HH:MM-HH:MM" or DAY HH:MM-HH:MM^" into a TimeInstanceJSON."""
-        time_str = time_str.rstrip('^')
+        time_str = time_str.rstrip("^")
         match = re.match(r"(\w{3}) (\d{2}):(\d{2})-(\d{2}):(\d{2})", time_str)
         if not match:
             raise ValueError(f"Invalid time format: {time_str}")
@@ -147,12 +158,13 @@ class ScheduleHandler:
         end = time["start"] + time["duration"]
         end_hour = end // 60
         end_minute = end % 60
-        return f"{day} {start_hour:02d}:{start_minute:02d}-{end_hour:02d}:{end_minute:02d}"
+        return (
+            f"{day} {start_hour:02d}:{start_minute:02d}-{end_hour:02d}:{end_minute:02d}"
+        )
 
     @staticmethod
     def _group_by(
-            schedule: list[CourseInstanceJSON],
-            key_fn: Callable[[CourseInstanceJSON], Any]
+        schedule: list[CourseInstanceJSON], key_fn: Callable[[CourseInstanceJSON], Any]
     ) -> dict[Any, list[CourseInstanceJSON]]:
         """Group courses in the schedule by a key function."""
         groups: dict[Any, list[CourseInstanceJSON]] = defaultdict(list)
@@ -162,25 +174,28 @@ class ScheduleHandler:
 
     @staticmethod
     def _build_rows(
-            courses: list[CourseInstanceJSON],
-            row_fn: Callable[[CourseInstanceJSON, list[str]], list[str]],
-            days: list[str]
+        courses: list[CourseInstanceJSON],
+        row_fn: Callable[[CourseInstanceJSON, list[str]], list[str]],
+        days: list[str],
     ) -> list[list[str]]:
         """Build table rows for a group of courses using a row builder function"""
         return [row_fn(course, days) for course in courses]
 
     @staticmethod
+    def _avg_start(course: CourseInstanceJSON) -> float:
+        """Get the average start time across all meeting times for a course, or +inf if none."""
+        starts = [t["start"] for t in course.get("times", [])]
+        return sum(starts) / len(starts) if starts else float("inf")
+
+    @staticmethod
     def _faculty_row(course: CourseInstanceJSON, days: list[str]) -> list[str]:
         """Build a row for a faculty schedule table."""
         lab_index = course.get("lab_index")
-        row = [
-            course["course"],
-            f"{course.get('room', '')} ({course.get('lab', '')})"
-        ]
+        row = [course["course"], f"{course.get('room', '')} ({course.get('lab', '')})"]
         for day in days:
             meetings = [
-                ScheduleHandler._format_time_instance(time) + (
-                    "^" if lab_index is not None and idx == lab_index else "")
+                ScheduleHandler._format_time_instance(time)
+                + ("^" if lab_index is not None and idx == lab_index else "")
                 for idx, time in enumerate(course["times"])
                 if INDEX_TO_DAY[time["day"]] == day
             ]
@@ -197,9 +212,10 @@ class ScheduleHandler:
             meetings = [
                 ScheduleHandler._format_time_instance(time)[4:]
                 for idx, time in enumerate(course["times"])
-                if INDEX_TO_DAY[time["day"]] == day and (
-                        (room == course.get("lab") and idx == lab_index) or
-                        (room == course.get("room") and idx != lab_index)
+                if INDEX_TO_DAY[time["day"]] == day
+                and (
+                    (room == course.get("lab") and idx == lab_index)
+                    or (room == course.get("room") and idx != lab_index)
                 )
             ]
             row.append(", ".join(meetings))
@@ -212,7 +228,8 @@ class ScheduleHandler:
         for course in schedule:
             lab_index = course.get("lab_index")
             time_str = ", ".join(
-                ScheduleHandler._format_time_instance(t) + ("^" if lab_index is not None and idx == lab_index else "")
+                ScheduleHandler._format_time_instance(t)
+                + ("^" if lab_index is not None and idx == lab_index else "")
                 for idx, t in enumerate(course["times"])
             )
             row = [
@@ -222,25 +239,29 @@ class ScheduleHandler:
                 course.get("lab", ""),
                 time_str,
             ]
-            rows.append(row)
+            rows.append(cast(list[str], row))
         return rows
 
     @staticmethod
-    def faculty_schedule_rows(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
+    def faculty_schedule_rows(
+        schedule: list[CourseInstanceJSON],
+    ) -> list[tuple[str, list[list[str]]]]:
         """Build rows for the faculty schedule table."""
-        days = ["MON", "TUE", "WED", "THU", "FRI"]
         faculty_map = ScheduleHandler._group_by(schedule, lambda c: c["faculty"])
-        rows: list[list[str]] = []
+        faculty_schedules = []
         for faculty, courses in faculty_map.items():
-            for course in courses:
-                row = [faculty] + ScheduleHandler._faculty_row(course, days)
-                rows.append(row)
-        return rows
+            sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
+            rows = ScheduleHandler._build_rows(
+                sorted_courses, ScheduleHandler._faculty_row, DAYS
+            )
+            faculty_schedules.append((faculty, rows))
+        return faculty_schedules
 
     @staticmethod
-    def room_schedule_rows(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
+    def room_schedule_rows(
+        schedule: list[CourseInstanceJSON],
+    ) -> list[tuple[str, list[list[str]]]]:
         """Build rows for the room schedule table."""
-        days = ["MON", "TUE", "WED", "THU", "FRI"]
         room_map: dict[str, list[CourseInstanceJSON]] = defaultdict(list)
         for course in schedule:
             room = course.get("room")
@@ -249,12 +270,15 @@ class ScheduleHandler:
                 room_map[room].append(course)
             if lab is not None:
                 room_map[lab].append(course)
-        rows: list[list[str]] = []
+        room_schedules = []
         for room, courses in room_map.items():
-            for course in courses:
-                row = [room] + ScheduleHandler._room_row(course, days, room)
-                rows.append(row)
-        return rows
+            sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
+            rows = [
+                ScheduleHandler._room_row(course, DAYS, room)
+                for course in sorted_courses
+            ]
+            room_schedules.append((room, rows))
+        return room_schedules
 
     @staticmethod
     def format_schedule_str(schedule: list[CourseInstanceJSON]) -> str:
@@ -266,20 +290,21 @@ class ScheduleHandler:
     @staticmethod
     def faculty_schedule_str(schedule: list[CourseInstanceJSON]) -> str:
         """Format the faculty schedule as a table string."""
-        days = ["MON", "TUE", "WED", "THU", "FRI"]
         faculty_map = ScheduleHandler._group_by(schedule, lambda c: c["faculty"])
         final_str = ""
         for faculty, courses in faculty_map.items():
+            sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
             final_str += f"\n{faculty}:\n"
-            headers = ["Course", "Room (Lab)"] + days
-            rows = ScheduleHandler._build_rows(courses, ScheduleHandler._faculty_row, days)
+            headers = ["Course", "Room (Lab)"] + DAYS
+            rows = ScheduleHandler._build_rows(
+                sorted_courses, ScheduleHandler._faculty_row, DAYS
+            )
             final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
         return final_str
 
     @staticmethod
     def room_schedule_str(schedule: list[CourseInstanceJSON]) -> str:
         """Format the room schedule as a table string."""
-        days = ["MON", "TUE", "WED", "THU", "FRI"]
         room_map: dict[str, list[CourseInstanceJSON]] = defaultdict(list)
         for course in schedule:
             room = course.get("room")
@@ -290,8 +315,12 @@ class ScheduleHandler:
                 room_map[lab].append(course)
         final_str = ""
         for room, courses in room_map.items():
+            sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
             final_str += f"\n{room}:\n"
-            headers = ["Course", "Faculty"] + days
-            rows = [ScheduleHandler._room_row(course, days, room) for course in courses]
+            headers = ["Course", "Faculty"] + DAYS
+            rows = [
+                ScheduleHandler._room_row(course, DAYS, room)
+                for course in sorted_courses
+            ]
             final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
         return final_str

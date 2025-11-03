@@ -10,37 +10,31 @@ dependencies = [
     "click-shell",
     "PyQt6",
     "tabulate",
-    "types-tabulate"
+    "types-tabulate",
+    "dotenv",
+    "langchain-openai",
+    "langchain",
+    "langgraph"
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest",
     "pytest-cov",
-    "mypy",
+    "ty",
     "ruff"
 ]
 
 [tool.uv]
 package = true
 
-[tool.mypy]
-python_version = "3.13"
-strict = true
-disallow_untyped_defs = true
-ignore_missing_imports = true
-
-[tool.ruff]
-target-version = "py313"
-lint.select = [
-    "E",
-    "F",
-    "I",
-    "B",
-    "UP",
-]
-src = ["src"]
-fix = true
-
 [project.scripts]
 sce = "scheduler_config_editor.main:main"
+
+# The purpose of this section is to suppress a specific deprecation warning.
+# Click_shell has a deprecated feature that is still in use, and this warning clutters the test output.
+[tool.pytest.ini_options]
+filterwarnings = [
+  "ignore:'protected_args' is deprecated and will be removed in Click 9.0:DeprecationWarning:click_shell.core",
+  "ignore:The 'frozen' attribute with value True was provided to the `Field\\(\\)` function:UserWarning:pydantic._internal._generate_schema"
+]

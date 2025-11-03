@@ -1,11 +1,20 @@
-from PyQt6.QtWidgets import QLabel, QWidget, QPushButton, QVBoxLayout, QListWidget, QGroupBox
 from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (
+    QGroupBox,
+    QLabel,
+    QListWidget,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
+
 
 class RoomEditorGui(QWidget):
     ROOM = "Room"
     LAB = "Lab"
 
     from scheduler_config_editor.controller.room_controller import RoomEditorController
+
     def __init__(self, controller: RoomEditorController) -> None:
         super().__init__()
         self.controller = controller
@@ -13,7 +22,7 @@ class RoomEditorGui(QWidget):
 
         # Layout Stuff
         self.my_layout = QVBoxLayout(self)
-        
+
         # Changes title
         self.title = QLabel("Room and Lab Editor")
         self.my_layout.addWidget(self.title, alignment=Qt.AlignmentFlag.AlignTop)
@@ -27,10 +36,14 @@ class RoomEditorGui(QWidget):
         room_layout.addWidget(self.room_list)
 
         room_add_button = QPushButton("Add Room")
-        room_add_button.clicked.connect(lambda item: self.controller.show_editor(item, RoomEditorGui.ROOM))
+        room_add_button.clicked.connect(
+            lambda item: self.controller.show_editor(item, RoomEditorGui.ROOM)
+        )
         room_layout.addWidget(room_add_button)
 
-        self.room_list.itemClicked.connect(lambda item: self.controller.show_editor(item, RoomEditorGui.ROOM))
+        self.room_list.itemClicked.connect(
+            lambda item: self.controller.show_editor(item, RoomEditorGui.ROOM)
+        )
 
         # Labs Group Box
         lab_group_box = QGroupBox("Labs")
@@ -41,10 +54,14 @@ class RoomEditorGui(QWidget):
         lab_layout.addWidget(self.lab_list)
 
         lab_add_button = QPushButton("Add Lab")
-        lab_add_button.clicked.connect(lambda item: self.controller.show_editor(item, RoomEditorGui.LAB))
+        lab_add_button.clicked.connect(
+            lambda item: self.controller.show_editor(item, RoomEditorGui.LAB)
+        )
         lab_layout.addWidget(lab_add_button)
 
-        self.lab_list.itemClicked.connect(lambda item: self.controller.show_editor(item, RoomEditorGui.LAB))
+        self.lab_list.itemClicked.connect(
+            lambda item: self.controller.show_editor(item, RoomEditorGui.LAB)
+        )
 
         self.my_layout.addWidget(room_group_box)
         self.my_layout.addWidget(lab_group_box)

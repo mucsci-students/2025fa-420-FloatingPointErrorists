@@ -17,7 +17,7 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 ### Installing
 
 * Clone the repository using:
-```git clone https://github.com/mucsci/Scheduler.git```, and navigate to the project directory.
+```git clone https://github.com/mucsci-students/2025fa-420-FloatingPointErrorists.git```, and navigate to the project directory.
 * Install dependencies and create a virtual environment by running:
 ```uv sync```
 * Activate the virtual environment:
@@ -27,8 +27,13 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
    ```source .venv/bin/activate```
 * If you want to deactivate the virtual environment later, simply run:
 ```deactivate```
+* To use AI features, set up your OpenAI API key as an environment variable:
+   - Create a `.env` from `.env.example` and add your OpenAI API key to it.
 * To install development packages, run:
 ```uv pip install -e ".[dev]"```
+* You can run tests using:
+```pytest```
+* You must have dev packages installed to run tests.
 
 ### Executing + Using the Program In CLI Mode
 
@@ -43,6 +48,7 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 * Once a configuration file is loaded, you can use the following commands:
     * `help` to bring up a list of commands.
     * `exit`, `quit` or ctrl+c to exit the program.
+    * `chat` to enter chat mode with the AI assistant who can modify the configuration for you.
     * `show` to display the current configuration.
     * `save` to save the current configuration to the loaded file.
     * `clear` to clear the terminal screen.
@@ -63,6 +69,22 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
     * ```show``` to display and navigate between the schedules.
     * ```show-faculty``` to display schedules for each faculty member.
     * ```show-room``` to display schedules for each room.
+
+## Design Patterns:
+
+* Model-View-Controller:
+    * Keep files for separate features distinguished and also for organization. This allows us to keep separation of concerns present in our code.
+    * Files: All the files in the labeled folders under the src/scheduler_config_editor directory
+* Adapter: 
+    * The schedules are either loaded as a JSON or CSV, but they are operated on as CourseInstanceJSON objects. So we have a class that will convert the schedules into lists of CourseInstanceJSON so they can be presented in a readable format.
+    * File: scheduler_handler.py
+* Command:
+    * We needed to queue up multiple schedules to be created
+    * File: generator_controller.py
+* Memento:
+    * When we open up the editor, we don't want the changes to be committed until we explicitly save them. So when we operate on the configuration, we do so on a copy of the original configuration. When we save, we overwrite the original configuration with the modified copy.
+    * File: json.py
+
 ## Authors:
 
 * Andrew Elko

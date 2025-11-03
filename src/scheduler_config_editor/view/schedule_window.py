@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QLabel, QWidget,  QVBoxLayout, QMainWindow, QScrollArea, QTableWidget
 from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QMainWindow, QScrollArea, QVBoxLayout, QWidget
+
 
 class newWindow(QMainWindow):
     def __init__(self) -> None:
@@ -21,17 +21,15 @@ class newWindow(QMainWindow):
         self.setCentralWidget(self.widget)
 
 
-
 class newWidget(QWidget):
-
     def __init__(self, parent: newWindow) -> None:
-
         super(QWidget, self).__init__(parent)
 
         self.my_widget = QWidget()
-        self.my_table = QTableWidget()
+        self.my_widget_layout = QVBoxLayout(self.my_widget)
+
         self.scroll_area_w = QScrollArea()
-    
+        self.scroll_area_w.setWidget(self.my_widget)
         self.scroll_area_w.setWidgetResizable(True)
 
         self.my_layout = QVBoxLayout()

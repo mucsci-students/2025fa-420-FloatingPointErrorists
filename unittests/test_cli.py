@@ -1,15 +1,19 @@
 import os
+
 from click.testing import CliRunner
+
 from scheduler_config_editor.cli import base_cli
 
 DUMMY_JSON = os.path.join(os.path.dirname(__file__), "dummy.json")
 LOAD_COMMAND = "load-config"
+
 
 def test_load_config_valid_json():
     runner = CliRunner()
     result = runner.invoke(base_cli, [LOAD_COMMAND, DUMMY_JSON])
     assert result.exit_code == 0
     assert "Configuration loaded" in result.output
+
 
 def test_load_config_new_file():
     runner = CliRunner()
@@ -22,6 +26,7 @@ def test_load_config_new_file():
         if os.path.exists(f"configs/{test_file}.json"):
             os.remove(f"configs/{test_file}.json")
 
+
 def test_load_config_invalid_json(tmp_path):
     runner = CliRunner()
     config = tmp_path / "bad.json"
@@ -30,20 +35,23 @@ def test_load_config_invalid_json(tmp_path):
     assert result.exit_code != 0
     assert "Invalid JSON" in result.output
 
+
 def test_show_config():
     runner = CliRunner()
     obj = {}
     runner.invoke(base_cli, [LOAD_COMMAND, DUMMY_JSON], obj=obj)
     result = runner.invoke(base_cli, ["show"], obj=obj)
-    assert 'Rooms:' in result.output
-    assert '- Roddy 136' in result.output
-    assert '- Roddy 140' in result.output
-    assert '- Roddy 147' in result.output
+    assert "Rooms:" in result.output
+    assert "- Roddy 136" in result.output
+    assert "- Roddy 140" in result.output
+    assert "- Roddy 147" in result.output
+
 
 def test_show_config_no_config():
     runner = CliRunner()
     result = runner.invoke(base_cli, ["show"])
     assert "No configuration loaded." in result.output
+
 
 def test_save_config():
     runner = CliRunner()
@@ -51,6 +59,7 @@ def test_save_config():
     runner.invoke(base_cli, [LOAD_COMMAND, DUMMY_JSON], obj=obj)
     result = runner.invoke(base_cli, ["save"], obj=obj)
     assert "Configuration saved." in result.output
+
 
 def test_save_config_no_config():
     runner = CliRunner()
