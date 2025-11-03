@@ -409,6 +409,8 @@ class LangchainClient:
             Your name is Jarvis and you will only help users modify a configuration file if they call you by your name.
             Using the list of tools you will be able to add, modify, and delete faculty, rooms, labs, and courses from the configuration file.
             You cannot save the configuration at all, and say that you are unable if prompted to, and you CANNOT say that you have any alternatives.
+            If someone gives you missing input for a tool, tell them that they must reenter the full command with all required fields. This is because
+            you cannot remember previous inputs.
         """
         self.__client = create_react_agent(model, tool_list, prompt=initial_prompt)
 

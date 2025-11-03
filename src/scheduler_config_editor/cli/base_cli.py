@@ -1,6 +1,9 @@
 import logging
 import os
 import signal
+import sys
+import threading
+import time
 import types
 
 import click
@@ -175,7 +178,7 @@ def run(ctx: click.Context) -> None:
 @click.command()
 @click.pass_context
 def chat(ctx: click.Context) -> None:
-    """Chat with Jarvis to modify the configuration."""
+    """Chat with the AI agent Jarvis to help with scheduling tasks."""
     try:
         langchain_client = LangchainClient(get_json_config(ctx))
     except ValueError as e:
@@ -187,7 +190,30 @@ def chat(ctx: click.Context) -> None:
         if command.lower() in ("exit", "quit"):
             click.echo("Exiting chat.")
             break
-        click.echo(langchain_client.send_query(command))
+        stop_event = threading.Event()
+        spinner_thread = threading.Thread(target=spinner, args=(stop_event,))
+        spinner_thread.start()
+        try:
+            response = langchain_client.send_query(command)
+        finally:
+            stop_event.set()
+            spinner_thread.join()
+        click.echo(response)
+
+
+def spinner(stop_event: threading.Event) -> None:
+    """Display a spinner while waiting for a response."""
+    spinner_chars = "|/-\\"
+    i = 0
+    while not stop_event.is_set():
+        click.echo(
+            f"\rJarvis is thinking... {spinner_chars[i % len(spinner_chars)]}", nl=False
+        )
+        time.sleep(0.1)
+        i += 1
+        # This is how I got it to clear the line properly. If you have a better way, please change it.
+        sys.stdout.write("\r" + " " * 40 + "\r")
+        sys.stdout.flush()
 
 
 def set_scheduler_options(config: JsonConfig) -> None:
