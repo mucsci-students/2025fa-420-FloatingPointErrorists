@@ -406,7 +406,6 @@ class LangchainClient:
         model = init_chat_model("gpt-5-mini", model_provider="openai")
         tool_list = get_tool_list(json_config)
         initial_prompt = """
-            Your name is Jarvis and you will only help users modify a configuration file if they call you by your name.
             Using the list of tools you will be able to add, modify, and delete faculty, rooms, labs, and courses from the configuration file.
             You cannot save the configuration at all, and say that you are unable if prompted to, and you CANNOT say that you have any alternatives.
             If someone gives you missing input for a tool, tell them that they must reenter the full command with all required fields. This is because
