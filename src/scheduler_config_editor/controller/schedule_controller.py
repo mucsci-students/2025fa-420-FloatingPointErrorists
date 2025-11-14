@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
     QWidget,
     QSizePolicy,
     QHeaderView,
+    QHBoxLayout
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFontMetrics
@@ -24,6 +25,10 @@ class SchedulerController:
         # seperate variable for popout window
         self.popup_widget = QWidget()
         self.popup_widget_layout = QVBoxLayout(self.popup_widget)
+        
+        #graphical variables
+        self.graph_widget = QWidget()
+        self.graph_layout = QVBoxLayout(self.graph_widget)
 
         self.cur_table = QTableWidget()
         self.popup_table = QTableWidget()
@@ -98,7 +103,7 @@ class SchedulerController:
                             [
                                 "Course",
                                 "Room (Lab)",
-                                "Monday",
+                                "day",
                                 "Tuesday",
                                 "Wednesday",
                                 "Thursday",
@@ -110,7 +115,7 @@ class SchedulerController:
                             [
                                 "Course",
                                 "Room (Lab)",
-                                "Monday",
+                                "day",
                                 "Tuesday",
                                 "Wednesday",
                                 "Thursday",
@@ -145,7 +150,7 @@ class SchedulerController:
                             [
                                 "Course",
                                 "Faculty",
-                                "Monday",
+                                "day",
                                 "Tuesday",
                                 "Wednesday",
                                 "Thursday",
@@ -157,7 +162,7 @@ class SchedulerController:
                             [
                                 "Course",
                                 "Faculty",
-                                "Monday",
+                                "day",
                                 "Tuesday",
                                 "Wednesday",
                                 "Thursday",
@@ -231,6 +236,121 @@ class SchedulerController:
             pop_item = QTableWidgetItem(value)
             self.cur_table.setItem(row_position, column, item)
             self.popup_table.setItem(row_position, column, pop_item)
+
+    def graph_schedule(self):
+        self.graph_widget = QWidget()
+        self.graph_layout = QVBoxLayout(self.graph_widget)
+        self.graph_layout.setSpacing(0)
+
+        if self.mode == 1:
+            graphList = ScheduleHandler.faculty_schedule_rows(
+                self.cur_schedules.schedules[self.index]
+            )
+
+            for graph in graphList:
+                match graph:
+                    case (fac_name, mList, tList, wList, rList, fList):
+
+                        #Create OverHeader Fac Name
+                        cur_fac_name = QLabel(fac_name)
+                        cur_fac_name.setAlignment(Qt.AlignmentFlag.AlignTop)
+                        self.graph_layout.addWidget(cur_fac_name)
+
+                        #MAIN TABLE
+                        schedule = QHBoxLayout()
+
+                        #1st column time index
+                        time_index = QVBoxLayout()
+
+                        #empty first box
+                        toptimelabel = QLabel()
+                        toptimelabel.setStyleSheet("border: 1px solid black")
+                        toptimelabel.setMinimumHeight(100)
+                        time_index.addWidget(toptimelabel)
+                        #8am-7pm
+                        for i in range(8, 20):
+                            time_label = QLabel()
+
+                            r_str = ""
+                            if i <= 12:
+                                r_str += str(i)
+                            else:
+                                r_str += str(i - 12)
+                            r_str += ":00 "
+
+                            if i <= 11:
+                                r_str += "AM"
+                            else:
+                                r_str += "PM"
+                            
+                            time_label.setText(r_str)
+                            time_label.setStyleSheet("border: 1px solid black")
+                            time_label.setMinimumHeight(100)
+                            time_label.setAlignment(Qt.AlignmentFlag.AlignTop)
+                            time_index.addWidget(time_label)
+                        
+                        schedule.addLayout(time_index)
+
+                        week = [("Monday", mList), ("Tuesday", tList), ("Wednesday", wList), ("Thursday", rList), ("Friday", fList)]
+
+                        #colors for classes
+                        colors = [("red","white"), ("blue","white"), ("yellow","black"), ("purple","white"), ("green","white"), ("orange","white")
+                                  ("pink","black"), ("lightblue","black"), ("limegreen","black"), ("lightgray","black"), ("cyan","white"), ("black","white")]
+                        color_index = 0
+
+                        #start day column
+                        for day in week:
+                            day_column = QVBoxLayout()
+                            
+                            match day:
+                                case(dayname, daylist):
+                                    #add day header
+                                    day_label = QLabel(dayname)
+                                    day_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                                    day_label.setStyleSheet("border: 1px solid black")
+                                    day_column.addWidget(day_label, stretch=60)
+                                    
+                                    #keep track of time for stretch sizeing
+                                    cur_time = self.convert_to_minutes(800)
+
+                                    #add each course
+                                    for course in daylist:
+                                        match course:
+                                            case(starttime, endtime, data):
+                                                #empty space before course
+                                                day_column.addStretch(self.convert_to_minutes(starttime) - cur_time)
+
+                                                #course
+                                                day_class = QLabel(data)
+                                                match colors[color_index]:
+                                                    case(background, text):
+                                                        day_class.setStyleSheet(f"background-color: {background}; color: {text}; border: 1px solid black; border-radius: 5px")
+                                                #go through colors
+                                                color_index += 1
+                                                if color_index == 12:
+                                                    color_index = 0
+                                                
+                                                day_column.addWidget(day_class, stretch=(self.convert_to_minutes(endtime) - self.convert_to_minutes(starttime)))
+
+                                                #update time
+                                                cur_time = self.convert_to_minutes(endtime)
+                                    
+                                    #add space after last course
+                                    day_column.addStretch(self.convert_to_minutes(2000) - cur_time)
+
+                                    schedule.addLayout(day_column)
+
+                        self.graph_layout.addLayout(schedule)
+
+
+
+
+    @staticmethod
+    def convert_to_minutes(i: int) -> int:
+        return (i / 100) * 60 + i % 100
+
+
+
 
     @staticmethod
     def save_as_json(my_schedules: list[list[CourseInstance]], name: str) -> None:
