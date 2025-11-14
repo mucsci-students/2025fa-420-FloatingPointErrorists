@@ -215,10 +215,11 @@ class EditFacultyWindow(QMainWindow):
 
             self.intervals_container = QVBoxLayout()
             self.day_layout.addLayout(self.intervals_container)
-            self.day_interval_widgets[day] = {
+            entry: DayIntervalData = {
                 "container": self.intervals_container,
                 "intervals": [],
             }
+            self.day_interval_widgets[day] = entry
             self.time_layout.addLayout(self.day_layout, 0, i)
 
         # Loading previous availabilities
