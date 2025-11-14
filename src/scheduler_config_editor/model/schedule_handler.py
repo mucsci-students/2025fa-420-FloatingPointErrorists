@@ -270,7 +270,7 @@ class ScheduleHandler:
         return rows
 
     @staticmethod
-    def faculty_schedule_rows(
+    def faculty_schedule_columns(
         schedule: list[CourseInstanceJSON],
     ) -> list[tuple[str, list[list[CourseMeeting]]]]:
         """Build rows for the faculty schedule table."""
@@ -286,7 +286,7 @@ class ScheduleHandler:
         ]
 
     @staticmethod
-    def room_schedule_rows(
+    def room_schedule_columns(
         schedule: list[CourseInstanceJSON],
     ) -> list[tuple[str, list[list[CourseMeeting]]]]:
         """Build rows for the room schedule table."""

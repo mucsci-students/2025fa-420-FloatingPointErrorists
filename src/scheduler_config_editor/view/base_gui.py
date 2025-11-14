@@ -272,9 +272,9 @@ class SimpleTabs(QWidget):
         def view_by_faulty() -> None:
             if self.sc.length > 0:
                 self.sc.mode = 1
-                self.sc.set_tables()
-                self.schedule_table_widgets = self.sc.cur_widgets
-                self.my_scroll.setWidget(self.sc.cur_widgets)
+                self.sc.graph_schedule()
+                self.schedule_table = self.sc.graph_widget
+                self.my_scroll.setWidget(self.schedule_table)
             else:
                 set_schedule_label("""Schedule by faculty will be shown here""")
                 self.my_scroll.setWidget(self.schedule_viewer_label)
@@ -287,9 +287,9 @@ class SimpleTabs(QWidget):
         def view_by_room() -> None:
             if self.sc.length > 0:
                 self.sc.mode = 2
-                self.sc.set_tables()
-                self.schedule_table_widgets = self.sc.cur_widgets
-                self.my_scroll.setWidget(self.sc.cur_widgets)
+                self.sc.graph_schedule()
+                self.schedule_table = self.sc.graph_widget
+                self.my_scroll.setWidget(self.schedule_table)
             else:
                 set_schedule_label("""Schedule by room will be shown here""")
                 self.my_scroll.setWidget(self.schedule_viewer_label)
@@ -330,58 +330,58 @@ class SimpleTabs(QWidget):
         self.my_scroll.setWidget(self.schedule_viewer_label)
 
         #test schedule
-        testing = QWidget()
-        self.testing = QVBoxLayout(testing)
-        self.schedule_viewer_test = QHBoxLayout()
-        self.scheduleTime = QVBoxLayout()
-        self.scheduleTime.setSpacing(0)
-        self.schedule_viewer_monday = QVBoxLayout()
-        self.schedule_viewer_monday.setSpacing(0)
-        self.schedule_viewer_tuesday = QVBoxLayout()
-        self.schedule_viewer_tuesday.setSpacing(0)
-        self.schedule_viewer_wednesday = QVBoxLayout()
-        self.schedule_viewer_wednesday.setSpacing(0)
-        self.schedule_viewer_thursday = QVBoxLayout()
-        self.schedule_viewer_thursday.setSpacing(0)
-        self.schedule_viewer_friday = QVBoxLayout()
-        self.schedule_viewer_friday.setSpacing(0)
+        # testing = QWidget()
+        # self.testing = QVBoxLayout(testing)
+        # self.schedule_viewer_test = QHBoxLayout()
+        # self.scheduleTime = QVBoxLayout()
+        # self.scheduleTime.setSpacing(0)
+        # self.schedule_viewer_monday = QVBoxLayout()
+        # self.schedule_viewer_monday.setSpacing(0)
+        # self.schedule_viewer_tuesday = QVBoxLayout()
+        # self.schedule_viewer_tuesday.setSpacing(0)
+        # self.schedule_viewer_wednesday = QVBoxLayout()
+        # self.schedule_viewer_wednesday.setSpacing(0)
+        # self.schedule_viewer_thursday = QVBoxLayout()
+        # self.schedule_viewer_thursday.setSpacing(0)
+        # self.schedule_viewer_friday = QVBoxLayout()
+        # self.schedule_viewer_friday.setSpacing(0)
 
-        tempor = QLabel("Fac Name")
-        self.testing.addWidget(tempor)
+        # tempor = QLabel("Fac Name")
+        # self.testing.addWidget(tempor)
 
-        temp = QLabel()
-        temp.setStyleSheet("border: 1px solid black")
-        temp.setMinimumHeight(100)
-        self.scheduleTime.addWidget(temp)
-        for i in range(8, 20):
-            temp = QLabel(str(i))
-            temp.setStyleSheet("border: 1px solid black")
-            temp.setMinimumHeight(100)
-            self.scheduleTime.addWidget(temp)
-        self.schedule_viewer_test.addLayout(self.scheduleTime)
+        # temp = QLabel()
+        # temp.setStyleSheet("border: 1px solid black")
+        # temp.setMinimumHeight(100)
+        # self.scheduleTime.addWidget(temp)
+        # for i in range(8, 20):
+        #     temp = QLabel(str(i))
+        #     temp.setStyleSheet("border: 1px solid black")
+        #     temp.setMinimumHeight(100)
+        #     self.scheduleTime.addWidget(temp)
+        # self.schedule_viewer_test.addLayout(self.scheduleTime)
 
-        self.mondayLabel = QLabel("Monday")
-        self.mondayLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.mondayLabel.setStyleSheet("border: 1px solid black")
-        self.emptyLabel1 = QLabel()
-        self.classLabel1 = QLabel("Course 111 9-9:50\nRoom 100")
-        self.classLabel1.setStyleSheet("background-color: red; color: white; border: 1px solid black; border-radius: 5px")
-        self.emptyLabel2 = QLabel()
-        self.classLabel2 = QLabel("Course 222 13-16:35\nRoom 200")
-        self.classLabel2.setStyleSheet("background-color: blue; color: white; border: 1px solid black; border-radius: 5px")
-        self.emptyLabel3 = QLabel()
-        self.schedule_viewer_monday.addWidget(self.mondayLabel, stretch=60)
-        self.schedule_viewer_monday.addWidget(self.emptyLabel1, stretch=60)
-        self.schedule_viewer_monday.addWidget(self.classLabel1, stretch=50)
-        self.schedule_viewer_monday.addWidget(self.emptyLabel2, stretch=190)
-        self.schedule_viewer_monday.addWidget(self.classLabel2, stretch=215)
-        self.schedule_viewer_monday.addWidget(self.emptyLabel3, stretch=205)
+        # self.mondayLabel = QLabel("Monday")
+        # self.mondayLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # self.mondayLabel.setStyleSheet("border: 1px solid black")
+        # self.emptyLabel1 = QLabel()
+        # self.classLabel1 = QLabel("Course 111 9-9:50\nRoom 100")
+        # self.classLabel1.setStyleSheet("background-color: red; color: white; border: 1px solid black; border-radius: 5px")
+        # self.emptyLabel2 = QLabel()
+        # self.classLabel2 = QLabel("Course 222 13-16:35\nRoom 200")
+        # self.classLabel2.setStyleSheet("background-color: blue; color: white; border: 1px solid black; border-radius: 5px")
+        # self.emptyLabel3 = QLabel()
+        # self.schedule_viewer_monday.addWidget(self.mondayLabel, stretch=60)
+        # self.schedule_viewer_monday.addWidget(self.emptyLabel1, stretch=60)
+        # self.schedule_viewer_monday.addWidget(self.classLabel1, stretch=50)
+        # self.schedule_viewer_monday.addWidget(self.emptyLabel2, stretch=190)
+        # self.schedule_viewer_monday.addWidget(self.classLabel2, stretch=215)
+        # self.schedule_viewer_monday.addWidget(self.emptyLabel3, stretch=205)
 
-        self.schedule_viewer_test.addLayout(self.schedule_viewer_monday)
+        # self.schedule_viewer_test.addLayout(self.schedule_viewer_monday)
 
-        self.testing.addLayout(self.schedule_viewer_test)
+        # self.testing.addLayout(self.schedule_viewer_test)
 
-        self.my_scroll.setWidget(testing)
+        # self.my_scroll.setWidget(testing)
 
 
         # table
