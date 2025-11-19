@@ -17,4 +17,5 @@ __all__ = [
     "ScheduleHandler",
     "ScheduleWriter",
     "LangchainClient",
+    "TimeSlot"
 ]

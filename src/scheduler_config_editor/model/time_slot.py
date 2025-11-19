@@ -1,5 +1,4 @@
-from scheduler import TimeSlotConfig
-from scheduler.models import TimeSlot
+from scheduler import TimeSlotConfig, TimeBlock, ClassPattern, Meeting
 from scheduler_config_editor.model import JsonConfig
 
 
@@ -26,6 +25,9 @@ class TimeSlot:
     def add_time_slot(json_config: JsonConfig, times: dict[str, list[TimeBlock]], classes: list[ClassPattern], max_time_gap: int=30, min_time_overlap: int=45) -> str:
         """ Adds a time slot to the config """
         TimeSlot.check_values(json_config, times, classes, max_time_gap, min_time_overlap)
+
+        # Converting times into a dict of time blocks
+
         time_slot_config = TimeSlotConfig(times=times, classes=classes, max_time_gap=max_time_gap, min_time_overlap=min_time_overlap)
         json_config.time_slot_config.append(time_slot_config)
         return "Time slot added successfully."
@@ -42,7 +44,7 @@ class TimeSlot:
             max_time_gap=max_time_gap if max_time_gap is not None else old_time_slot.max_time_gap,
             min_time_overlap=min_time_overlap if min_time_overlap is not None else old_time_slot.min_time_overlap,
         )
-        Course.check_values(
+        TimeSlot.check_values(
             json_config,
             time_slot.times,
             time_slot.classes,
