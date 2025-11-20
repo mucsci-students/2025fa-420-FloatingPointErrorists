@@ -273,7 +273,7 @@ class ScheduleHandler:
     def faculty_schedule_columns(
         schedule: list[CourseInstanceJSON],
     ) -> list[tuple[str, list[list[CourseMeeting]]]]:
-        """Build rows for the faculty schedule table."""
+        """Build Columns for the faculty schedule table."""
         faculty_map = ScheduleHandler._group_by_faculty(schedule)
         return [
             (
@@ -289,7 +289,7 @@ class ScheduleHandler:
     def room_schedule_columns(
         schedule: list[CourseInstanceJSON],
     ) -> list[tuple[str, list[list[CourseMeeting]]]]:
-        """Build rows for the room schedule table."""
+        """Build Columns for the room schedule table."""
         room_map = ScheduleHandler._group_by_room(schedule)
         return [
             (
