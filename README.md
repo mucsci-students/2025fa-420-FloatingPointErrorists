@@ -84,6 +84,10 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 * Memento:
     * When we open up the editor, we don't want the changes to be committed until we explicitly save them. So when we operate on the configuration, we do so on a copy of the original configuration. When we save, we overwrite the original configuration with the modified copy.
     * File: json.py
+ 
+* Mediator:
+    * An essential part to MVC is the mediator design pattern. It lets us enforce separation of concerns. We don't want, for example, the faculty_editor_gui.py to have the logic to edit the json file directly, so it'll communicate with faculty_controller.py, the mediator, which will tell the model to do what it needs to do in order to make those modifications. All controller files, by nature, are examples of a Mediator design pattern. 
+    * File: all files under the src/scheduler_config_editor/controller directory
 
 ## Authors:
 
