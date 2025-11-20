@@ -18,5 +18,5 @@ __all__ = [
     "ScheduleHandler",
     "ScheduleWriter",
     "LangchainClient",
-    "INDEX_TO_DAY"
+    "INDEX_TO_DAY",
 ]

@@ -304,8 +304,12 @@ class SimpleTabs(QWidget):
         def popoutwindow() -> None:
             self.nw.show()
             if self.sc.length > 0:
-                self.nw.widget.my_widget = self.sc.popup_widget
-                self.nw.widget.scroll_area_w.setWidget(self.nw.widget.my_widget)
+                if self.sc.mode == 0:
+                    self.nw.widget.my_widget = self.sc.popup_widget
+                    self.nw.widget.scroll_area_w.setWidget(self.nw.widget.my_widget)
+                else:
+                    self.nw.widget.graph_widget = self.sc.popup_graph_widget
+                    self.nw.widget.scroll_area_w.setWidget(self.nw.widget.graph_widget)
 
             else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
@@ -329,7 +333,7 @@ class SimpleTabs(QWidget):
         set_schedule_label("""Schedule by course will be shown here""")
         self.my_scroll.setWidget(self.schedule_viewer_label)
 
-        #test schedule
+        # test schedule
         # testing = QWidget()
         # self.testing = QVBoxLayout(testing)
         # self.schedule_viewer_test = QHBoxLayout()
@@ -382,7 +386,6 @@ class SimpleTabs(QWidget):
         # self.testing.addLayout(self.schedule_viewer_test)
 
         # self.my_scroll.setWidget(testing)
-
 
         # table
         self.schedule_table = QTableWidget()
