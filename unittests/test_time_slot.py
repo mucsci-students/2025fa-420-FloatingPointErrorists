@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from scheduler.config import TimeBlock, Meeting, ClassPattern
 
 from scheduler_config_editor.model import TimeSlot, JsonConfig
 
@@ -11,11 +12,11 @@ def json_config():
 class TestTimeSlot:
     def test_add_time_slot(self, json_config: JsonConfig):
         old_length = len(json_config.time_slot_config.items)
-        test_times = {"MON": [{"start": "09:00", "spacing": 15, "end": "10:00"},
-                         {"start": "12:00", "spacing": 20, "end": "15:00"}],
-                 "TUE": [{"start": "13:10", "spacing": 10, "end": "14:25"}]}
-        test_classes = [{"credits": 3, "meetings": [{"day": "MON", "duration": 50, "lab": False}], "disabled": False,
-                   "start_time": "09:00"}]
+        test_times = {"MON": [TimeBlock(start= "09:00", spacing= 15, end= "10:00"),
+                         TimeBlock(start= "12:00", spacing= 20, end= "15:00")],
+                 "TUE": [TimeBlock(start= "13:10", spacing= 10, end= "14:25")]}
+        test_classes = [ClassPattern(credits= 3, meetings= [Meeting(day= "MON", duration= 50, lab= False)], disabled= False,
+                   start_time= "09:00")]
 
         result = TimeSlot.add_time_slot(
             json_config=json_config,

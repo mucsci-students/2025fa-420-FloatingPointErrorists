@@ -1,4 +1,4 @@
-from scheduler import TimeSlotConfig, TimeBlock, ClassPattern, Meeting
+from scheduler.config import TimeSlotConfig, TimeBlock, ClassPattern, Meeting
 from scheduler_config_editor.model import JsonConfig
 
 
