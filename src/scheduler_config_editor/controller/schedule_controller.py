@@ -16,18 +16,18 @@ from scheduler_config_editor.model import ScheduleWriter
 from scheduler_config_editor.model import ScheduleHandler, INDEX_TO_DAY
 
 # colors for classes
-#(background, text)
+# (background, text)
 colors = [
-    ("#0066ff", "#ffffff"), #50% light
-    ("#0052cc", "#ffffff"), #40% light
-    ("#33adff", "#000000"), #60% light
-    ("#005c99", "#ffffff"), #30% light
-    ("#66a3ff", "#000000"), #70% light
-    ("#002966", "#ffffff"), #20% light
-    ("#99c2ff", "#000000"), #80% light
-    ("#001433", "#ffffff"), #10% light
-    ("#b3d1ff", "#000000"), #90% light
-    ("#000000", "#ffffff"), #00% light
+    ("#0066ff", "#ffffff"),  # 50% light
+    ("#0052cc", "#ffffff"),  # 40% light
+    ("#33adff", "#000000"),  # 60% light
+    ("#005c99", "#ffffff"),  # 30% light
+    ("#66a3ff", "#000000"),  # 70% light
+    ("#002966", "#ffffff"),  # 20% light
+    ("#99c2ff", "#000000"),  # 80% light
+    ("#001433", "#ffffff"),  # 10% light
+    ("#b3d1ff", "#000000"),  # 90% light
+    ("#000000", "#ffffff"),  # 00% light
 ]
 
 
@@ -285,9 +285,11 @@ class SchedulerController:
                                 color_index += 1
                                 color_index %= 10
                             else:
-                                course_color_index = found_classes.index(courses.name) % 10
-                                #print(course_color_index)
-                            #print(course_color_index)
+                                course_color_index = (
+                                    found_classes.index(courses.name) % 10
+                                )
+                                # print(course_color_index)
+                            # print(course_color_index)
                             match colors[course_color_index]:
                                 case (background, text):
                                     day_class.setStyleSheet(
