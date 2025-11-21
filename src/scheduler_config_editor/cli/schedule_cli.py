@@ -3,7 +3,7 @@ from enum import Enum
 import click
 from click_shell import shell
 
-from ..model import ScheduleHandler
+from ..model import ScheduleHandler, PdfWriter
 from .base_cli import HANDLER_KEY, clear
 
 
@@ -36,10 +36,12 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
         user_input = click.prompt(
             "Type 'n' for next, 'p' for previous, 'q' to quit",
             default="n",
-            type=click.Choice(["n", "p", "q"]),
+            type=click.Choice(["n", "p", "q", "e"]),
             show_choices=False,
         ).lower()
         match user_input:
+            case "e":
+                PdfWriter.export_room_schedule(ScheduleHandler.room_schedule_columns(schedules[idx]), "room_test.pdf")
             case "n":
                 if idx < len(schedules) - 1:
                     idx += 1
