@@ -297,7 +297,6 @@
             {
                 "name": "Zoppetti",
                 "maximum_credits": 12,
-                "maximum_days": 5,
                 "minimum_credits": 12,
                 "unique_course_limit": 3,
                 "times": {
@@ -340,13 +339,11 @@
                 "lab_preferences": {
                     "Linux": 5,
                     "Mac": 1
-                },
-                "mandatory_days": []
+                }
             },
             {
                 "name": "Hardy",
                 "maximum_credits": 14,
-                "maximum_days": 5,
                 "minimum_credits": 12,
                 "unique_course_limit": 2,
                 "times": {
@@ -388,13 +385,11 @@
                 "lab_preferences": {
                     "Linux": 3,
                     "Mac": 3
-                },
-                "mandatory_days": []
+                }
             },
             {
                 "name": "Hogg",
                 "maximum_credits": 8,
-                "maximum_days": 5,
                 "minimum_credits": 8,
                 "unique_course_limit": 2,
                 "times": {
@@ -436,13 +431,11 @@
                 "lab_preferences": {
                     "Linux": 5,
                     "Mac": 1
-                },
-                "mandatory_days": []
+                }
             },
             {
                 "name": "Xie",
                 "maximum_credits": 12,
-                "maximum_days": 5,
                 "minimum_credits": 12,
                 "unique_course_limit": 2,
                 "times": {
@@ -484,13 +477,11 @@
                 "lab_preferences": {
                     "Linux": 3,
                     "Mac": 3
-                },
-                "mandatory_days": []
+                }
             },
             {
                 "name": "Rogers",
                 "maximum_credits": 4,
-                "maximum_days": 5,
                 "minimum_credits": 0,
                 "unique_course_limit": 1,
                 "times": {
@@ -531,13 +522,11 @@
                 "lab_preferences": {
                     "Linux": 5,
                     "Mac": 1
-                },
-                "mandatory_days": []
+                }
             },
             {
                 "name": "Wertz",
                 "maximum_credits": 4,
-                "maximum_days": 5,
                 "minimum_credits": 0,
                 "unique_course_limit": 1,
                 "times": {
@@ -568,13 +557,11 @@
                 "lab_preferences": {
                     "Linux": 5,
                     "Mac": 1
-                },
-                "mandatory_days": []
+                }
             },
             {
                 "name": "Hobbs",
                 "maximum_credits": 4,
-                "maximum_days": 5,
                 "minimum_credits": 0,
                 "unique_course_limit": 1,
                 "times": {
@@ -615,13 +602,11 @@
                 "lab_preferences": {
                     "Mac": 5,
                     "Linux": 1
-                },
-                "mandatory_days": []
+                }
             },
             {
                 "name": "Yang",
                 "maximum_credits": 12,
-                "maximum_days": 5,
                 "minimum_credits": 12,
                 "unique_course_limit": 2,
                 "times": {
@@ -663,13 +648,11 @@
                 "lab_preferences": {
                     "Mac": 3,
                     "Linux": 3
-                },
-                "mandatory_days": []
+                }
             },
             {
                 "name": "Schwartz",
                 "maximum_credits": 0,
-                "maximum_days": 5,
                 "minimum_credits": 0,
                 "unique_course_limit": 1,
                 "times": {
@@ -688,8 +671,7 @@
                 "lab_preferences": {
                     "Mac": 5,
                     "Linux": 1
-                },
-                "mandatory_days": []
+                }
             }
         ]
     },
