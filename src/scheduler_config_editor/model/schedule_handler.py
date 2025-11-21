@@ -4,7 +4,7 @@ import os
 import re
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, cast, Tuple
+from typing import Any, cast, Tuple, Optional
 
 from scheduler.json_types import CourseInstanceJSON, TimeInstanceJSON
 from scheduler.models import CourseInstance
@@ -17,6 +17,8 @@ DAYS = ["MON", "TUE", "WED", "THU", "FRI"]
 
 @dataclass
 class CourseMeeting:
+    """A dataclass representing a single meeting of a course."""
+
     name: str
     time: Tuple[int, int]
     room: str
@@ -230,14 +232,18 @@ class ScheduleHandler:
         return row
 
     @staticmethod
-    def _day_column(courses: list[CourseInstanceJSON]) -> list[list[CourseMeeting]]:
-        """Build a column for a faculty schedule table."""
+    def _day_column(
+        courses: list[CourseInstanceJSON], room_filter: Optional[str] = None
+    ) -> list[list[CourseMeeting]]:
+        """Build a column for a faculty or room schedule table."""
         meetings: list[list[CourseMeeting]] = [[] for _ in range(5)]
         for course in courses:
             lab_index = course.get("lab_index")
             for idx, time in enumerate(course["times"]):
                 meeting = (time["start"], time["start"] + time["duration"])
-                room = course["lab"] if idx == lab_index else course["room"]
+                room = course["lab"] if idx == lab_index else course.get("room")
+                if room_filter is not None and room is not None and room != room_filter:
+                    continue
                 meetings[time["day"] - 1].append(
                     CourseMeeting(
                         name=course["course"],
@@ -295,7 +301,7 @@ class ScheduleHandler:
             (
                 room,
                 ScheduleHandler._day_column(
-                    sorted(courses, key=ScheduleHandler._avg_start)
+                    sorted(courses, key=ScheduleHandler._avg_start), room
                 ),
             )
             for room, courses in room_map.items()
