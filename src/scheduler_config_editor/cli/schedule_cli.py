@@ -1,19 +1,14 @@
 from enum import Enum
-
 import click
 from click_shell import shell
-
-from ..model import ScheduleHandler, PdfWriter
+from ..model import ScheduleHandler, PdfWriter, PdfMode
 from .base_cli import HANDLER_KEY, clear
-
 
 class DisplayMode(Enum):
     """Modes for displaying schedules."""
-
     DEFAULT = "default"
     FACULTY = "faculty"
     ROOM = "room"
-
 
 def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> None:
     """Navigate through schedules interactively."""
@@ -34,14 +29,19 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
                     f"Schedule {idx + 1}:\n{ScheduleHandler.format_schedule_str(schedules[idx])}"
                 )
         user_input = click.prompt(
-            "Type 'n' for next, 'p' for previous, 'q' to quit",
+            "Type 'n' for next, 'p' for previous, 'q' to quit, 'e' to export to PDF",
             default="n",
             type=click.Choice(["n", "p", "q", "e"]),
             show_choices=False,
         ).lower()
         match user_input:
             case "e":
-                PdfWriter.export_room_schedule(ScheduleHandler.room_schedule_columns(schedules[idx]), "room_test.pdf")
+                name = click.prompt("Enter filename for PDF export", default="schedule")
+                PdfWriter.export_graph_pdf(
+                    ScheduleHandler.room_schedule_columns(schedules[idx]) if mode == DisplayMode.ROOM else ScheduleHandler.faculty_schedule_columns(schedules[idx]),
+                    name,
+                    PdfMode.ROOM if mode == DisplayMode.ROOM else PdfMode.FACULTY,
+                )
             case "n":
                 if idx < len(schedules) - 1:
                     idx += 1

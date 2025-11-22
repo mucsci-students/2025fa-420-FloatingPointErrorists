@@ -1,78 +1,99 @@
-from PyQt6.QtCore import Qt, QMarginsF
-from PyQt6.QtGui import QPainter, QPageLayout
+import os
+import signal
+from enum import Enum
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter
 from PyQt6.QtPrintSupport import QPrinter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QApplication
-
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
 from scheduler_config_editor.model import INDEX_TO_DAY
 from scheduler_config_editor.model.schedule_handler import CourseMeeting
 
+_app = QApplication.instance()
+def get_app():
+    """Get or create the QApplication instance. Uses singleton to ensure only one instance exists."""
+    global _app
+    if _app is None:
+        _app = QApplication([])
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+    return _app
+
+class PdfMode(Enum):
+    """Modes for PDF schedule export."""
+    FACULTY = "faculty"
+    ROOM = "room"
 
 class PdfWriter:
+    """Class for exporting schedules to PDF files."""
 
     @staticmethod
-    def graph_schedule(mode: int, week: list[list[CourseMeeting]], name: str) -> QWidget:
+    def _graph_schedule(
+        mode: PdfMode, week: list[list[CourseMeeting]], name: str
+    ) -> QWidget:
+        """Create a graphical representation of the schedule."""
         graph_widget = QWidget()
         graph_layout = QVBoxLayout(graph_widget)
         graph_layout.setSpacing(0)
 
         # Header
-        cur_graph_name = QLabel(name)
-        cur_graph_name.setAlignment(Qt.AlignmentFlag.AlignTop)
-        graph_layout.addWidget(cur_graph_name)
+        graph_name = QLabel(name)
+        graph_name.setAlignment(Qt.AlignmentFlag.AlignTop)
+        graph_name.setStyleSheet("font-size: 24px; font-weight: bold;")
+        graph_layout.addWidget(graph_name)
 
-        # MAIN TABLE LAYOUT
+        # Table Layout
         schedule = QHBoxLayout()
         graph_layout.addLayout(schedule)
-        graph_layout.setContentsMargins(0, 0, 0, 0)
-        schedule.setContentsMargins(0, 0, 0, 0)
         schedule.setSpacing(0)
 
-        # --- LEFT TIME COLUMN ---
+        # Time Column
         time_index = QVBoxLayout()
-
         top_label = QLabel()
         top_label.setStyleSheet("border: 1px solid black;")
         top_label.setFixedHeight(50)
         time_index.addWidget(top_label)
 
-        for hour in range(8, 20):
+        for hour in range(8, 21):
             time_label = QLabel(
                 SchedulerController.convert_to_timestr(
                     SchedulerController.convert_to_minutes(hour * 100)
                 )
             )
-            time_label.setStyleSheet("border: 1px solid black;")
+            time_label.setStyleSheet(
+                "border: 1px solid black; font-size: 16px; font-weight: bold;"
+            )
             time_label.setMinimumHeight(100)
             time_label.setAlignment(Qt.AlignmentFlag.AlignTop)
             time_index.addWidget(time_label)
 
         schedule.addLayout(time_index)
 
-        # --- COLORS ---
+        # Colors
         colors = [
-            ("red", "white"), ("blue", "white"),
-            ("yellow", "black"), ("purple", "white"),
-            ("green", "white"), ("orange", "black"),
-            ("pink", "black"), ("lightblue", "black"),
-            ("limegreen", "black"), ("lightgray", "black"),
-            ("cyan", "black"), ("black", "white"),
+            ("#0066ff", "#ffffff"),  # 50% light
+            ("#0052cc", "#ffffff"),  # 40% light
+            ("#33adff", "#000000"),  # 60% light
+            ("#005c99", "#ffffff"),  # 30% light
+            ("#66a3ff", "#000000"),  # 70% light
+            ("#002966", "#ffffff"),  # 20% light
+            ("#99c2ff", "#000000"),  # 80% light
+            ("#001433", "#ffffff"),  # 10% light
+            ("#b3d1ff", "#000000"),  # 90% light
+            ("#000000", "#ffffff"),  # 00% light
         ]
         found_classes = []
-        # --- DAY COLUMNS ---
+        # Day Columns
         for idx, day in enumerate(week):
             day_container = QVBoxLayout()
-
-            # Day header label
             day_label = QLabel(INDEX_TO_DAY[idx + 1])
             day_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             day_label.setFixedHeight(50)
             day_label.setMinimumWidth(125)
-            day_label.setStyleSheet("border: 1px solid black;")
+            day_label.setStyleSheet(
+                "border: 1px solid black; font-size: 16px; font-weight: bold;"
+            )
             day_container.addWidget(day_label)
-
             cur_time = SchedulerController.convert_to_minutes(800)
-
             day_column = QVBoxLayout()
 
             # Render courses in order
@@ -81,27 +102,30 @@ class PdfWriter:
                 day_column.addStretch(course.time[0] - cur_time)
 
                 # Course widget
-                if mode == 1:
-                    content = f"{course.name}\n{course.room}\n" \
-                              f"{SchedulerController.convert_to_timestr(course.time[0])} to " \
-                              f"{SchedulerController.convert_to_timestr(course.time[1])}"
+                if mode == PdfMode.FACULTY:
+                    content = (
+                        f"{course.name}\n{course.room}\n"
+                        f"{SchedulerController.convert_to_timestr(course.time[0])} to "
+                        f"{SchedulerController.convert_to_timestr(course.time[1])}"
+                    )
                 else:
-                    content = f"{course.name}\n{course.faculty}\n" \
-                              f"{SchedulerController.convert_to_timestr(course.time[0])} to " \
-                              f"{SchedulerController.convert_to_timestr(course.time[1])}"
+                    content = (
+                        f"{course.name}\n{course.faculty}\n"
+                        f"{SchedulerController.convert_to_timestr(course.time[0])} to "
+                        f"{SchedulerController.convert_to_timestr(course.time[1])}"
+                    )
 
                 block = QLabel(content)
 
                 # Consistent color assignment
                 if course.name not in found_classes:
                     found_classes.append(course.name)
-                    color_index = len(found_classes) % len(colors)
-
                 bg, fg = colors[found_classes.index(course.name)]
 
                 block.setStyleSheet(
                     f"background-color: {bg}; color: {fg}; "
                     f"border: 1px solid black; border-radius: 5px;"
+                    f"font-size: 16px; font-weight: bold;"
                 )
 
                 # Height based on duration
@@ -120,51 +144,43 @@ class PdfWriter:
 
         return graph_widget
 
-    # ----------------------------------------------------------------------
-    # PDF EXPORT
-    # ----------------------------------------------------------------------
     @staticmethod
-    def export_room_schedule(
-            schedule: list[tuple[str, list[list[CourseMeeting]]]],
-            output_path: str
-    ):
-        # Ensure a QApplication exists
-        from PyQt6.QtWidgets import QApplication
-        app = QApplication.instance()
-        if app is None:
-            app = QApplication([])
-
+    def _export_to_pdf(schedule: list[QWidget], name: str) -> None:
+        """Export the given schedule widgets to a PDF file."""
+        path = os.path.join("schedulePDFs", f"{name}.pdf")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         printer = QPrinter(QPrinter.PrinterMode.HighResolution)
         printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
-        printer.setOutputFileName(output_path)
-
+        printer.setOutputFileName(path)
         painter = QPainter()
         printer.setResolution(600)
         painter.begin(printer)
-
         first_page = True
-
-        for room_name, week in schedule:
-
-            widget = PdfWriter.graph_schedule(1, week, room_name)
+        for widget in schedule:
             widget.resize(1100, 1600)
-
             if not first_page:
                 printer.newPage()
             first_page = False
-
-            # ------- FIX: use correct unit ------
             page_rect = printer.pageRect(QPrinter.Unit.DevicePixel)
-            # -------------------------------------
-
             scale_x = page_rect.width() / widget.width()
             scale_y = page_rect.height() / widget.height()
             scale = max(scale_x, scale_y)
-
             painter.save()
             painter.scale(scale, scale)
             widget.render(painter)
             painter.restore()
-
         painter.end()
 
+    @staticmethod
+    def export_graph_pdf(
+        schedule: list[tuple[str, list[list[CourseMeeting]]]],
+        output_path: str,
+        mode: PdfMode,
+    ) -> None:
+        """Export the schedule as a graphical PDF."""
+        get_app() # Ensure QApplication is initialized because the PdfWriter uses Qt widgets
+        widgets = []
+        for name, week in schedule:
+            widget = PdfWriter._graph_schedule(mode, week, name)
+            widgets.append(widget)
+        PdfWriter._export_to_pdf(widgets, output_path)
