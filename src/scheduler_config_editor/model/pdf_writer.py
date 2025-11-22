@@ -1,96 +1,170 @@
-from typing import List, Tuple
+from PyQt6.QtCore import Qt, QMarginsF
+from PyQt6.QtGui import QPainter, QPageLayout
+from PyQt6.QtPrintSupport import QPrinter
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QApplication
+
+from scheduler_config_editor.controller.schedule_controller import SchedulerController
+from scheduler_config_editor.model import INDEX_TO_DAY
 from scheduler_config_editor.model.schedule_handler import CourseMeeting
-from xhtml2pdf import pisa
 
 
 class PdfWriter:
-    """
-    A class responsible for writing room/faculty schedules to PDF
-    using HTML + CSS (Google Calendar-like layout).
-    """
-
-    HOURS = list(range(8, 23))  # 8 to 22 inclusive
-    DAYS = ["MON", "TUE", "WED", "THU", "FRI"]
 
     @staticmethod
-    def _generate_html_page(name: str, week: List[List[CourseMeeting]]) -> str:
-        """
-        Generate HTML for one page of a schedule.
-        `week` is a list of 5 lists (one per day), each containing CourseMeeting objects.
-        """
-        html = f"""
-        <html>
-        <head>
-        <style>
-        body {{ font-family: Arial, sans-serif; margin: 0; padding: 0; }}
-        h2 {{ text-align: center; margin: 10px; }}
-        .calendar {{ display: table; width: 100%; border-collapse: collapse; }}
-        .day-column {{ display: table-cell; border: 1px solid #999; vertical-align: top; width: 20%; }}
-        .hour {{ height: 50px; border-top: 1px solid #ccc; position: relative; }}
-        .class-block {{
-            position: absolute;
-            left: 0;
-            right: 0;
-            padding: 2px;
-            color: white;
-            font-size: 10px;
-            border-radius: 3px;
-        }}
-        </style>
-        </head>
-        <body>
-        <h2>{name}</h2>
-        <div class="calendar">
-        """
+    def graph_schedule(mode: int, week: list[list[CourseMeeting]], name: str) -> QWidget:
+        graph_widget = QWidget()
+        graph_layout = QVBoxLayout(graph_widget)
+        graph_layout.setSpacing(0)
+
+        # Header
+        cur_graph_name = QLabel(name)
+        cur_graph_name.setAlignment(Qt.AlignmentFlag.AlignTop)
+        graph_layout.addWidget(cur_graph_name)
+
+        # MAIN TABLE LAYOUT
+        schedule = QHBoxLayout()
+        graph_layout.addLayout(schedule)
+        graph_layout.setContentsMargins(0, 0, 0, 0)
+        schedule.setContentsMargins(0, 0, 0, 0)
+        schedule.setSpacing(0)
+
+        # --- LEFT TIME COLUMN ---
+        time_index = QVBoxLayout()
+
+        top_label = QLabel()
+        top_label.setStyleSheet("border: 1px solid black;")
+        top_label.setFixedHeight(50)
+        time_index.addWidget(top_label)
+
+        for hour in range(8, 20):
+            time_label = QLabel(
+                SchedulerController.convert_to_timestr(
+                    SchedulerController.convert_to_minutes(hour * 100)
+                )
+            )
+            time_label.setStyleSheet("border: 1px solid black;")
+            time_label.setMinimumHeight(100)
+            time_label.setAlignment(Qt.AlignmentFlag.AlignTop)
+            time_index.addWidget(time_label)
+
+        schedule.addLayout(time_index)
+
+        # --- COLORS ---
         colors = [
-            "#e74c3c", "#3498db", "#f1c40f", "#9b59b6", "#2ecc71",
-            "#e67e22", "#fd79a8", "#1abc9c", "#95a5a6", "#34495e",
-            "#16a085", "#c0392b"
+            ("red", "white"), ("blue", "white"),
+            ("yellow", "black"), ("purple", "white"),
+            ("green", "white"), ("orange", "black"),
+            ("pink", "black"), ("lightblue", "black"),
+            ("limegreen", "black"), ("lightgray", "black"),
+            ("cyan", "black"), ("black", "white"),
         ]
-        class_color_map = {}
+        found_classes = []
+        # --- DAY COLUMNS ---
+        for idx, day in enumerate(week):
+            day_container = QVBoxLayout()
 
-        for day_idx, day in enumerate(week):
-            html += f'<div class="day-column"><strong>{PdfWriter.DAYS[day_idx]}</strong>'
+            # Day header label
+            day_label = QLabel(INDEX_TO_DAY[idx + 1])
+            day_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            day_label.setFixedHeight(50)
+            day_label.setMinimumWidth(125)
+            day_label.setStyleSheet("border: 1px solid black;")
+            day_container.addWidget(day_label)
+
+            cur_time = SchedulerController.convert_to_minutes(800)
+
+            day_column = QVBoxLayout()
+
+            # Render courses in order
             for course in day:
-                # Determine color for this course
-                if course.name not in class_color_map:
-                    class_color_map[course.name] = colors[len(class_color_map) % len(colors)]
-                color = class_color_map[course.name]
+                # Blank space before course
+                day_column.addStretch(course.time[0] - cur_time)
 
-                # Compute position & height
-                start_hour = course.time[0] / 60
-                end_hour = course.time[1] / 60
-                top_percent = ((start_hour - PdfWriter.HOURS[0]) / (PdfWriter.HOURS[-1] - PdfWriter.HOURS[0])) * 100
-                height_percent = ((end_hour - start_hour) / (PdfWriter.HOURS[-1] - PdfWriter.HOURS[0])) * 100
+                # Course widget
+                if mode == 1:
+                    content = f"{course.name}\n{course.room}\n" \
+                              f"{SchedulerController.convert_to_timestr(course.time[0])} to " \
+                              f"{SchedulerController.convert_to_timestr(course.time[1])}"
+                else:
+                    content = f"{course.name}\n{course.faculty}\n" \
+                              f"{SchedulerController.convert_to_timestr(course.time[0])} to " \
+                              f"{SchedulerController.convert_to_timestr(course.time[1])}"
 
-                html += f"""
-                <div class="class-block" style="top:{top_percent}%; height:{height_percent}%; background-color:{color};">
-                    {course.name}<br>{course.faculty if course.room else course.room}<br>
-                </div>
-                """
-            html += "</div>"  # end day-column
+                block = QLabel(content)
 
-        html += "</div></body></html>"
-        return html
+                # Consistent color assignment
+                if course.name not in found_classes:
+                    found_classes.append(course.name)
+                    color_index = len(found_classes) % len(colors)
 
+                bg, fg = colors[found_classes.index(course.name)]
+
+                block.setStyleSheet(
+                    f"background-color: {bg}; color: {fg}; "
+                    f"border: 1px solid black; border-radius: 5px;"
+                )
+
+                # Height based on duration
+                stretch = course.time[1] - course.time[0]
+                day_column.addWidget(block, stretch=stretch)
+
+                cur_time = course.time[1]
+
+            # Space after last course
+            day_column.addStretch(
+                SchedulerController.convert_to_minutes(2000) - cur_time
+            )
+
+            day_container.addLayout(day_column)
+            schedule.addLayout(day_container)
+
+        return graph_widget
+
+    # ----------------------------------------------------------------------
+    # PDF EXPORT
+    # ----------------------------------------------------------------------
     @staticmethod
-    def _save_pdf(html: str, output_path: str) -> None:
-        """Convert HTML string to PDF and save to output_path."""
-        with open(output_path, "wb") as f:
-            pisa.CreatePDF(src=html, dest=f)
+    def export_room_schedule(
+            schedule: list[tuple[str, list[list[CourseMeeting]]]],
+            output_path: str
+    ):
+        # Ensure a QApplication exists
+        from PyQt6.QtWidgets import QApplication
+        app = QApplication.instance()
+        if app is None:
+            app = QApplication([])
 
-    @staticmethod
-    def export_room_schedule(schedule: List[Tuple[str, List[List[CourseMeeting]]]], output_path: str) -> None:
-        """Export room schedule to multi-page PDF (one page per room)."""
-        combined_html = ""
-        for room, week in schedule:
-            combined_html += PdfWriter._generate_html_page(room, week) + "<div style='page-break-after: always;'></div>"
-        PdfWriter._save_pdf(combined_html, output_path)
+        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+        printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
+        printer.setOutputFileName(output_path)
 
-    @staticmethod
-    def export_faculty_schedule(schedule: List[Tuple[str, List[List[CourseMeeting]]]], output_path: str) -> None:
-        """Export faculty schedule to multi-page PDF (one page per faculty)."""
-        combined_html = ""
-        for faculty, week in schedule:
-            combined_html += PdfWriter._generate_html_page(faculty, week) + "<div style='page-break-after: always;'></div>"
-        PdfWriter._save_pdf(combined_html, output_path)
+        painter = QPainter()
+        printer.setResolution(600)
+        painter.begin(printer)
+
+        first_page = True
+
+        for room_name, week in schedule:
+
+            widget = PdfWriter.graph_schedule(1, week, room_name)
+            widget.resize(1100, 1600)
+
+            if not first_page:
+                printer.newPage()
+            first_page = False
+
+            # ------- FIX: use correct unit ------
+            page_rect = printer.pageRect(QPrinter.Unit.DevicePixel)
+            # -------------------------------------
+
+            scale_x = page_rect.width() / widget.width()
+            scale_y = page_rect.height() / widget.height()
+            scale = max(scale_x, scale_y)
+
+            painter.save()
+            painter.scale(scale, scale)
+            widget.render(painter)
+            painter.restore()
+
+        painter.end()
+
