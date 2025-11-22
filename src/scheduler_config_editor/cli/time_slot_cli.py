@@ -18,7 +18,7 @@ def time_slot() -> None:
     time_slot.add_command(show)
     time_slot.add_command(clear)
     time_slot.add_command(run)
-    time_clot.add_command(save)
+    time_slot.add_command(save)
 
 def normalize_range(r: str) -> str:
     """
@@ -32,7 +32,7 @@ def normalize_range(r: str) -> str:
         return f"{int(parts[0]):02d}:00-{int(parts[1]):02d}:00"
     return r.strip()
 
-def get_start_end (range: str) -> Tuple[str, str]:
+def get_start_end (range: str) -> tuple[str, str]:
     """
     Takes a normalized range in HH:MM-HH:MM format.
     Returns the start and end of the range as a tuple.
@@ -63,7 +63,7 @@ def add_timeblock(default: bool) -> dict[str, list[TimeBlock]]:
         )
 
         start, end = get_start_end(time_block_input)
-        spacing = click.prompt("Spacing (minutes)", type=int, min=0)
+        spacing = click.prompt("Spacing (minutes)", type=click.IntRange(min=0))
         block = TimeBlock(start=start, end=end, spacing=spacing)
         time_blocks[day].append(block)
 
@@ -81,9 +81,9 @@ def add_class_pattern(default: bool) -> dict[str, list[ClassPattern]]:
         meetings: list[Meeting] = []
 
         def add_meeting() -> None:
-            meeting_day = click.prompt("Meeting day", type=click.Choice(DAYS))
+            meeting_day = click.prompt("Meeting day", type=click.Choice(DAYS, case_sensitive=False))
             start_time = normalize_range(click.prompt("Start time"))
-            duration = click.prompt("Duration (minutes)", type=int, min=0)
+            duration = click.prompt("Duration (minutes)", type=click.IntRange(min=0))
             lab = click.confirm("Is this a lab meeting?", default=default)
             meeting = Meeting(day=meeting_day, start_time=start_time, duration=duration, lab=lab)
             meetings.append(meeting)
@@ -107,8 +107,8 @@ def add(ctx: click.Context) -> None:
     json_config = get_json_config(ctx)
     times = add_timeblock(default=False)
     classes = add_class_pattern(default=False)
-    max_time_gap = click.prompt("Max time gap (minutes)", type=int, min=0, default=30)
-    min_time_overlap = click.prompt("Min time overlap (minutes)", type=int, min=0, default=45)
+    max_time_gap = click.prompt("Max time gap (minutes)", type=click.IntRange(min=0), default=30)
+    min_time_overlap = click.prompt("Min time overlap (minutes)", type=click.IntRange(min=0), default=45)
     click.echo(
         TimeSlot.add_time_slot(
             json_config=json_config,
@@ -156,14 +156,14 @@ def modify(ctx: click.Context) -> None:
     else:
         new_classes = old_time_slot.classes
 
-    max_time_gap = click.prompt("Enter max time gap (minutes)", type=int, min=0, default=old_time_slot.max_time_gap)
-    min_time_overlap = click.prompt("Enter min time overlap (minutes)", type=int, min=0, default=old_time_slot.min_time_overlap)
+    max_time_gap = click.prompt("Enter max time gap (minutes)", type=click.IntRange(min=0), default=old_time_slot.max_time_gap)
+    min_time_overlap = click.prompt("Enter min time overlap (minutes)", type=click.IntRange(min=0), default=old_time_slot.min_time_overlap)
     click.echo(
         TimeSlot.mod_time_slot(
             index=index,
             json_config=json_config,
-            times=times,
-            classes=classes,
+            times=new_times,
+            classes=new_classes,
             max_time_gap=max_time_gap,
             min_time_overlap=min_time_overlap
         )

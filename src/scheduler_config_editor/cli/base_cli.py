@@ -71,12 +71,14 @@ def enable_configuration_commands() -> None:
     from .faculty_cli import faculty
     from .lab_cli import labs
     from .room_cli import rooms
+    from .time_slot_cli import time_slot
 
     base_cli.add_command(faculty)  # Add faculty sub-shell
     base_cli.add_command(courses)  # Add courses sub-shell
     base_cli.add_command(rooms)  # Add rooms sub-shell
     base_cli.add_command(labs)  # Add labs sub-shell
     base_cli.add_command(chat)  # Add chat command
+    base_cli.add_command(time_slot) # Add time slot sub-shell
 
 
 def check_valid_config(json_config: JsonConfig) -> None:
@@ -90,6 +92,8 @@ def check_valid_config(json_config: JsonConfig) -> None:
         raise click.ClickException("No faculty defined in the configuration.")
     if len(config.courses) == 0:
         raise click.ClickException("No courses defined in the configuration.")
+    if len(json_config.time_slot_config) == 0:
+        raise click.ClickException("No time slots defined in the configuration.")
 
 
 @base_cli.command()  # type: ignore
