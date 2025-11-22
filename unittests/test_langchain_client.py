@@ -3,7 +3,7 @@ import os
 import pytest
 from scheduler import TimeRange
 
-from scheduler_config_editor.model import LangchainClient, JsonConfig
+from scheduler_config_editor.model import LangchainClient, JsonConfig, Room, Lab, Faculty, Course
 
 """
     Tests for the module src/scheduler_config_editor/model/langchain_client.py
@@ -19,6 +19,45 @@ def json_config():
 def client(json_config: JsonConfig):
     yield LangchainClient(json_config)
 
+def test_add_room(json_config: JsonConfig, client: LangchainClient) -> None:
+    client.send_query(
+        "Jarvis, add a room with the name: Test Room"
+    )
+    assert json_config.scheduler_config.rooms.count("Test Room") == 1
+
+def test_mod_room(json_config: JsonConfig, client: LangchainClient) -> None:
+    Room.add_room(json_config, "Test Room")
+    client.send_query(
+        "Jarvis, change the room with the name Test Room, to the new name: New Room"
+    )
+    assert json_config.scheduler_config.rooms.count("New Room") == 1
+
+def test_del_room(json_config: JsonConfig, client: LangchainClient) -> None:
+    Room.add_room(json_config, "Test Room")
+    client.send_query(
+        "Jarvis, remove the room with the name: Test Room"
+    )
+    assert json_config.scheduler_config.rooms.count("Test Room") == 0
+
+def test_add_lab(json_config: JsonConfig, client: LangchainClient) -> None:
+    client.send_query(
+        "Jarvis, add a lab with the name: Research Lab"
+    )
+    assert json_config.scheduler_config.labs.count("Research Lab") == 1
+
+def test_mod_lab(json_config: JsonConfig, client: LangchainClient) -> None:
+    Lab.add_lab(json_config, "Test Lab")
+    client.send_query(
+        "Jarvis, change the lab with the name Test Lab, to the new name: Research Lab"
+    )
+    assert json_config.scheduler_config.labs.count("Research Lab") == 1
+
+def test_del_lab(json_config: JsonConfig, client: LangchainClient) -> None:
+    Lab.add_lab(json_config, "Research Lab")
+    client.send_query(
+        "Jarvis, remove the lab with the name: Research Lab"
+    )
+    assert json_config.scheduler_config.labs.count("Research Lab") == 0
 
 def test_add_course(json_config: JsonConfig, client: LangchainClient) -> None:
     client.send_query(
