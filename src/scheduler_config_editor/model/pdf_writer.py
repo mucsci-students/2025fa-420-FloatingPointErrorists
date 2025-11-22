@@ -10,6 +10,8 @@ from scheduler_config_editor.model import INDEX_TO_DAY
 from scheduler_config_editor.model.schedule_handler import CourseMeeting
 
 _app = QApplication.instance()
+
+
 def get_app():
     """Get or create the QApplication instance. Uses singleton to ensure only one instance exists."""
     global _app
@@ -18,10 +20,13 @@ def get_app():
         signal.signal(signal.SIGINT, signal.SIG_DFL)
     return _app
 
+
 class PdfMode(Enum):
     """Modes for PDF schedule export."""
+
     FACULTY = "faculty"
     ROOM = "room"
+
 
 class PdfWriter:
     """Class for exporting schedules to PDF files."""
@@ -178,7 +183,7 @@ class PdfWriter:
         mode: PdfMode,
     ) -> None:
         """Export the schedule as a graphical PDF."""
-        get_app() # Ensure QApplication is initialized because the PdfWriter uses Qt widgets
+        get_app()  # Ensure QApplication is initialized because the PdfWriter uses Qt widgets
         widgets = []
         for name, week in schedule:
             widget = PdfWriter._graph_schedule(mode, week, name)

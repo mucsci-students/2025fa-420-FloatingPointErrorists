@@ -4,11 +4,14 @@ from click_shell import shell
 from ..model import ScheduleHandler, PdfWriter, PdfMode
 from .base_cli import HANDLER_KEY, clear
 
+
 class DisplayMode(Enum):
     """Modes for displaying schedules."""
+
     DEFAULT = "default"
     FACULTY = "faculty"
     ROOM = "room"
+
 
 def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> None:
     """Navigate through schedules interactively."""
@@ -38,7 +41,9 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
             case "e":
                 name = click.prompt("Enter filename for PDF export", default="schedule")
                 PdfWriter.export_graph_pdf(
-                    ScheduleHandler.room_schedule_columns(schedules[idx]) if mode == DisplayMode.ROOM else ScheduleHandler.faculty_schedule_columns(schedules[idx]),
+                    ScheduleHandler.room_schedule_columns(schedules[idx])
+                    if mode == DisplayMode.ROOM
+                    else ScheduleHandler.faculty_schedule_columns(schedules[idx]),
                     name,
                     PdfMode.ROOM if mode == DisplayMode.ROOM else PdfMode.FACULTY,
                 )

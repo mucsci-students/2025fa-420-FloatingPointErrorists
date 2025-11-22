@@ -21,5 +21,5 @@ __all__ = [
     "LangchainClient",
     "INDEX_TO_DAY",
     "PdfWriter",
-    "PdfMode"
+    "PdfMode",
 ]
