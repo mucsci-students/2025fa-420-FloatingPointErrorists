@@ -93,6 +93,127 @@ def test_add_course_appends_and_updates_faculty_preferences(import_courses_modul
     assert alice.course_preferences.get("CS101") == 5
     assert "CS101" not in bob.course_preferences
 
+def test_add_course_missing_id(import_courses_module):
+    courses_mod = import_courses_module
+    sched = DummySchedulerConfig(courses=[], faculty=[], rooms=[])
+    json_cfg = DummyJsonConfig(sched)
+
+    try:
+        courses_mod.Course.add_course(
+            json_config=json_cfg,
+            course_id=None,
+            course_credits=0,
+            room=[],
+            lab=[],
+            conflicts=[],
+            faculty=[],
+        )
+        assert False
+    except ValueError:
+        assert True
+
+def test_add_course_invalid_credits(import_courses_module):
+    courses_mod = import_courses_module
+    sched = DummySchedulerConfig(courses=[], faculty=[], rooms=[])
+    json_cfg = DummyJsonConfig(sched)
+
+    try:
+        courses_mod.Course.add_course(
+            json_config=json_cfg,
+            course_id="CS101",
+            course_credits=0,
+            room=[],
+            lab=[],
+            conflicts=[],
+            faculty=[],
+        )
+        assert False
+    except ValueError:
+        assert True
+
+def test_add_course_missing_room(import_courses_module):
+    courses_mod = import_courses_module
+    
+    sched = DummySchedulerConfig(courses=[], faculty=[], rooms=None)
+    json_cfg = DummyJsonConfig(sched)
+
+    try:
+        courses_mod.Course.add_course(
+            json_config=json_cfg,
+            course_id="CS101",
+            course_credits=3,
+            room=None,
+            lab=[],
+            conflicts=[],
+            faculty=[],
+        )
+        assert False
+    except ValueError:
+        assert True
+
+def test_add_course_missing_faculty(import_courses_module):
+    courses_mod = import_courses_module
+    
+    sched = DummySchedulerConfig(courses=[], faculty=None, rooms=["R1"])
+    json_cfg = DummyJsonConfig(sched)
+
+    try:
+        courses_mod.Course.add_course(
+            json_config=json_cfg,
+            course_id="CS101",
+            course_credits=0,
+            room=["R1"],
+            lab=[],
+            conflicts=[],
+            faculty=None,
+        )
+        assert False
+    except ValueError:
+        assert True
+
+def test_add_course_invalid_lab(import_courses_module):
+    courses_mod = import_courses_module
+    
+    alice = DummyFaculty("Alice")
+    bob = DummyFaculty("Bob")
+    sched = DummySchedulerConfig(courses=[], faculty=[alice, bob], rooms=["R1"])
+    json_cfg = DummyJsonConfig(sched)
+
+    try:
+        courses_mod.Course.add_course(
+            json_config=json_cfg,
+            course_id="CS101",
+            course_credits=3,
+            room=["R1"],
+            lab=["TEST"],
+            conflicts=[],
+            faculty=["Alice"],
+        )
+        assert False
+    except ValueError:
+        assert True
+
+def test_add_course_invalid_conflict(import_courses_module):
+    courses_mod = import_courses_module
+    
+    alice = DummyFaculty("Alice")
+    bob = DummyFaculty("Bob")
+    sched = DummySchedulerConfig(courses=[], faculty=[alice, bob], rooms=["R1"])
+    json_cfg = DummyJsonConfig(sched)
+
+    try:
+        courses_mod.Course.add_course(
+            json_config=json_cfg,
+            course_id="CS101",
+            course_credits=3,
+            room=["R1"],
+            lab=[],
+            conflicts=["COURSE"],
+            faculty=["Alice"],
+        )
+        assert False
+    except ValueError:
+        assert True
 
 def test_mod_course_changes_id_updates_faculty_and_conflicts(import_courses_module):
     courses_mod = import_courses_module
