@@ -409,9 +409,14 @@ class SimpleTabs(QWidget):
         def schedule_back() -> None:
             if self.sc.length > 0:
                 self.sc.previous_schedule()
-                self.sc.set_tables()
-                self.schedule_table_widgets = self.sc.cur_widgets
-                self.my_scroll.setWidget(self.sc.cur_widgets)
+                if self.sc.mode == 0:
+                    self.sc.set_tables()
+                    self.schedule_table_widgets = self.sc.cur_widgets
+                    self.my_scroll.setWidget(self.sc.cur_widgets)
+                else:
+                    self.sc.graph_schedule()
+                    self.schedule_table = self.sc.graph_widget
+                    self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
             else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
@@ -439,9 +444,14 @@ class SimpleTabs(QWidget):
                     self.sc.index = self.sc.length - 1
                 else:
                     self.sc.index = newIndex - 1
-                self.sc.set_tables()
-                self.schedule_table_widgets = self.sc.cur_widgets
-                self.my_scroll.setWidget(self.sc.cur_widgets)
+                if self.sc.mode == 0:
+                    self.sc.set_tables()
+                    self.schedule_table_widgets = self.sc.cur_widgets
+                    self.my_scroll.setWidget(self.sc.cur_widgets)
+                else:
+                    self.sc.graph_schedule()
+                    self.schedule_table = self.sc.graph_widget
+                    self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
             else:
                 QMessageBox.warning(self, "Error", "No schedule loaded.")
@@ -465,9 +475,14 @@ class SimpleTabs(QWidget):
         def schedule_forward() -> None:
             if self.sc.length > 0:
                 self.sc.next_schedule()
-                self.sc.set_tables()
-                self.schedule_table_widgets = self.sc.cur_widgets
-                self.my_scroll.setWidget(self.sc.cur_widgets)
+                if self.sc.mode == 0:
+                    self.sc.set_tables()
+                    self.schedule_table_widgets = self.sc.cur_widgets
+                    self.my_scroll.setWidget(self.sc.cur_widgets)
+                else:
+                    self.sc.graph_schedule()
+                    self.schedule_table = self.sc.graph_widget
+                    self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
             else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
@@ -494,9 +509,6 @@ class SimpleTabs(QWidget):
         self.schedule_viewer_filename.setPlaceholderText("Filename")
         self.schedule_viewer_filename.setAlignment(Qt.AlignmentFlag.AlignRight)
         view_bot_right_layout.addWidget(self.schedule_viewer_filename)
-
-        self._pdf_worker = None
-        self._pdf_loading = None
 
         def pdf_export() -> None:
             """Export current schedule as PDF using a background worker and a spinner dialog."""
@@ -552,9 +564,14 @@ class SimpleTabs(QWidget):
                 self.schedules = []
 
                 # show first schedule
-                self.sc.set_tables()
-                self.schedule_table_widgets = self.sc.cur_widgets
-                self.my_scroll.setWidget(self.schedule_table_widgets)
+                if self.sc.mode == 0:
+                    self.sc.set_tables()
+                    self.schedule_table_widgets = self.sc.cur_widgets
+                    self.my_scroll.setWidget(self.schedule_table_widgets)
+                else:
+                    self.sc.graph_schedule()
+                    self.schedule_table = self.sc.graph_widget
+                    self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
                 self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
 
