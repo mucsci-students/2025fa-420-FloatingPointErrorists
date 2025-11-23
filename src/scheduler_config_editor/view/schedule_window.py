@@ -32,6 +32,9 @@ class newWidget(QWidget):
         self.scroll_area_w.setWidget(self.my_widget)
         self.scroll_area_w.setWidgetResizable(True)
 
+        self.graph_widget = QWidget()
+        self.graph_widget_layout = QVBoxLayout(self.graph_widget)
+
         self.my_layout = QVBoxLayout()
         self.my_layout.addWidget(self.scroll_area_w)
         self.setLayout(self.my_layout)
