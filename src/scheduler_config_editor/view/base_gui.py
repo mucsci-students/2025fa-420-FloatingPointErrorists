@@ -728,7 +728,7 @@ class SimpleTabs(QWidget):
         else:
             self.editor_content_area.addWidget(self.course_controller.view)
 
-    # Saves config file
+    # Saves config files
     def save_config(self) -> None:
         if not self.config:
             QMessageBox.warning(self, "Error", "No config loaded to save.")
