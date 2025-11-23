@@ -68,7 +68,7 @@ class PdfWriter:
         title_spacing = 0.3 * inch
 
         column_width = (width - 2 * margin) / 6  # time + 5 days
-        row_height = (height - 2 * margin) / (total_hours + 2)
+        row_height = (height - 2 * margin) / (total_hours + 3)
 
         title_y = height - margin
         header_y = title_y - title_spacing - row_height
