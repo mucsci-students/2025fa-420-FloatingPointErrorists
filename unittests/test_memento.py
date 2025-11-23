@@ -38,7 +38,7 @@ class DummyCombinedConfig:
 
 
 # ----------------------------------------------------------------------
-# Actual test cases for undo/redo
+# Actual test cases for undo/redo.
 # ----------------------------------------------------------------------
 class TestUndoRedo(unittest.TestCase):
 
