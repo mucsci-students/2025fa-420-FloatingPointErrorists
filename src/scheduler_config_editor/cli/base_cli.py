@@ -92,9 +92,10 @@ def check_valid_config(json_config: JsonConfig) -> None:
         raise click.ClickException("No faculty defined in the configuration.")
     if len(config.courses) == 0:
         raise click.ClickException("No courses defined in the configuration.")
-    if len(json_config.time_slot_config) == 0:
-        raise click.ClickException("No time slots defined in the configuration.")
-
+    if len(json_config.time_slot_config.times) == 0:
+        raise click.ClickException("No time blocks defined in the configuration.")
+    if len(json_config.time_slot_config.classes) == 0:
+        raise click.ClickException("No class patterns defined in the configuration.")
 
 @base_cli.command()  # type: ignore
 def clear() -> None:

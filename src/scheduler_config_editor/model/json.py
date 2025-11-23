@@ -8,7 +8,7 @@ from scheduler import (
     load_config_from_file,
 )
 
-
+DAYS ={"MON", "TUE", "WED", "THU", "FRI"}
 class JsonConfig:
     """
     Class to handle loading, saving, and displaying scheduler configuration from a JSON file.
@@ -114,7 +114,8 @@ class JsonConfig:
         """String representation of the time slot configuration."""
         time_slot_config = self._time_slot_config
         lines = ["\nTime Slot Config:"]
-        for day, slots in time_slot_config.times.items():
+        for day in DAYS:
+            slots = time_slot_config.times.get(day)
             lines.append(f"  {day}:")
             for slot in slots:
                 lines.append(

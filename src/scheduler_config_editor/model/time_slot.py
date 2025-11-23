@@ -1,5 +1,5 @@
 from scheduler import TimeString
-from scheduler.config import TimeSlotConfig, TimeBlock, ClassPattern, Meeting
+from scheduler.config import TimeBlock, ClassPattern, Meeting
 from scheduler_config_editor.model import JsonConfig
 
 DAY_TO_INDEX = {"MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5}
