@@ -15,7 +15,7 @@ dependencies = [
     "langchain-openai",
     "langchain",
     "langgraph",
-    "rerportlab"
+    "reportlab"
 ]
 
 [project.optional-dependencies]
