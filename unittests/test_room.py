@@ -120,3 +120,13 @@ def test_room_mod_dupe() -> None:
         raise AssertionError()
     except Room.RoomExistsError:
         assert True
+
+
+def test_list_rooms() -> None:
+    runner = CliRunner()
+    obj = {}
+    runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
+    config = obj[CONFIG_KEY]
+    output = Room.room_string(config)
+    assert "Roddy 140" in output
+    assert "Roddy 136" in output

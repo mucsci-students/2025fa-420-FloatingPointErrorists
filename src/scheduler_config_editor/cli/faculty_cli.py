@@ -3,7 +3,7 @@ from click_shell import shell
 
 from ..model.faculty import Faculty
 from ..model.json_config import JsonConfig
-from .base_cli import clear, get_json_config, run, save, show, undo, redo
+from .base_cli import clear, get_json_config, run, save, undo, redo
 
 """
 This module implements a command-line interface (CLI) for managing faculty in the configuration file.
@@ -27,7 +27,6 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 )  # type: ignore
 def faculty() -> None:
     """Manage faculty"""
-    faculty.add_command(show)
     faculty.add_command(clear)
     faculty.add_command(run)
     faculty.add_command(save)
@@ -113,6 +112,14 @@ def add_lab_preferences(json_config: JsonConfig, default: bool) -> dict[str, int
         )
         lab_preferences[lab] = preference
     return lab_preferences
+
+
+@faculty.command()  # type: ignore
+@click.pass_context
+def show(ctx: click.Context) -> None:
+    """Show all faculty members."""
+    config = get_json_config(ctx)
+    click.echo(Faculty.faculty_string(config))
 
 
 @faculty.command()  # type: ignore

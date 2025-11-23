@@ -2,7 +2,7 @@ import click
 from click_shell import shell
 
 from ..model.lab import Lab
-from .base_cli import clear, get_json_config, run, save, show, undo, redo
+from .base_cli import clear, get_json_config, run, save, undo, redo
 
 """
 This module implements a command-line interface (CLI) for managing rooms in the configuration file.
@@ -26,12 +26,19 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 )  # type: ignore
 def labs() -> None:
     """Manage rooms."""
-    labs.add_command(show)
     labs.add_command(clear)
     labs.add_command(save)
     labs.add_command(run)
     labs.add_command(undo)
     labs.add_command(redo)
+
+
+@labs.command()  # type: ignore
+@click.pass_context
+def show(ctx: click.Context) -> None:
+    """Show all labs."""
+    config = get_json_config(ctx)
+    click.echo(Lab.lab_string(config))
 
 
 @labs.command()  # type: ignore

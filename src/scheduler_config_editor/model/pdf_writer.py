@@ -72,7 +72,6 @@ class PdfWriter:
 
         title_y = height - margin
         header_y = title_y - title_spacing - row_height
-        first_time_row_top = header_y - row_height
 
         color_pairs = [
             ("#0066ff", "#ffffff"),
@@ -128,7 +127,7 @@ class PdfWriter:
                     duration = end - start
                     start_offset = start - start_minutes
 
-                    y = first_time_row_top - (start_offset / 60) * row_height
+                    y = header_y - (start_offset / 60) * row_height
                     h = (duration / 60) * row_height
 
                     c.setFillColor(bg)
