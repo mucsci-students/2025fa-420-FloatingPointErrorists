@@ -55,7 +55,8 @@ def test_lab_del_ne() -> None:
         raise AssertionError()
     except Lab.LabMissingError:
         assert True
-    
+
+
 def test_lab_del_used() -> None:
     runner = CliRunner()
     obj = {}
@@ -68,6 +69,7 @@ def test_lab_del_used() -> None:
     facRoomPref = list(jsonObj.scheduler_config.faculty[0].lab_preferences.keys())
     assert facRoomPref.count("Linux") == 0
 
+
 def test_lab_mod() -> None:
     runner = CliRunner()
     obj = {}
@@ -76,6 +78,7 @@ def test_lab_mod() -> None:
     Lab.add_lab(jsonObj, "Test Lab")
     Lab.mod_lab(jsonObj, "Test Lab", "New Lab")
     assert jsonObj.scheduler_config.labs.count("New Lab") == 1
+
 
 def test_lab_mod_used() -> None:
     runner = CliRunner()
