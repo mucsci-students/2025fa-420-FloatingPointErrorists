@@ -50,7 +50,7 @@ class TestFaculty:
             assert False
         except ValueError:
             assert True
-    
+
     def test_add_faculty_invalid_credits(self, json_config: JsonConfig):
         try:
             Faculty.add_faculty(
@@ -84,7 +84,7 @@ class TestFaculty:
             assert False
         except ValueError:
             assert True
-        
+
     def test_add_faculty_invalid_course_pref(self, json_config: JsonConfig):
         try:
             Faculty.add_faculty(
@@ -101,7 +101,7 @@ class TestFaculty:
             assert False
         except ValueError:
             assert True
-    
+
     def test_add_faculty_invalid_room_pref(self, json_config: JsonConfig):
         try:
             Faculty.add_faculty(
@@ -118,7 +118,7 @@ class TestFaculty:
             assert False
         except ValueError:
             assert True
-    
+
     def test_add_faculty_invalid_lab_pref(self, json_config: JsonConfig):
         try:
             Faculty.add_faculty(

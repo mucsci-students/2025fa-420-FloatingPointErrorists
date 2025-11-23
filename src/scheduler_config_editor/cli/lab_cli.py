@@ -2,7 +2,7 @@ import click
 from click_shell import shell
 
 from ..model.lab import Lab
-from .base_cli import clear, get_json_config, run, save, show
+from .base_cli import clear, get_json_config, run, save, show, undo, redo
 
 """
 This module implements a command-line interface (CLI) for managing rooms in the configuration file.
@@ -30,6 +30,8 @@ def labs() -> None:
     labs.add_command(clear)
     labs.add_command(save)
     labs.add_command(run)
+    labs.add_command(undo)
+    labs.add_command(redo)
 
 
 @labs.command()  # type: ignore
