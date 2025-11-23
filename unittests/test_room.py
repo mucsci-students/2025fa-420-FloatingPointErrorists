@@ -56,6 +56,7 @@ def test_room_del_ne() -> None:
     except Room.RoomMissingError:
         assert True
 
+
 def test_room_del_used() -> None:
     runner = CliRunner()
     obj = {}
@@ -77,6 +78,7 @@ def test_room_mod() -> None:
     Room.add_room(jsonObj, "Test Room")
     Room.mod_room(jsonObj, "Test Room", "New Room")
     assert jsonObj.scheduler_config.rooms.count("New Room") == 1
+
 
 def test_room_mod_used() -> None:
     runner = CliRunner()

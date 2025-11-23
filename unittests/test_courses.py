@@ -93,6 +93,7 @@ def test_add_course_appends_and_updates_faculty_preferences(import_courses_modul
     assert alice.course_preferences.get("CS101") == 5
     assert "CS101" not in bob.course_preferences
 
+
 def test_add_course_missing_id(import_courses_module):
     courses_mod = import_courses_module
     sched = DummySchedulerConfig(courses=[], faculty=[], rooms=[])
@@ -111,6 +112,7 @@ def test_add_course_missing_id(import_courses_module):
         assert False
     except ValueError:
         assert True
+
 
 def test_add_course_invalid_credits(import_courses_module):
     courses_mod = import_courses_module
@@ -131,9 +133,10 @@ def test_add_course_invalid_credits(import_courses_module):
     except ValueError:
         assert True
 
+
 def test_add_course_missing_room(import_courses_module):
     courses_mod = import_courses_module
-    
+
     sched = DummySchedulerConfig(courses=[], faculty=[], rooms=[])
     json_cfg = DummyJsonConfig(sched)
 
@@ -150,10 +153,11 @@ def test_add_course_missing_room(import_courses_module):
         assert False
     except ValueError:
         assert True
-    
+
+
 def test_add_course_invalid_room(import_courses_module):
     courses_mod = import_courses_module
-    
+
     sched = DummySchedulerConfig(courses=[], faculty=[], rooms=[])
     json_cfg = DummyJsonConfig(sched)
 
@@ -171,9 +175,10 @@ def test_add_course_invalid_room(import_courses_module):
     except ValueError:
         assert True
 
+
 def test_add_course_missing_faculty(import_courses_module):
     courses_mod = import_courses_module
-    
+
     sched = DummySchedulerConfig(courses=[], faculty=[], rooms=["R1"])
     json_cfg = DummyJsonConfig(sched)
 
@@ -190,10 +195,11 @@ def test_add_course_missing_faculty(import_courses_module):
         assert False
     except ValueError:
         assert True
-    
+
+
 def test_add_course_invalid_faculty(import_courses_module):
     courses_mod = import_courses_module
-    
+
     sched = DummySchedulerConfig(courses=[], faculty=[], rooms=["R1"])
     json_cfg = DummyJsonConfig(sched)
 
@@ -211,9 +217,10 @@ def test_add_course_invalid_faculty(import_courses_module):
     except ValueError:
         assert True
 
+
 def test_add_course_invalid_lab(import_courses_module):
     courses_mod = import_courses_module
-    
+
     alice = DummyFaculty("Alice")
     bob = DummyFaculty("Bob")
     sched = DummySchedulerConfig(courses=[], faculty=[alice, bob], rooms=["R1"])
@@ -233,9 +240,10 @@ def test_add_course_invalid_lab(import_courses_module):
     except ValueError:
         assert True
 
+
 def test_add_course_invalid_conflict(import_courses_module):
     courses_mod = import_courses_module
-    
+
     alice = DummyFaculty("Alice")
     bob = DummyFaculty("Bob")
     sched = DummySchedulerConfig(courses=[], faculty=[alice, bob], rooms=["R1"])
@@ -255,6 +263,7 @@ def test_add_course_invalid_conflict(import_courses_module):
     except ValueError:
         assert True
 
+
 def test_mod_course_changes_id_updates_faculty_and_conflicts(import_courses_module):
     courses_mod = import_courses_module
     fac = DummyFaculty("DrX", course_preferences={"OLD101": 7})
@@ -262,7 +271,12 @@ def test_mod_course_changes_id_updates_faculty_and_conflicts(import_courses_modu
         course_id="OLD101", credits=3, room=[], lab=[], conflicts=[], faculty=["DrX"]
     )
     c_other = DummyCourseConfig(
-        course_id="OTHER", credits=2, room=[], lab=[], conflicts=["OLD101"], faculty=["DrX"]
+        course_id="OTHER",
+        credits=2,
+        room=[],
+        lab=[],
+        conflicts=["OLD101"],
+        faculty=["DrX"],
     )
     sched = DummySchedulerConfig(
         courses=[c_old, c_other], faculty=[fac], rooms=["RmA"], labs=["LabA"]
@@ -324,6 +338,7 @@ def test_mod_course_same_id_adds_new_faculty_preference(import_courses_module):
     assert updated.credits == 5
     assert updated.room == ["R2"]
 
+
 def test_mod_course_out_of_bounds(import_courses_module):
     courses_mod = import_courses_module
     # fac = DummyFaculty("DrX", course_preferences={"OLD101": 7})
@@ -333,9 +348,7 @@ def test_mod_course_out_of_bounds(import_courses_module):
     # c_other = DummyCourseConfig(
     #     course_id="OTHER", credits=2, room=[], lab=[], conflicts=["OLD101"], faculty=["DrX"]
     # )
-    sched = DummySchedulerConfig(
-        courses=[], faculty=[], rooms=[], labs=[]
-    )
+    sched = DummySchedulerConfig(courses=[], faculty=[], rooms=[], labs=[])
     json_cfg = DummyJsonConfig(sched)
 
     try:
@@ -372,6 +385,7 @@ def test_del_course_removes_and_cleans_references(import_courses_module):
     assert "DELME" not in fac.course_preferences
     assert "DELME" not in json_cfg.scheduler_config.courses[0].conflicts
 
+
 def test_del_course_out_of_bounds(import_courses_module):
     courses_mod = import_courses_module
     # fac = DummyFaculty("DrX", course_preferences={"OLD101": 7})
@@ -381,9 +395,7 @@ def test_del_course_out_of_bounds(import_courses_module):
     # c_other = DummyCourseConfig(
     #     course_id="OTHER", credits=2, room=[], lab=[], conflicts=["OLD101"], faculty=["DrX"]
     # )
-    sched = DummySchedulerConfig(
-        courses=[], faculty=[], rooms=[], labs=[]
-    )
+    sched = DummySchedulerConfig(courses=[], faculty=[], rooms=[], labs=[])
     json_cfg = DummyJsonConfig(sched)
 
     try:

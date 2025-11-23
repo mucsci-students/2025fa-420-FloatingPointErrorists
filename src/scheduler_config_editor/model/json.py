@@ -1,4 +1,5 @@
 import os
+from typing import Literal
 
 from scheduler import (
     CombinedConfig,
@@ -8,7 +9,9 @@ from scheduler import (
     load_config_from_file,
 )
 
-DAYS ={"MON", "TUE", "WED", "THU", "FRI"}
+DAYS = Literal["MON", "TUE", "WED", "THU", "FRI"]
+
+
 class JsonConfig:
     """
     Class to handle loading, saving, and displaying scheduler configuration from a JSON file.
@@ -115,10 +118,11 @@ class JsonConfig:
         time_slot_config = self._time_slot_config
         lines = ["\nTime Slot Config:"]
         for day in DAYS:
-            slots = time_slot_config.times.get(day, [])
+            slots = time_slot_config.times[day] if day in time_slot_config.times else []
             lines.append(f"  {day}:")
             if not slots:
-                    lines.append("")
+                slots = []
+                lines.append("")
             else:
                 for i, slot in enumerate(slots):
                     lines.append(
@@ -133,7 +137,9 @@ class JsonConfig:
                     f"{m.day} (Duration={m.duration}, lab={getattr(m, 'lab', False)})"
                     for m in cls.meetings
                 )
-                lines.append(f" [{i}] - Credits: {cls.credits}, Meetings: [{meetings_str}], Disabled:{cls.disabled}")
+                lines.append(
+                    f" [{i}] - Credits: {cls.credits}, Meetings: [{meetings_str}], Disabled:{cls.disabled}"
+                )
         return "\n".join(lines)
 
     def __str__(self) -> str:
