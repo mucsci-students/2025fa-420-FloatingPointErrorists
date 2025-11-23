@@ -660,7 +660,7 @@ class SimpleTabs(QWidget):
         config_path, _ = QFileDialog.getOpenFileName(
             self,
             "Select Scheduler Config File",
-            "",
+            "configs",
             "JSON Files (*.json);;All Files (*)",
         )
 
@@ -735,9 +735,14 @@ class SimpleTabs(QWidget):
             self.sc.length = len(self.sc.cur_schedules.schedules)
 
             # show first schedule
-            self.sc.set_tables()
-            self.schedule_table_widgets = self.sc.cur_widgets
-            self.my_scroll.setWidget(self.sc.cur_widgets)
+            if self.sc.mode == 0:
+                self.sc.set_tables()
+                self.schedule_table_widgets = self.sc.cur_widgets
+                self.my_scroll.setWidget(self.sc.cur_widgets)
+            else:
+                self.sc.graph_schedule()
+                self.schedule_table = self.sc.graph_widget
+                self.my_scroll.setWidget(self.schedule_table)
             self.schedule_viewer_index.setText(str(self.sc.index + 1))
             self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
 
@@ -746,7 +751,7 @@ class SimpleTabs(QWidget):
 
             # enable button
             self.schedule_viewer_savebutton.setEnabled(True)
-
+            
     def undo(self) -> None:
         try:
             self.config.undo()
