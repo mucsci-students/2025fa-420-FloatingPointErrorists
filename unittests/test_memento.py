@@ -3,7 +3,9 @@ from unittest.mock import patch
 import copy
 import os
 
-from scheduler_config_editor.model.json import JsonConfig  # change this to where JsonConfig actually lives
+from scheduler_config_editor.model.json import (
+    JsonConfig,
+)  # change this to where JsonConfig actually lives
 
 
 # ----------------------------------------------------------------------
@@ -22,6 +24,7 @@ class DummyTimeSlotConfig:
 
 class DummyCombinedConfig:
     """Minimal object with .config and .time_slot_config attributes."""
+
     def __init__(self, a, b):
         self.config = DummySchedulerConfig(a)
         self.time_slot_config = DummyTimeSlotConfig(b)
@@ -41,11 +44,12 @@ class DummyCombinedConfig:
 # Actual test cases for undo/redo.
 # ----------------------------------------------------------------------
 class TestUndoRedo(unittest.TestCase):
-
     def setUp(self):
         patcher1 = patch("scheduler_config_editor.model.json.os.makedirs")
-        patcher2 = patch("scheduler_config_editor.model.json.load_config_from_file",
-                         return_value=DummyCombinedConfig(1, 2))
+        patcher2 = patch(
+            "scheduler_config_editor.model.json.load_config_from_file",
+            return_value=DummyCombinedConfig(1, 2),
+        )
 
         self.mock_makedirs = patcher1.start()
         self.mock_load = patcher2.start()
