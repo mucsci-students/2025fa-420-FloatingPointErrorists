@@ -5,7 +5,6 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter
 from PyQt6.QtPrintSupport import QPrinter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QApplication
-from scheduler_config_editor.controller.schedule_controller import SchedulerController
 from scheduler_config_editor.model import INDEX_TO_DAY
 from scheduler_config_editor.model.schedule_handler import CourseMeeting
 
@@ -60,8 +59,8 @@ class PdfWriter:
 
         for hour in range(8, 21):
             time_label = QLabel(
-                SchedulerController.convert_to_timestr(
-                    SchedulerController.convert_to_minutes(hour * 100)
+                PdfWriter._convert_to_timestr(
+                    PdfWriter._convert_to_minutes(hour * 100)
                 )
             )
             time_label.setStyleSheet(
@@ -98,7 +97,7 @@ class PdfWriter:
                 "border: 1px solid black; font-size: 16px; font-weight: bold;"
             )
             day_container.addWidget(day_label)
-            cur_time = SchedulerController.convert_to_minutes(800)
+            cur_time = PdfWriter._convert_to_minutes(800)
             day_column = QVBoxLayout()
 
             # Render courses in order
@@ -110,14 +109,14 @@ class PdfWriter:
                 if mode == PdfMode.FACULTY:
                     content = (
                         f"{course.name}\n{course.room}\n"
-                        f"{SchedulerController.convert_to_timestr(course.time[0])} to "
-                        f"{SchedulerController.convert_to_timestr(course.time[1])}"
+                        f"{PdfWriter._convert_to_timestr(course.time[0])} to "
+                        f"{PdfWriter._convert_to_timestr(course.time[1])}"
                     )
                 else:
                     content = (
                         f"{course.name}\n{course.faculty}\n"
-                        f"{SchedulerController.convert_to_timestr(course.time[0])} to "
-                        f"{SchedulerController.convert_to_timestr(course.time[1])}"
+                        f"{PdfWriter._convert_to_timestr(course.time[0])} to "
+                        f"{PdfWriter._convert_to_timestr(course.time[1])}"
                     )
 
                 block = QLabel(content)
@@ -141,13 +140,38 @@ class PdfWriter:
 
             # Space after last course
             day_column.addStretch(
-                SchedulerController.convert_to_minutes(2000) - cur_time
+                PdfWriter._convert_to_minutes(2000) - cur_time
             )
 
             day_container.addLayout(day_column)
             schedule.addLayout(day_container)
 
         return graph_widget
+
+    @staticmethod
+    def _convert_to_minutes(i: int) -> int:
+        return i // 100 * 60 + i % 100
+
+    @staticmethod
+    def _convert_to_timestr(i: int) -> str:
+        m = i % 60
+        h = i // 60
+        # minute placeholder
+        mp = ""
+        # hour suffix
+        hs = "AM"
+
+        # make single digit minutes take 2 characters
+        if m < 10:
+            mp = "0"
+
+        # am pm
+        if h >= 12:
+            h -= 12
+            hs = "PM"
+        if h == 0:
+            h = 12
+        return f"{h}:{mp}{m} {hs}"
 
     @staticmethod
     def _export_to_pdf(schedule: list[QWidget], name: str) -> None:
@@ -158,7 +182,6 @@ class PdfWriter:
         printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
         printer.setOutputFileName(path)
         painter = QPainter()
-        printer.setResolution(600)
         painter.begin(printer)
         first_page = True
         for widget in schedule:

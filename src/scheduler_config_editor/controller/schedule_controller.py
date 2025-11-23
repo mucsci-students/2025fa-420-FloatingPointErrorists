@@ -12,7 +12,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFontMetrics
 from scheduler.models import CourseInstance
 
-from scheduler_config_editor.model import ScheduleWriter
+from scheduler_config_editor.model import ScheduleWriter, PdfWriter, PdfMode
 from scheduler_config_editor.model import ScheduleHandler, INDEX_TO_DAY
 
 # colors for classes
@@ -361,3 +361,12 @@ class SchedulerController:
     @staticmethod
     def save_as_csv(my_schedules: list[list[CourseInstance]], name: str) -> None:
         ScheduleWriter.write_as_csv(my_schedules, name)
+
+    def save_as_pdf(self, name: str) -> None:
+        schedule = self.cur_schedules.schedules[self.index]
+        mode = PdfMode.ROOM if self.mode == 2 else PdfMode.FACULTY
+        PdfWriter.export_graph_pdf(
+            ScheduleHandler.room_schedule_columns(schedule) if mode == PdfMode.ROOM else ScheduleHandler.faculty_schedule_columns(schedule),
+            name,
+            mode,
+        )

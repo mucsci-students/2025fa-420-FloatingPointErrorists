@@ -473,9 +473,9 @@ class SimpleTabs(QWidget):
         view_bot_right_layout.addStretch()
 
         # add checkboxs
-        self.checkboxjson = QCheckBox("json")
+        self.checkboxjson = QCheckBox("JSON")
         view_bot_right_layout.addWidget(self.checkboxjson)
-        self.checkboxcsv = QCheckBox("csv")
+        self.checkboxcsv = QCheckBox("CSV")
         view_bot_right_layout.addWidget(self.checkboxcsv)
 
         # add filename lineedit
@@ -483,6 +483,16 @@ class SimpleTabs(QWidget):
         self.schedule_viewer_filename.setPlaceholderText("Filename")
         self.schedule_viewer_filename.setAlignment(Qt.AlignmentFlag.AlignRight)
         view_bot_right_layout.addWidget(self.schedule_viewer_filename)
+
+        def pdf_export() -> None:
+            """Export current schedule as PDF."""
+            self.sc.save_as_pdf(self.schedule_viewer_filename.text() or "_")
+            QMessageBox.information(self, "Information", "PDF Export Complete.")
+
+        self.schedule_viewer_pdfbutton = QPushButton("Export PDF")
+        self.schedule_viewer_pdfbutton.clicked.connect(pdf_export)
+        self.schedule_viewer_pdfbutton.setEnabled(False)
+        view_bot_right_layout.addWidget(self.schedule_viewer_pdfbutton)
 
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
@@ -535,6 +545,7 @@ class SimpleTabs(QWidget):
 
                 # Disable Save Button
                 self.schedule_viewer_savebutton.setEnabled(False)
+                self.schedule_viewer_pdfbutton.setEnabled(True)
 
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"{e}")
@@ -764,3 +775,4 @@ class SimpleTabs(QWidget):
 
             # enable button
             self.schedule_viewer_savebutton.setEnabled(True)
+            self.schedule_viewer_pdfbutton.setEnabled(True)
