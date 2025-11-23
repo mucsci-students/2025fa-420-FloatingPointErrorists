@@ -11,6 +11,7 @@ from scheduler_config_editor.model import (
     Faculty,
     Course,
 )
+from scheduler_config_editor.model import LangchainClient, JsonConfig, Room, Lab
 
 """
     Tests for the module src/scheduler_config_editor/model/langchain_client.py
@@ -119,5 +120,5 @@ def test_add_course(json_config: JsonConfig, client: LangchainClient) -> None:
 
 
 def test_langchain_client_initialization(json_config: JsonConfig) -> None:
-    langchain_client = LangchainClient(json_config, "test_key")
+    LangchainClient(json_config, "test_key")
     assert os.environ["OPENAI_API_KEY"] == "test_key"
