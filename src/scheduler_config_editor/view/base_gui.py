@@ -30,7 +30,7 @@ from scheduler_config_editor.controller.faculty_controller import (
 from scheduler_config_editor.controller.generator_controller import GeneratorController
 from scheduler_config_editor.controller.room_controller import RoomEditorController
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
-from scheduler_config_editor.model.json import JsonConfig
+from scheduler_config_editor.model.json_config import JsonConfig
 from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
 from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
 from scheduler_config_editor.view.schedule_window import newWindow
@@ -445,9 +445,9 @@ class SimpleTabs(QWidget):
         view_bot_right_layout.addStretch()
 
         # add checkboxs
-        self.checkboxjson = QCheckBox("json")
+        self.checkboxjson = QCheckBox("JSON")
         view_bot_right_layout.addWidget(self.checkboxjson)
-        self.checkboxcsv = QCheckBox("csv")
+        self.checkboxcsv = QCheckBox("CSV")
         view_bot_right_layout.addWidget(self.checkboxcsv)
 
         # add filename lineedit
@@ -455,6 +455,17 @@ class SimpleTabs(QWidget):
         self.schedule_viewer_filename.setPlaceholderText("Filename")
         self.schedule_viewer_filename.setAlignment(Qt.AlignmentFlag.AlignRight)
         view_bot_right_layout.addWidget(self.schedule_viewer_filename)
+
+        def pdf_export() -> None:
+            """Export current schedule as PDF using a background worker and a spinner dialog."""
+            name = self.schedule_viewer_filename.text() or "_"
+            self.sc.save_as_pdf(name)
+            QMessageBox.information(self, "Information", "PDF Export Complete.")
+
+        self.schedule_viewer_pdfbutton = QPushButton("Export PDF")
+        self.schedule_viewer_pdfbutton.clicked.connect(pdf_export)
+        self.schedule_viewer_pdfbutton.setEnabled(False)
+        view_bot_right_layout.addWidget(self.schedule_viewer_pdfbutton)
 
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
@@ -512,6 +523,7 @@ class SimpleTabs(QWidget):
 
                 # Disable Save Button
                 self.schedule_viewer_savebutton.setEnabled(False)
+                self.schedule_viewer_pdfbutton.setEnabled(True)
 
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"{e}")
@@ -751,6 +763,7 @@ class SimpleTabs(QWidget):
 
             # enable button
             self.schedule_viewer_savebutton.setEnabled(True)
+            self.schedule_viewer_pdfbutton.setEnabled(True)
 
     def undo(self) -> None:
         try:

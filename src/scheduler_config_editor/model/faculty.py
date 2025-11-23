@@ -3,7 +3,7 @@ from typing import Annotated, Optional, cast
 
 from scheduler import Day, FacultyConfig, TimeRange
 
-from .json import JsonConfig
+from .json_config import JsonConfig
 
 
 class Faculty:

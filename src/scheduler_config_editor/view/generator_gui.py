@@ -19,7 +19,7 @@ if TYPE_CHECKING:
         GeneratorController,
     )
 
-from scheduler_config_editor.model.json import JsonConfig
+from scheduler_config_editor.model.json_config import JsonConfig
 
 sys.path.append("../controller")
 

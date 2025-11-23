@@ -12,7 +12,7 @@ from scheduler import OptimizerFlags, Scheduler, CombinedConfig
 from scheduler.models import CourseInstance
 from scheduler_config_editor.model.langchain_client import LangchainClient
 
-from ..model.json import JsonConfig
+from ..model.json_config import JsonConfig
 from ..model.schedule_writer import ScheduleWriter
 from ..model.schedule_handler import ScheduleHandler
 
@@ -193,7 +193,9 @@ def chat(ctx: click.Context) -> None:
             click.echo("Exiting chat.")
             break
         stop_event = threading.Event()
-        spinner_thread = threading.Thread(target=spinner, args=(stop_event,))
+        spinner_thread = threading.Thread(
+            target=spinner, args=(stop_event, "Jarvis is thinking")
+        )
         spinner_thread.start()
         try:
             response = langchain_client.send_query(command)
@@ -225,14 +227,12 @@ def redo(ctx: click.Context) -> None:
         click.echo("Nothing to redo.")
 
 
-def spinner(stop_event: threading.Event) -> None:
+def spinner(stop_event: threading.Event, text: str) -> None:
     """Display a spinner while waiting for a response."""
     spinner_chars = "|/-\\"
     i = 0
     while not stop_event.is_set():
-        click.echo(
-            f"\rJarvis is thinking... {spinner_chars[i % len(spinner_chars)]}", nl=False
-        )
+        click.echo(f"\r{text}... {spinner_chars[i % len(spinner_chars)]}", nl=False)
         time.sleep(0.1)
         i += 1
         # This is how I got it to clear the line properly. If you have a better way, please change it.
