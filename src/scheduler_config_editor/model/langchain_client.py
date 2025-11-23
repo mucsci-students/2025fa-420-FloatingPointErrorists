@@ -1,11 +1,10 @@
-import functools
 import os
 from typing import Optional
 from dotenv import load_dotenv
-from langgraph.prebuilt import create_react_agent
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import StructuredTool
+from langchain.agents import create_agent
 from pydantic import BaseModel
 from scheduler_config_editor.model import JsonConfig, Faculty, Course, Room, Lab
 
@@ -264,11 +263,23 @@ class DelLabArgs(BaseModel):
 # ----- Tool List Definition ----- #
 
 
+def bind_config(fn, json_config: JsonConfig):
+    """Wrap a function while preserving name and annotations so LangChain accepts it."""
+
+    def wrapper(*args, **kwargs):
+        return fn(json_config, *args, **kwargs)
+
+    wrapper.__name__ = fn.__name__
+    wrapper.__doc__ = fn.__doc__
+    wrapper.__annotations__ = fn.__annotations__
+    return wrapper
+
+
 def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
     return [
         StructuredTool.from_function(
             name="add_faculty",
-            func=functools.partial(add_faculty, json_config),
+            func=bind_config(add_faculty, json_config),
             description=(
                 "Add a faculty member to the scheduler configuration. "
                 "Required fields: name, maximum_credits, minimum_credits, unique_course_limit, times. "
@@ -283,7 +294,7 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
         ),
         StructuredTool.from_function(
             name="mod_faculty",
-            func=functools.partial(mod_faculty, json_config),
+            func=bind_config(mod_faculty, json_config),
             description=(
                 "Modify a faculty member in the scheduler configuration. "
                 "Required fields: old_name, new_name, maximum_credits, minimum_credits, unique_course_limit, times. "
@@ -298,35 +309,35 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
         ),
         StructuredTool.from_function(
             name="del_faculty",
-            func=functools.partial(Faculty.del_faculty, json_config),
+            func=bind_config(Faculty.del_faculty, json_config),
             description="Delete a faculty member from the scheduler config.",
             return_direct=True,
             args_schema=DelFacultyArgs,
         ),
         StructuredTool.from_function(
             name="courses_string",
-            func=functools.partial(Course.courses_string, json_config),
+            func=bind_config(Course.courses_string, json_config),
             description="List all courses in the scheduler configuration.",
             return_direct=True,
             args_schema=ListCoursesArgs,
         ),
         StructuredTool.from_function(
             name="del_course",
-            func=functools.partial(del_course, json_config=json_config),
+            func=bind_config(del_course, json_config=json_config),
             description="Delete a course from the scheduler configuration by its index.",
             return_direct=True,
             args_schema=DelCourseArgs,
         ),
         StructuredTool.from_function(
             name="add_course",
-            func=functools.partial(add_course, json_config=json_config),
+            func=bind_config(add_course, json_config=json_config),
             description="Add a course to the scheduler configuration.",
             return_direct=True,
             args_schema=AddCourseArgs,
         ),
         StructuredTool.from_function(
             name="mod_course",
-            func=functools.partial(mod_course, json_config=json_config),
+            func=bind_config(mod_course, json_config=json_config),
             description=(
                 "Modify a course in the scheduler configuration."
                 "if you are told to remove all items from a list field, pass an empty list for that field."
@@ -336,42 +347,42 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
         ),
         StructuredTool.from_function(
             name="add_room",
-            func=functools.partial(add_room, json_config=json_config),
+            func=bind_config(add_room, json_config=json_config),
             description="Add a room to the scheduler configuration.",
             return_direct=True,
             args_schema=AddRoomArgs,
         ),
         StructuredTool.from_function(
             name="mod_room",
-            func=functools.partial(mod_room, json_config=json_config),
+            func=bind_config(mod_room, json_config=json_config),
             description="Modify a room in the scheduler configuration.",
             return_direct=True,
             args_schema=ModRoomArgs,
         ),
         StructuredTool.from_function(
             name="del_room",
-            func=functools.partial(del_room, json_config=json_config),
+            func=bind_config(del_room, json_config=json_config),
             description="Delete a room from the scheduler configuration.",
             return_direct=True,
             args_schema=DelRoomArgs,
         ),
         StructuredTool.from_function(
             name="add_lab",
-            func=functools.partial(add_lab, json_config=json_config),
+            func=bind_config(add_lab, json_config=json_config),
             description="Add a lab to the scheduler configuration.",
             return_direct=True,
             args_schema=AddLabArgs,
         ),
         StructuredTool.from_function(
             name="mod_lab",
-            func=functools.partial(mod_lab, json_config=json_config),
+            func=bind_config(mod_lab, json_config=json_config),
             description="Modify a lab in the scheduler configuration.",
             return_direct=True,
             args_schema=ModLabArgs,
         ),
         StructuredTool.from_function(
             name="del_lab",
-            func=functools.partial(del_lab, json_config=json_config),
+            func=bind_config(del_lab, json_config=json_config),
             description="Delete a lab from the scheduler configuration.",
             return_direct=True,
             args_schema=DelLabArgs,
@@ -406,13 +417,14 @@ class LangchainClient:
         model = init_chat_model("gpt-5-mini", model_provider="openai")
         tool_list = get_tool_list(json_config)
         initial_prompt = """
-            Your name is Jarvis and you will only help users modify a configuration file if they call you by your name.
             Using the list of tools you will be able to add, modify, and delete faculty, rooms, labs, and courses from the configuration file.
             You cannot save the configuration at all, and say that you are unable if prompted to, and you CANNOT say that you have any alternatives.
             If someone gives you missing input for a tool, tell them that they must reenter the full command with all required fields. This is because
             you cannot remember previous inputs.
         """
-        self.__client = create_react_agent(model, tool_list, prompt=initial_prompt)
+        self.__client = create_agent(
+            model, tools=tool_list, system_prompt=initial_prompt
+        )
 
     def send_query(self, query: str) -> str:
         """Sends a query to the Langchain React agent and returns the response."""
