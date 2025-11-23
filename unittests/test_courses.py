@@ -40,6 +40,9 @@ class DummyJsonConfig:
     def __init__(self, scheduler_config):
         self.scheduler_config = scheduler_config
 
+    def add_to_undo_stack(self):
+        pass
+
 
 @pytest.fixture(autouse=True)
 def import_courses_module(tmp_path, monkeypatch):
