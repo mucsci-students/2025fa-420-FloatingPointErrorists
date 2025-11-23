@@ -207,8 +207,34 @@ class SchedulerController:
                     popup_toptimelabel.setFixedHeight(50)
                     popup_time_index.addWidget(popup_toptimelabel)
 
+                    #find earliest start time and latest end time
+                    earliest_start = None
+                    latest_end = None
+                    while earliest_start is None:
+                        for day in week:
+                            for course in day:
+                                earliest_start = course.time[0]
+                                latest_end = course.time[1]
+                                if earliest_start is not None:
+                                    break
+
+                    for day in week:
+                        for course in day:
+                            if course.time[0] < earliest_start or earliest_start == 0:
+                                earliest_start = course.time[0]
+                            if course.time[1] > latest_end:
+                                latest_end = course.time[1]
+
+                    # round to nearest hour
+                    if earliest_start % 60 != 0:
+                        earliest_start -= earliest_start % 60
+                    if latest_end % 60 != 0:
+                        latest_end += 60 - (latest_end % 60)
+                    else:
+                        latest_end += 60
+
                     # 8am-7pm
-                    for i in range(8, 20):
+                    for i in range(earliest_start//60, latest_end//60):
                         time_label = QLabel(
                             self.convert_to_timestr(self.convert_to_minutes(i * 100))
                         )
@@ -259,8 +285,7 @@ class SchedulerController:
                         popup_coursespaceing.addStretch(1)
 
                         # keep track of time for stretch sizeing
-                        ######################################NEEEDS CHANGE AFTER TIMESLOT CONFIG IS ADDED#####################################
-                        cur_time = self.convert_to_minutes(800)
+                        cur_time = earliest_start
 
                         day_column = QVBoxLayout()
                         popup_daycolumn = QVBoxLayout()
@@ -313,10 +338,8 @@ class SchedulerController:
                             cur_time = courses.time[1]
 
                         # add space after last course
-                        day_column.addStretch(self.convert_to_minutes(2000) - cur_time)
-                        popup_daycolumn.addStretch(
-                            self.convert_to_minutes(2000) - cur_time
-                        )
+                        day_column.addStretch(latest_end - cur_time)
+                        popup_daycolumn.addStretch(latest_end - cur_time)
 
                         day_cousrse_spaceing.addLayout(day_column, stretch=40)
                         day_cousrse_spaceing.addStretch(1)
