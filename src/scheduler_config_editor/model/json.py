@@ -115,19 +115,25 @@ class JsonConfig:
         time_slot_config = self._time_slot_config
         lines = ["\nTime Slot Config:"]
         for day in DAYS:
-            slots = time_slot_config.times.get(day)
+            slots = time_slot_config.times.get(day, [])
             lines.append(f"  {day}:")
-            for slot in slots:
-                lines.append(
-                    f"    - Start: {slot.start}, End: {slot.end}, Spacing: {slot.spacing}"
-                )
+            if not slots:
+                    lines.append("")
+            else:
+                for i, slot in enumerate(slots):
+                    lines.append(
+                        f"    [{i}]- Start: {slot.start}, End: {slot.end}, Spacing: {slot.spacing}"
+                    )
         lines.append("\nClasses:")
-        for cls in time_slot_config.classes:
-            meetings_str = ", ".join(
-                f"{m.day} (Duration={m.duration}, lab={getattr(m, 'lab', False)})"
-                for m in cls.meetings
-            )
-            lines.append(f"  - Credits: {cls.credits}, Meetings: [{meetings_str}]")
+        if not time_slot_config.classes:
+            lines.append("")
+        else:
+            for i, cls in enumerate(time_slot_config.classes):
+                meetings_str = ", ".join(
+                    f"{m.day} (Duration={m.duration}, lab={getattr(m, 'lab', False)})"
+                    for m in cls.meetings
+                )
+                lines.append(f" [{i}] - Credits: {cls.credits}, Meetings: [{meetings_str}], Disabled:{cls.disabled}")
         return "\n".join(lines)
 
     def __str__(self) -> str:

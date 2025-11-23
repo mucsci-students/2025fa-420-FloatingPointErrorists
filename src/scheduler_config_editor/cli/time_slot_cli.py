@@ -1,10 +1,9 @@
 import click
 from click_shell import shell
+from scheduler.config import Meeting
 
-from ..model.time_slot import TimeSlot
-from ..model.json import JsonConfig
-from scheduler.config import TimeBlock, Meeting, ClassPattern
 from .base_cli import clear, get_json_config, run, save, show
+from ..model.time_slot import TimeSlot
 
 DAY_TO_INDEX = {"MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5}
 INDEX_TO_DAY = {1: "MON", 2: "TUE", 3: "WED", 4: "THU", 5: "FRI"}
@@ -17,7 +16,7 @@ INDEX_TO_DAY = {1: "MON", 2: "TUE", 3: "WED", 4: "THU", 5: "FRI"}
 
 def time_slot() -> None:
     """Manage time slots"""
-    time_slot.add_command(show)
+    time_slot.add_command(show_time_slot)
     time_slot.add_command(clear)
     time_slot.add_command(run)
     time_slot.add_command(save)
@@ -92,11 +91,11 @@ def delete_time_block(ctx: click.Context) -> None:
     if len(json_config.time_slot_config.times.get(day)) == 0:
         click.echo("No time blocks to delete.")
         return
-    click.echo(json_config.time_slot_config.time_slot_str())
+    click.echo(json_config.time_slot_str())
     index = click.prompt("Enter the number time block to delete" , type=click.IntRange(0, len(json_config.time_slot_config.times.get(day)) - 1))
     click.echo(TimeSlot.del_time_block(json_config=json_config, day_index=day_index, index=index))
     while click.confirm("Delete another time block?", default=False):
-            click.echo(json_config.time_slot_config.time_slot_str())
+            click.echo(json_config.time_slot_str())
             index = click.prompt("Enter the number time block to delete",type=click.IntRange(0, len(json_config.time_slot_config.times.get(day)) - 1))
             click.echo(TimeSlot.del_time_block(json_config=json_config, day_index=day_index, index=index))
 
@@ -108,7 +107,7 @@ def delete_class_pattern(ctx: click.Context) -> None:
     index = click.prompt("Enter the number class pattern to delete" , type=click.IntRange(0, len(json_config.time_slot_config.classes) - 1))
     click.echo(TimeSlot.del_class_pattern(json_config=json_config, index=index))
     while click.confirm("Delete another class pattern?", default=False):
-            click.echo(json_config.time_slot_config.time_slot_str())
+            click.echo(json_config.time_slot_str())
             index = click.prompt("Enter the number class pattern to delete",type=click.IntRange(0, len(json_config.time_slot_config.classes) - 1))
             click.echo(TimeSlot.del_class_pattern(json_config=json_config, index=index))
 
@@ -122,7 +121,7 @@ def modify_time_block(ctx: click.Context) -> None:
     if len(json_config.time_slot_config.times.get(day)) == 0:
         click.echo("No time blocks to modify.")
         return
-    click.echo(json_config.time_slot_config.time_slot_str())
+    click.echo(json_config.time_slot_str())
     index = click.prompt("Enter the number time block to modify", type=click.IntRange(0, len(json_config.time_slot_config.times.get(day)) - 1))
     old_time_slot = json_config.time_slot_config.times.get(day)[index]
     start = normalize_time(click.prompt("Start time (e.g., 9 or 09:00)"))
@@ -166,6 +165,13 @@ def modify_class_pattern(ctx: click.Context) -> None:
         TimeSlot.mod_class_pattern(index=index, json_config=json_config, creds=creds, meetings=meetings, disabled=disabled,
                                    start_time=cp_start_time)
     )
+
+@time_slot.command(name="show")
+@click.pass_context
+def show_time_slot(ctx: click.Context) -> None:
+    """Show time slot configuration when in the time slot sub-shell"""
+    config = get_json_config(ctx)
+    click.echo(config.time_slot_str())
 
 
 
