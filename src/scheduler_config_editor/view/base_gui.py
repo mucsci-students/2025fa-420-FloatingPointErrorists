@@ -193,7 +193,7 @@ class SimpleTabs(QWidget):
 
         self.editor_combo_box.currentTextChanged.connect(on_editor_selection_change)
 
-        # Button Layout for Load/Save Config
+        # Button Layout for Load/Save Config and Undo/Redo
         bottom_buttons_layout = QHBoxLayout()
         self.load_config_button = QPushButton("Load Config")
         self.load_config_button.clicked.connect(self.load_config)
@@ -202,9 +202,20 @@ class SimpleTabs(QWidget):
         self.save_config_button.clicked.connect(self.save_config)
         self.save_config_button.setEnabled(False)
 
+        self.undo_button = QPushButton("Undo")
+        self.redo_button = QPushButton("Redo")
+
+        self.undo_button.clicked.connect(self.undo)
+        self.redo_button.clicked.connect(self.redo)
+
+        self.undo_button.setEnabled(False)
+        self.redo_button.setEnabled(False)
+
         bottom_buttons_layout.addStretch()
         bottom_buttons_layout.addWidget(self.load_config_button)
         bottom_buttons_layout.addWidget(self.save_config_button)
+        bottom_buttons_layout.addWidget(self.undo_button)
+        bottom_buttons_layout.addWidget(self.redo_button)
 
         editor_layout.addLayout(bottom_buttons_layout, 99, 0, 1, 2)
 
@@ -674,6 +685,11 @@ class SimpleTabs(QWidget):
             self.save_config_button.setEnabled(True)
             self.jarvis_button.setEnabled(True)
 
+            # Set memento config
+            self.redo_button.setEnabled(True)
+            self.undo_button.setEnabled(True)
+            self.config.clear_stacks()
+
             # refresh GUI
             self.refresh()
 
@@ -730,3 +746,19 @@ class SimpleTabs(QWidget):
 
             # enable button
             self.schedule_viewer_savebutton.setEnabled(True)
+            
+    def undo(self) -> None:
+        try:
+            self.config.undo()
+        except IndexError as error:
+            QMessageBox.information(self, "Undo Error", str(error))
+        self.config.save()
+        self.refresh()
+
+    def redo(self) -> None:
+        try:
+            self.config.redo()
+        except IndexError as error:
+            QMessageBox.information(self, "Redo Error", str(error))
+        self.config.save()
+        self.refresh()

@@ -34,6 +34,108 @@ class TestFaculty:
         assert faculty_added.times == {"MON": [TimeRange(start="09:00", end="15:00")]}
         assert faculty_added.course_preferences == {"CMSC 162": 5}
 
+    def test_add_faculty_missing_name(self, json_config: JsonConfig):
+        try:
+            Faculty.add_faculty(
+                json_config=json_config,
+                name=None,
+                maximum_credits=9,
+                minimum_credits=3,
+                unique_course_limit=2,
+                times={"MON": ["09:00-15:00"]},
+                course_preferences={"CMSC 162": 5},
+                room_preferences={"Roddy 136": 3},
+                lab_preferences={"Mac": 7},
+            )
+            assert False
+        except ValueError:
+            assert True
+
+    def test_add_faculty_invalid_credits(self, json_config: JsonConfig):
+        try:
+            Faculty.add_faculty(
+                json_config=json_config,
+                name="Dr. Test",
+                maximum_credits=3,
+                minimum_credits=9,
+                unique_course_limit=2,
+                times={"MON": ["09:00-15:00"]},
+                course_preferences={"CMSC 162": 5},
+                room_preferences={"Roddy 136": 3},
+                lab_preferences={"Mac": 7},
+            )
+            assert False
+        except ValueError:
+            assert True
+
+    def test_add_faculty_invalid_course_limit(self, json_config: JsonConfig):
+        try:
+            Faculty.add_faculty(
+                json_config=json_config,
+                name="Dr. Test",
+                maximum_credits=9,
+                minimum_credits=3,
+                unique_course_limit=0,
+                times={"MON": ["09:00-15:00"]},
+                course_preferences={"CMSC 162": 5},
+                room_preferences={"Roddy 136": 3},
+                lab_preferences={"Mac": 7},
+            )
+            assert False
+        except ValueError:
+            assert True
+
+    def test_add_faculty_invalid_course_pref(self, json_config: JsonConfig):
+        try:
+            Faculty.add_faculty(
+                json_config=json_config,
+                name="Dr. Test",
+                maximum_credits=9,
+                minimum_credits=3,
+                unique_course_limit=2,
+                times={"MON": ["09:00-15:00"]},
+                course_preferences={"COURSE": 5},
+                room_preferences={"Roddy 136": 3},
+                lab_preferences={"Mac": 7},
+            )
+            assert False
+        except ValueError:
+            assert True
+
+    def test_add_faculty_invalid_room_pref(self, json_config: JsonConfig):
+        try:
+            Faculty.add_faculty(
+                json_config=json_config,
+                name="Dr. Test",
+                maximum_credits=9,
+                minimum_credits=3,
+                unique_course_limit=2,
+                times={"MON": ["09:00-15:00"]},
+                course_preferences={"CMSC 162": 5},
+                room_preferences={"ROOM": 3},
+                lab_preferences={"Mac": 7},
+            )
+            assert False
+        except ValueError:
+            assert True
+
+    def test_add_faculty_invalid_lab_pref(self, json_config: JsonConfig):
+        try:
+            Faculty.add_faculty(
+                json_config=json_config,
+                name="Dr. Test",
+                maximum_credits=9,
+                minimum_credits=3,
+                unique_course_limit=2,
+                times={"MON": ["09:00-15:00"]},
+                course_preferences={"CMSC 162": 5},
+                room_preferences={"Roddy 136": 3},
+                lab_preferences={"LAB": 7},
+            )
+            assert False
+        except ValueError:
+            assert True
+
     def test_add_faculty_defaults(self, json_config: JsonConfig):
         # omit optional args to exercise defaulting behavior
         Faculty.add_faculty(
