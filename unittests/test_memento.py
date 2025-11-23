@@ -53,11 +53,6 @@ class TestUndoRedo(unittest.TestCase):
         self.addCleanup(patcher1.stop)
         self.addCleanup(patcher2.stop)
 
-        # ensure default.json exists
-        os.makedirs("data", exist_ok=True)
-        with open("data/default.json", "w") as f:
-            f.write("{}")
-
         self.cfg = JsonConfig("test_config.json")
 
     # -----------------------------------------------------------
