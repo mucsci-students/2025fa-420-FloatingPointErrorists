@@ -2,7 +2,7 @@ import click
 from click_shell import shell
 
 from ..model.faculty import Faculty
-from ..model.json import JsonConfig
+from ..model.json_config import JsonConfig
 from .base_cli import clear, get_json_config, run, save, show, undo, redo
 
 """
@@ -77,7 +77,7 @@ def add_times(default: bool) -> dict[str, list[str]]:
     return times
 
 
-def add_course_preferences(json_config: JsonConfig, default: bool) -> dict[str, int]:
+def add_course_preferences(default: bool) -> dict[str, int]:
     """Helper function to add course preferences for a faculty member."""
     course_preferences = {}
     while click.confirm("Add course preference?", default=default):
@@ -131,7 +131,7 @@ def add(ctx: click.Context) -> None:
         "Unique course limit", type=click.IntRange(min=1)
     )
     times = add_times(False)
-    course_preferences = add_course_preferences(json_config, False)
+    course_preferences = add_course_preferences(False)
     room_preferences = add_room_preferences(json_config, False)
     lab_preferences = add_lab_preferences(json_config, False)
     click.echo(
@@ -209,7 +209,7 @@ def modify(ctx: click.Context) -> None:
         "Modify course preferences? (you will create a new one from scratch)",
         default=False,
     ):
-        course_preferences = add_course_preferences(json_config, True)
+        course_preferences = add_course_preferences(True)
     room_preferences = faculty_obj.room_preferences.copy()
     if click.confirm(
         "Modify room preferences? (you will create a new one from scratch)",

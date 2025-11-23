@@ -1,9 +1,9 @@
+import time
 from enum import Enum
-
 import click
 from click_shell import shell
-
-from ..model import ScheduleHandler
+from scheduler.json_types import CourseInstanceJSON
+from ..model import ScheduleHandler, PdfWriter, PdfMode
 from .base_cli import HANDLER_KEY, clear
 
 
@@ -13,6 +13,20 @@ class DisplayMode(Enum):
     DEFAULT = "default"
     FACULTY = "faculty"
     ROOM = "room"
+
+
+def pdf_export(mode: PdfMode, schedule: list[CourseInstanceJSON]) -> None:
+    """Export the current schedule to a PDF file."""
+    name = click.prompt("Enter filename for PDF export", default="schedule")
+    PdfWriter.export_pdf(
+        ScheduleHandler.room_schedule_columns(schedule)
+        if mode == PdfMode.ROOM
+        else ScheduleHandler.faculty_schedule_columns(schedule),
+        name,
+        mode,
+    )
+    click.echo(f"Schedule exported to {name}.pdf")
+    time.sleep(1.5)
 
 
 def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> None:
@@ -34,12 +48,17 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
                     f"Schedule {idx + 1}:\n{ScheduleHandler.format_schedule_str(schedules[idx])}"
                 )
         user_input = click.prompt(
-            "Type 'n' for next, 'p' for previous, 'q' to quit",
+            "Type 'n' for next, 'p' for previous, 'q' to quit, 'e' to export to PDF",
             default="n",
-            type=click.Choice(["n", "p", "q"]),
+            type=click.Choice(["n", "p", "q", "e"]),
             show_choices=False,
         ).lower()
         match user_input:
+            case "e":
+                pdf_export(
+                    PdfMode.ROOM if mode == DisplayMode.ROOM else PdfMode.FACULTY,
+                    schedules[idx],
+                )
             case "n":
                 if idx < len(schedules) - 1:
                     idx += 1
