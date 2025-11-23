@@ -82,15 +82,15 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
     * We needed to queue up multiple schedules to be created
     * File: generator_controller.py
 * Memento:
-    * When we open up the editor, we don't want the changes to be committed until we explicitly save them. So when we operate on the configuration, we do so on a copy of the original configuration. When we save, we overwrite the original configuration with the modified copy.
-    * File: json.py
+    * We wanted to be able to undo and redo changes to the json config file, so we implemented the memento design pattern to store previous states of the json config.
+    * File: json_config.py
  
 * Mediator:
     * An essential part to MVC is the mediator design pattern. It lets us enforce separation of concerns. We don't want, for example, the faculty_editor_gui.py to have the logic to edit the json file directly, so it'll communicate with faculty_controller.py, the mediator, which will tell the model to do what it needs to do in order to make those modifications. All controller files, by nature, are examples of a Mediator design pattern. 
     * File: all files under the src/scheduler_config_editor/controller directory
 
-* Thread Pool: 
-    * In pdf_writer.py, we use a thread pool, a concurrency design pattern, by forking a task to create the pdf for our "export pdf" function. 
+* Strategy: 
+    * In pdf_writer.py, we use the enum PdfMode to determine whether we are exporting a schedule for a faculty member or room. 
     * File: pdf_writer.py
 
 ## Authors:
