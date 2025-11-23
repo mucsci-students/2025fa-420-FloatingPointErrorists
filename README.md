@@ -48,6 +48,8 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 * Once a configuration file is loaded, you can use the following commands:
     * `help` to bring up a list of commands.
     * `exit`, `quit` or ctrl+c to exit the program.
+    * `undo` to undo the last change made to the configuration.
+    * `redo` to redo the last undone change made to the configuration.
     * `chat` to enter chat mode with the AI assistant who can modify the configuration for you.
     * `show` to display the current configuration.
     * `save` to save the current configuration to the loaded file.
@@ -78,9 +80,9 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 * Adapter: 
     * The schedules are either loaded as a JSON or CSV, but they are operated on as CourseInstanceJSON objects. So we have a class that will convert the schedules into lists of CourseInstanceJSON so they can be presented in a readable format.
     * File: scheduler_handler.py
-* Command:
-    * We needed to queue up multiple schedules to be created
-    * File: generator_controller.py
+* Factory:
+    * We need to generate a list of StructuredTools that the AI can call to modify the json config file. So we have a factory that will create those given preexisting functions.
+    * File: langchain_client.py
 * Memento:
     * We wanted to be able to undo and redo changes to the json config file, so we implemented the memento design pattern to store previous states of the json config.
     * File: json_config.py
