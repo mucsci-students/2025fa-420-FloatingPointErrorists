@@ -89,6 +89,10 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
     * An essential part to MVC is the mediator design pattern. It lets us enforce separation of concerns. We don't want, for example, the faculty_editor_gui.py to have the logic to edit the json file directly, so it'll communicate with faculty_controller.py, the mediator, which will tell the model to do what it needs to do in order to make those modifications. All controller files, by nature, are examples of a Mediator design pattern. 
     * File: all files under the src/scheduler_config_editor/controller directory
 
+* Thread Pool: 
+    * In pdf_writer.py, we use a thread pool, a concurrency design pattern, by forking a task to create the pdf for our "export pdf" function. 
+    * File: pdf_writer.py
+
 ## Authors:
 
 * Andrew Elko
