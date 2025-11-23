@@ -182,9 +182,11 @@ class SchedulerController:
                     # Create OverHeader Fac Name
                     cur_graph_name = QLabel(graph_name)
                     cur_graph_name.setAlignment(Qt.AlignmentFlag.AlignTop)
+                    cur_graph_name.setStyleSheet("font-weight: bold; font-size: 32px")
                     self.graph_layout.addWidget(cur_graph_name)
                     popup_graph_name = QLabel(graph_name)
                     popup_graph_name.setAlignment(Qt.AlignmentFlag.AlignTop)
+                    popup_graph_name.setStyleSheet("font-weight: bold; font-size: 32px")
                     self.popup_graph_layout.addWidget(popup_graph_name)
 
                     # MAIN TABLE
