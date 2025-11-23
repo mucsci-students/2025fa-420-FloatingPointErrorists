@@ -1,7 +1,6 @@
 import os
 
 import pytest
-from scheduler import TimeRange
 
 from scheduler_config_editor.model import LangchainClient, JsonConfig
 
@@ -32,5 +31,5 @@ def test_add_course(json_config: JsonConfig, client: LangchainClient) -> None:
 
 
 def test_langchain_client_initialization(json_config: JsonConfig) -> None:
-    langchain_client = LangchainClient(json_config, "test_key")
+    LangchainClient(json_config, "test_key")
     assert os.environ["OPENAI_API_KEY"] == "test_key"
