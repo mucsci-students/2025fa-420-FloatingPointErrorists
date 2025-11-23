@@ -8,6 +8,7 @@ from .schedule_handler import ScheduleHandler, INDEX_TO_DAY
 from .schedule_writer import ScheduleWriter
 from .langchain_client import LangchainClient
 
+
 __all__ = [
     "JsonConfig",
     "Faculty",
