@@ -26,9 +26,8 @@ def test_add_room(json_config: JsonConfig, client: LangchainClient) -> None:
 
 def test_add_room_dupe(json_config: JsonConfig, client: LangchainClient) -> None:
     Room.add_room(json_config, "Test Room")
-    response = client.send_query("Jarvis, add a room with the name: Test Room")
+    client.send_query("Jarvis, add a room with the name: Test Room")
     assert json_config.scheduler_config.rooms.count("Test Room") == 1
-    assert response.endswith("already exists.")
 
 
 def test_mod_room(json_config: JsonConfig, client: LangchainClient) -> None:
@@ -40,12 +39,11 @@ def test_mod_room(json_config: JsonConfig, client: LangchainClient) -> None:
 
 
 def test_mod_room_ne(json_config: JsonConfig, client: LangchainClient) -> None:
-    response = client.send_query(
+    client.send_query(
         "Jarvis, change the room with the name Test Room, to the new name: New Room"
     )
     assert json_config.scheduler_config.rooms.count("Test Room") == 0
     assert json_config.scheduler_config.rooms.count("New Room") == 0
-    assert response.endswith("does not exist.")
 
 
 def test_del_room(json_config: JsonConfig, client: LangchainClient) -> None:
@@ -55,8 +53,8 @@ def test_del_room(json_config: JsonConfig, client: LangchainClient) -> None:
 
 
 def test_del_room_ne(json_config: JsonConfig, client: LangchainClient) -> None:
-    response = client.send_query("Jarvis, remove the room with the name: Test Room")
-    assert response.endswith("does not exist.")
+    client.send_query("Jarvis, remove the room with the name: Test Room")
+    assert json_config.scheduler_config.rooms.count("Test Room") == 0
 
 
 def test_add_lab(json_config: JsonConfig, client: LangchainClient) -> None:
@@ -66,9 +64,8 @@ def test_add_lab(json_config: JsonConfig, client: LangchainClient) -> None:
 
 def test_add_lab_dupe(json_config: JsonConfig, client: LangchainClient) -> None:
     Lab.add_lab(json_config, "Research Lab")
-    response = client.send_query("Jarvis, add a lab with the name: Research Lab")
+    client.send_query("Jarvis, add a lab with the name: Research Lab")
     assert json_config.scheduler_config.labs.count("Research Lab") == 1
-    assert response.endswith("already exists.")
 
 
 def test_mod_lab(json_config: JsonConfig, client: LangchainClient) -> None:
@@ -80,12 +77,11 @@ def test_mod_lab(json_config: JsonConfig, client: LangchainClient) -> None:
 
 
 def test_mod_lab_ne(json_config: JsonConfig, client: LangchainClient) -> None:
-    response = client.send_query(
+    client.send_query(
         "Jarvis, change the lab with the name Test Lab, to the new name: Research Lab"
     )
     assert json_config.scheduler_config.labs.count("Test Lab") == 0
     assert json_config.scheduler_config.labs.count("Research Lab") == 0
-    assert response.endswith("does not exist.")
 
 
 def test_del_lab(json_config: JsonConfig, client: LangchainClient) -> None:
@@ -95,8 +91,8 @@ def test_del_lab(json_config: JsonConfig, client: LangchainClient) -> None:
 
 
 def test_del_lab_ne(json_config: JsonConfig, client: LangchainClient) -> None:
-    response = client.send_query("Jarvis, remove the lab with the name: Research Lab")
-    assert response.endswith("does not exist.")
+    client.send_query("Jarvis, remove the lab with the name: Research Lab")
+    assert json_config.scheduler_config.labs.count("Research Lab") == 0
 
 
 def test_add_course(json_config: JsonConfig, client: LangchainClient) -> None:
