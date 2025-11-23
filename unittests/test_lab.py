@@ -120,3 +120,13 @@ def test_lab_mod_dupe() -> None:
         raise AssertionError()
     except Lab.LabExistsError:
         assert True
+
+
+def test_list_labs() -> None:
+    runner = CliRunner()
+    obj = {}
+    runner.invoke(base_cli, [LOAD_COMMAND, dummy_path()], obj=obj)
+    config = obj[CONFIG_KEY]
+    output = Lab.lab_string(config)
+    assert "Linux" in output
+    assert "Mac" in output

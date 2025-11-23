@@ -195,3 +195,14 @@ class Faculty:
             if found
             else f"Faculty member {name} not found."
         )
+
+    @staticmethod
+    def faculty_string(json_config: JsonConfig) -> str:
+        """returns a string representation of all faculty members in the config"""
+        faculty_list = json_config.scheduler_config.faculty
+        if not faculty_list:
+            return "No faculty members found."
+        result = "Faculty Members:\n"
+        for faculty in faculty_list:
+            result += f"- {faculty.name}, Max Credits: {faculty.maximum_credits}, Min Credits: {faculty.minimum_credits}, Unique Course Limit: {faculty.unique_course_limit}\n"
+        return result

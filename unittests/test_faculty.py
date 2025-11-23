@@ -283,3 +283,8 @@ class TestFaculty:
             for f in json_config.scheduler_config.faculty
         )
         assert "ToRemove" not in json_config.scheduler_config.courses[0].faculty
+
+    def test_list_faculty(self, json_config: JsonConfig):
+        output = Faculty.faculty_string(json_config)
+        assert "Zoppetti" in output  # from dummy.json
+        assert "Wertz" in output

@@ -10,6 +10,8 @@ from scheduler_config_editor.model import JsonConfig, Faculty, Course, Room, Lab
 
 
 # ----- Wrappers & Argument Schemas for JsonConfig ----- #
+
+
 def make_show(json_config):
     def show() -> str:
         """Show the current scheduler configuration in a pretty-printed format."""
@@ -97,6 +99,13 @@ def mod_faculty(
         )
     except ValueError as e:
         return str(e)
+
+
+def make_show_faculty(json_config):
+    def show_faculty() -> str:
+        return Faculty.faculty_string(json_config)
+
+    return show_faculty
 
 
 class AddFacultyArgs(BaseModel):
@@ -254,6 +263,20 @@ def del_lab(json_config: JsonConfig, lab: str) -> str:
         return Lab.del_lab(json_config, lab)
     except Lab.LabMissingError as e:
         return str(e)
+
+
+def make_show_rooms(json_config):
+    def show_rooms() -> str:
+        return Room.room_string(json_config)
+
+    return show_rooms
+
+
+def make_show_labs(json_config):
+    def show_labs() -> str:
+        return Lab.lab_string(json_config)
+
+    return show_labs
 
 
 class AddRoomArgs(BaseModel):
@@ -425,6 +448,24 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
             name="redo",
             func=make_redo(json_config),
             description="Redo the last undone change to the configuration.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="show_faculty",
+            func=make_show_faculty(json_config),
+            description="List all faculty members in the scheduler configuration.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="show_rooms",
+            func=make_show_rooms(json_config),
+            description="List all rooms in the scheduler configuration.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="show_labs",
+            func=make_show_labs(json_config),
+            description="List all labs in the scheduler configuration.",
             return_direct=True,
         ),
     ]

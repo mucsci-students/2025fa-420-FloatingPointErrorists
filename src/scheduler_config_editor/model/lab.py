@@ -60,6 +60,14 @@ class Lab:
             raise Lab.LabMissingError(f"Lab {lab} does not exist.")
         return f"Lab {lab} successfully deleted."
 
+    @staticmethod
+    def lab_string(json_config: JsonConfig) -> str:
+        """Returns a string of all labs in the config"""
+        lab_list = json_config.scheduler_config.labs
+        if not lab_list:
+            return "No labs available."
+        return "Labs:\n" + "\n".join(f"- {lab}" for lab in lab_list)
+
     class LabExistsError(Exception):
         # Exception for when a lab already exists in the JSON
         pass
