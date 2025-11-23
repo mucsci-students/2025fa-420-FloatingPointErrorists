@@ -9,13 +9,35 @@ from pydantic import BaseModel
 from scheduler_config_editor.model import JsonConfig, Faculty, Course, Room, Lab
 
 
-# ----- Show Config Function ----- #
+# ----- Wrappers & Argument Schemas for JsonConfig ----- #
 def make_show(json_config):
     def show() -> str:
         """Show the current scheduler configuration in a pretty-printed format."""
         return str(json_config)
 
     return show
+
+
+def make_undo(json_config: JsonConfig):
+    def undo_wrapper() -> str:
+        try:
+            json_config.undo()
+            return "Successfully undid the last change."
+        except IndexError:
+            return "Nothing to undo."
+
+    return undo_wrapper
+
+
+def make_redo(json_config: JsonConfig):
+    def redo_wrapper() -> str:
+        try:
+            json_config.redo()
+            return "Successfully redid the last undone change."
+        except IndexError:
+            return "Nothing to redo."
+
+    return redo_wrapper
 
 
 # ------ Wrappers & Argument Schemas for Faculty functions ----- #
@@ -391,6 +413,18 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
             name="show",
             func=make_show(json_config),
             description="Show the current scheduler configuration in a pretty-printed format.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="undo",
+            func=make_undo(json_config),
+            description="Undo the last change made to the configuration.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="redo",
+            func=make_redo(json_config),
+            description="Redo the last undone change to the configuration.",
             return_direct=True,
         ),
     ]
