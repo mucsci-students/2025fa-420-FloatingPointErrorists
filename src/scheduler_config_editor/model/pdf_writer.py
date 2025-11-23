@@ -128,7 +128,7 @@ class PdfWriter:
                     duration = end - start
                     start_offset = start - start_minutes
 
-                    y = first_time_row_top - (start_offset / 60) * row_height
+                    y = header_y - (start_offset / 60) * row_height
                     h = (duration / 60) * row_height
 
                     c.setFillColor(bg)
