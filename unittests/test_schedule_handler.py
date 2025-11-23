@@ -146,7 +146,7 @@ def test_import_schedules_variants(tmp_path):
         handler.import_schedules("does_not_exist_zzz")
 
 
-def test_faculty_and_room_rows_and_strings():
+def test_faculty_and_room_columns_and_strings():
     course = {
         "course": "CS101",
         "faculty": "ProfX",
@@ -160,9 +160,9 @@ def test_faculty_and_room_rows_and_strings():
     }
     schedule = [course]
     # rows
-    fac_rows = ScheduleHandler.faculty_schedule_rows(schedule)
+    fac_rows = ScheduleHandler.faculty_schedule_columns(schedule)
     assert any("ProfX" in r[0] or "ProfX" in r[1] for r in fac_rows)
-    room_rows = ScheduleHandler.room_schedule_rows(schedule)
+    room_rows = ScheduleHandler.room_schedule_columns(schedule)
     # There should be rows for both R1 and L1
     rooms_present = {r[0] for r in room_rows}
     assert "R1" in rooms_present and "L1" in rooms_present
