@@ -1,23 +1,14 @@
 import os
-import signal
+import pickle
+import subprocess
+import sys
 from enum import Enum
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter
 from PyQt6.QtPrintSupport import QPrinter
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QApplication
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
 from scheduler_config_editor.model import INDEX_TO_DAY
 from scheduler_config_editor.model.schedule_handler import CourseMeeting
-
-_app = QApplication.instance()
-
-
-def get_app():
-    """Get or create the QApplication instance. Uses singleton to ensure only one instance exists."""
-    global _app
-    if _app is None:
-        _app = QApplication([])
-        signal.signal(signal.SIGINT, signal.SIG_DFL)
-    return _app
 
 
 class PdfMode(Enum):
@@ -59,9 +50,7 @@ class PdfWriter:
 
         for hour in range(8, 21):
             time_label = QLabel(
-                PdfWriter._convert_to_timestr(
-                    PdfWriter._convert_to_minutes(hour * 100)
-                )
+                PdfWriter._convert_to_timestr(PdfWriter._convert_to_minutes(hour * 100))
             )
             time_label.setStyleSheet(
                 "border: 1px solid black; font-size: 16px; font-weight: bold;"
@@ -139,9 +128,7 @@ class PdfWriter:
                 cur_time = course.time[1]
 
             # Space after last course
-            day_column.addStretch(
-                PdfWriter._convert_to_minutes(2000) - cur_time
-            )
+            day_column.addStretch(PdfWriter._convert_to_minutes(2000) - cur_time)
 
             day_container.addLayout(day_column)
             schedule.addLayout(day_container)
@@ -150,21 +137,21 @@ class PdfWriter:
 
     @staticmethod
     def _convert_to_minutes(i: int) -> int:
+        """Convert HHMM to total minutes."""
         return i // 100 * 60 + i % 100
 
     @staticmethod
     def _convert_to_timestr(i: int) -> str:
+        """Convert total minutes to a formatted time string."""
         m = i % 60
         h = i // 60
         # minute placeholder
         mp = ""
         # hour suffix
         hs = "AM"
-
         # make single digit minutes take 2 characters
         if m < 10:
             mp = "0"
-
         # am pm
         if h >= 12:
             h -= 12
@@ -200,15 +187,44 @@ class PdfWriter:
         painter.end()
 
     @staticmethod
-    def export_graph_pdf(
+    def _export_graph_pdf_direct(
         schedule: list[tuple[str, list[list[CourseMeeting]]]],
         output_path: str,
         mode: PdfMode,
     ) -> None:
         """Export the schedule as a graphical PDF."""
-        get_app()  # Ensure QApplication is initialized because the PdfWriter uses Qt widgets
         widgets = []
         for name, week in schedule:
             widget = PdfWriter._graph_schedule(mode, week, name)
             widgets.append(widget)
         PdfWriter._export_to_pdf(widgets, output_path)
+
+    @staticmethod
+    def export_graph_pdf(
+        schedule: list[tuple[str, list[list[CourseMeeting]]]],
+        output_path: str,
+        mode: PdfMode,
+    ) -> None:
+        """Run the Qt PDF generation in a clean subprocess."""
+        worker_path = os.path.join(os.path.dirname(__file__), "pdf_worker.py")
+        cmd = [sys.executable, worker_path]
+        # Serialize the arguments
+        payload = pickle.dumps(
+            {
+                "schedule": schedule,
+                "output_path": output_path,
+                "mode": mode,
+            }
+        )
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=False,
+            )
+            stdout, stderr = proc.communicate(payload)
+        except KeyboardInterrupt:
+            proc.kill()
+            raise

@@ -1,6 +1,6 @@
 from .courses import Course
 from .faculty import Faculty
-from .json import JsonConfig
+from .json_config import JsonConfig
 from .lab import Lab
 from .room import Room
 from .schedule_handler import ScheduleHandler, INDEX_TO_DAY

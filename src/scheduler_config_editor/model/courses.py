@@ -2,7 +2,7 @@ from typing import Optional
 
 from scheduler import CourseConfig
 
-from .json import JsonConfig
+from .json_config import JsonConfig
 
 
 class Course:

@@ -363,10 +363,13 @@ class SchedulerController:
         ScheduleWriter.write_as_csv(my_schedules, name)
 
     def save_as_pdf(self, name: str) -> None:
+        """Saves the current schedule as a PDF."""
         schedule = self.cur_schedules.schedules[self.index]
         mode = PdfMode.ROOM if self.mode == 2 else PdfMode.FACULTY
         PdfWriter.export_graph_pdf(
-            ScheduleHandler.room_schedule_columns(schedule) if mode == PdfMode.ROOM else ScheduleHandler.faculty_schedule_columns(schedule),
+            ScheduleHandler.room_schedule_columns(schedule)
+            if mode == PdfMode.ROOM
+            else ScheduleHandler.faculty_schedule_columns(schedule),
             name,
             mode,
         )

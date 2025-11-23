@@ -1,11 +1,11 @@
+import threading
 import time
 from enum import Enum
 import click
 from click_shell import shell
 from scheduler.json_types import CourseInstanceJSON
-
 from ..model import ScheduleHandler, PdfWriter, PdfMode
-from .base_cli import HANDLER_KEY, clear
+from .base_cli import HANDLER_KEY, clear, spinner
 
 
 class DisplayMode(Enum):
@@ -15,18 +15,29 @@ class DisplayMode(Enum):
     FACULTY = "faculty"
     ROOM = "room"
 
+
 def pdf_export(mode: PdfMode, schedule: list[CourseInstanceJSON]) -> None:
     """Export the current schedule to a PDF file."""
     name = click.prompt("Enter filename for PDF export", default="schedule")
-    PdfWriter.export_graph_pdf(
-        ScheduleHandler.room_schedule_columns(schedule)
-        if mode == PdfMode.ROOM
-        else ScheduleHandler.faculty_schedule_columns(schedule),
-        name,
-        mode
+    stop_event = threading.Event()
+    spinner_thread = threading.Thread(
+        target=spinner, args=(stop_event, "Generating PDF")
     )
+    spinner_thread.start()
+    try:
+        PdfWriter.export_graph_pdf(
+            ScheduleHandler.room_schedule_columns(schedule)
+            if mode == PdfMode.ROOM
+            else ScheduleHandler.faculty_schedule_columns(schedule),
+            name,
+            mode,
+        )
+    finally:
+        stop_event.set()
+        spinner_thread.join()
     click.echo(f"Schedule exported to {name}.pdf")
     time.sleep(1.5)
+
 
 def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> None:
     """Navigate through schedules interactively."""
@@ -54,7 +65,10 @@ def navigate_schedules(schedule_handler: ScheduleHandler, mode: DisplayMode) -> 
         ).lower()
         match user_input:
             case "e":
-                pdf_export(PdfMode.ROOM if mode == DisplayMode.ROOM else PdfMode.FACULTY, schedules[idx])
+                pdf_export(
+                    PdfMode.ROOM if mode == DisplayMode.ROOM else PdfMode.FACULTY,
+                    schedules[idx],
+                )
             case "n":
                 if idx < len(schedules) - 1:
                     idx += 1

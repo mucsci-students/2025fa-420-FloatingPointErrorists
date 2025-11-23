@@ -1,4 +1,4 @@
-from .json import JsonConfig
+from .json_config import JsonConfig
 
 
 class Room:
