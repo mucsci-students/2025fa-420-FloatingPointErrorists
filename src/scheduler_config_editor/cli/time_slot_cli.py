@@ -2,7 +2,7 @@ import click
 from click_shell import shell
 from scheduler.config import Meeting
 
-from .base_cli import clear, get_json_config, run, save, show
+from .base_cli import clear, get_json_config, run, save
 from ..model.time_slot import TimeSlot
 
 DAY_TO_INDEX = {"MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5}
@@ -172,7 +172,7 @@ def modify_time_block(ctx: click.Context) -> None:
             0, len(json_config.time_slot_config.times.get(day, [])) - 1
         ),
     )
-    old_time_slot = json_config.time_slot_config.times.get(day, [])[index]
+    json_config.time_slot_config.times.get(day, [])[index]
     start = normalize_time(click.prompt("Start time (e.g., 9 or 09:00)"))
     end = normalize_time(click.prompt("End time (e.g., 9 or 09:00)"))
     spacing = click.prompt("Spacing (minutes)", type=click.IntRange(min=0))
@@ -197,7 +197,7 @@ def modify_class_pattern(ctx: click.Context) -> None:
         "Enter the number class pattern to modify",
         type=click.IntRange(0, len(json_config.time_slot_config.classes) - 1),
     )
-    old_time_slot = json_config.time_slot_config.classes[index]
+    json_config.time_slot_config.classes[index]
     creds = click.prompt("Credits", type=int)
     meetings: list[Meeting] = []
 

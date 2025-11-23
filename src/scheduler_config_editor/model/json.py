@@ -1,4 +1,5 @@
 import os
+import copy
 from typing import Literal
 
 from scheduler import (
@@ -10,9 +11,6 @@ from scheduler import (
 )
 
 DAYS = Literal["MON", "TUE", "WED", "THU", "FRI"]
-
-import copy
-
 
 class JsonConfig:
     """
