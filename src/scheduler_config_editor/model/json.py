@@ -1,6 +1,6 @@
 import os
 import copy
-from typing import Literal, List, cast
+from typing import Literal, List
 
 from scheduler import (
     CombinedConfig,
@@ -11,7 +11,7 @@ from scheduler import (
 )
 
 DAYS = Literal["MON", "TUE", "WED", "THU", "FRI"]
-DayList: List[str] = ["MON", "TUE", "WED", "THU", "FRI"]
+DayList: List[DAYS] = ["MON", "TUE", "WED", "THU", "FRI"]
 
 
 class JsonConfig:
@@ -122,11 +122,9 @@ class JsonConfig:
         time_slot_config = self._time_slot_config
         lines = ["\nTime Slot Config:"]
         for day in DayList:
-            day_literal = cast(DAYS, day)
-            slots = time_slot_config.times.get(day_literal, [])
+            slots = time_slot_config.times.get(day, [])
             lines.append(f"  {day}:")
             if not slots:
-                slots = []
                 lines.append("")
             else:
                 for i, slot in enumerate(slots):
@@ -145,6 +143,8 @@ class JsonConfig:
                 lines.append(
                     f" [{i}] - Credits: {cls.credits}, Meetings: [{meetings_str}], Disabled:{cls.disabled}"
                 )
+        lines.append(f"\nMax Time Gap: {time_slot_config.max_time_gap}")
+        lines.append(f"\nMin Time Overlap: {time_slot_config.min_time_overlap}")
         return "\n".join(lines)
 
     def __str__(self) -> str:

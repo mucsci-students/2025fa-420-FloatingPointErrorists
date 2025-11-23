@@ -4,6 +4,7 @@ import pytest
 from scheduler.config import TimeBlock, Meeting, ClassPattern
 
 from scheduler_config_editor.model import JsonConfig, TimeSlot
+from scheduler_config_editor.model.json import DayList
 
 
 @pytest.fixture()
@@ -102,3 +103,66 @@ class TestTimeSlot:
         result = TimeSlot.del_class_pattern(json_config, old_length - 1)
         assert result == "Class pattern deleted successfully."
         assert len(json_config.time_slot_config.classes) == old_length - 1
+
+
+    def test_del_invalid_time_block(self, json_config: JsonConfig):
+        index = len(json_config.time_slot_config.times.get("MON")) + 5
+        with pytest.raises(IndexError, match="Time block index out of range"):
+            TimeSlot.del_time_block(json_config,1, index)
+
+    def test_del_invalid_class_pattern(self, json_config: JsonConfig):
+        index = len(json_config.time_slot_config.classes) + 5
+        with pytest.raises(IndexError, match="Class pattern index out of range."):
+            TimeSlot.del_class_pattern(json_config, index)
+
+
+    def test_mod_invalid_time_block(self, json_config: JsonConfig):
+        index = len(json_config.time_slot_config.times.get("MON")) + 5
+        with pytest.raises(IndexError, match="Time block index out of range."):
+            TimeSlot.mod_time_block(
+            index=index,
+            day_index=1,
+            json_config=json_config,
+            start="10:00",
+            spacing=10,
+            end="15:00",
+        )
+
+    def test_mod_invalid_class_pattern(self, json_config: JsonConfig):
+        index = len(json_config.time_slot_config.classes) + 5
+        with pytest.raises(IndexError, match = "Class pattern index out of range."):
+            TimeSlot.mod_class_pattern(
+            index=index,
+            json_config=json_config,
+            creds=4,
+            meetings=[Meeting(day="TUE", start_time="11:00", duration=75, lab=True)],
+            disabled=True,
+            start_time="12:00",
+        )
+
+    def test_set_max_time_gap (self, json_config: JsonConfig):
+        result = TimeSlot.set_max_time_gap(json_config=json_config, max_time_gap=20)
+        assert result == "Maximum time gap is now 20 minutes."
+        assert json_config.time_slot_config.max_time_gap == 20
+        result2 = TimeSlot.set_max_time_gap(json_config=json_config, max_time_gap=40)
+        assert result2 == "Maximum time gap is now 40 minutes."
+        assert json_config.time_slot_config.max_time_gap == 40
+
+    def test_set_min_time_overlap (self, json_config: JsonConfig):
+        result = TimeSlot.set_min_time_overlap(json_config=json_config, min_time_overlap=10)
+        assert result == "Minimum time overlap is now 10 minutes."
+        assert json_config.time_slot_config.min_time_overlap == 10
+        result = TimeSlot.set_min_time_overlap(json_config=json_config, min_time_overlap=50)
+        assert result == "Minimum time overlap is now 50 minutes."
+        assert json_config.time_slot_config.min_time_overlap == 50
+
+    def test_time_slot_str (self, json_config: JsonConfig):
+        result = json_config.time_slot_str()
+        for day in DayList:
+            assert f"  {day}:" in result
+        assert "Classes:\n" in result
+        assert "Duration=" in result
+        assert "Credits:" in result
+        assert "Max Time Gap:" in result
+        assert "Min Time Overlap:" in result
+

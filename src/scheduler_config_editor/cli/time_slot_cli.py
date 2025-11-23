@@ -12,7 +12,7 @@ INDEX_TO_DAY = {1: "MON", 2: "TUE", 3: "WED", 4: "THU", 5: "FRI"}
 # ===== Time Slot Shell =====
 @shell(
     prompt="time slot>",
-    intro="You may now add, modify, or delete time blocks and class patterns. \nType 'help' to see available commands, 'exit' to return to main shell.\n",
+    intro="You may now add, modify, or delete time blocks and class patterns.\nYou may also set the maximum time gap and minimum time overlap.\nType 'help' to see available commands, 'exit' to return to main shell.\n",
 )
 def time_slot() -> None:
     """Manage time slots"""
@@ -172,7 +172,7 @@ def modify_time_block(ctx: click.Context) -> None:
             0, len(json_config.time_slot_config.times.get(day, [])) - 1
         ),
     )
-    json_config.time_slot_config.times.get(day, [])[index]
+    old_time_block = json_config.time_slot_config.times.get(day, [])[index]
     start = normalize_time(click.prompt("Start time (e.g., 9 or 09:00)"))
     end = normalize_time(click.prompt("End time (e.g., 9 or 09:00)"))
     spacing = click.prompt("Spacing (minutes)", type=click.IntRange(min=0))
@@ -181,9 +181,9 @@ def modify_time_block(ctx: click.Context) -> None:
             day_index=day_index,
             index=index,
             json_config=json_config,
-            start=start,
-            end=end,
-            spacing=spacing,
+            start=start if start is not None else old_time_block.start,
+            end=end if end is not None else old_time_block.end,
+            spacing=spacing if spacing is not None else old_time_block.spacing,
         )
     )
 
@@ -197,7 +197,7 @@ def modify_class_pattern(ctx: click.Context) -> None:
         "Enter the number class pattern to modify",
         type=click.IntRange(0, len(json_config.time_slot_config.classes) - 1),
     )
-    json_config.time_slot_config.classes[index]
+    old_class_pattern = json_config.time_slot_config.classes[index]
     creds = click.prompt("Credits", type=int)
     meetings: list[Meeting] = []
 
@@ -224,10 +224,38 @@ def modify_class_pattern(ctx: click.Context) -> None:
         TimeSlot.mod_class_pattern(
             index=index,
             json_config=json_config,
-            creds=creds,
-            meetings=meetings,
-            disabled=disabled,
-            start_time=cp_start_time,
+            creds=creds if creds is not None else old_class_pattern.creits,
+            meetings=meetings if meetings is not None else old_class_pattern.meetings,
+            disabled=disabled if disabled is not None else old_class_pattern.disabled,
+            start_time=cp_start_time
+            if cp_start_time is not None
+            else old_class_pattern.start_time,
+        )
+    )
+
+
+@time_slot.command()
+@click.pass_context
+def set_max_time_gap(ctx: click.Context) -> None:
+    """Set max time gap."""
+    json_config = get_json_config(ctx)
+    max_time_gap = click.prompt("Max time gap (minutes)", type=click.IntRange(min=0))
+    click.echo(
+        TimeSlot.set_max_time_gap(json_config=json_config, max_time_gap=max_time_gap)
+    )
+
+
+@time_slot.command()
+@click.pass_context
+def set_min_time_overlap(ctx: click.Context) -> None:
+    """Set min time overlap."""
+    json_config = get_json_config(ctx)
+    min_time_overlap = click.prompt(
+        "Min time overlap (minutes)", type=click.IntRange(min=0)
+    )
+    click.echo(
+        TimeSlot.set_min_time_overlap(
+            json_config=json_config, min_time_overlap=min_time_overlap
         )
     )
 

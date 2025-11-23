@@ -14,6 +14,16 @@ class TimeSlot:
     """
 
     @staticmethod
+    def set_max_time_gap(json_config: JsonConfig, max_time_gap: int = 30):
+        json_config.time_slot_config.max_time_gap = max_time_gap
+        return "Maximum time gap is now " + str(max_time_gap) + " minutes."
+
+    @staticmethod
+    def set_min_time_overlap(json_config: JsonConfig, min_time_overlap: int = 45):
+        json_config.time_slot_config.min_time_overlap = min_time_overlap
+        return "Minimum time overlap is now " + str(min_time_overlap) + " minutes."
+
+    @staticmethod
     def add_time_block(
         json_config: JsonConfig,
         day_index: int,
@@ -96,7 +106,7 @@ class TimeSlot:
         if time_blocks is None:
             return f"No time block found for day {day}"
         if index < 0 or index >= len(json_config.time_slot_config.times.get(day, [])):
-            return "Time block index out of range."
+            raise IndexError("Time block index out of range.")
         del time_blocks[index]
         return "Time block deleted successfully."
 
@@ -104,6 +114,6 @@ class TimeSlot:
     def del_class_pattern(json_config: JsonConfig, index: int) -> str:
         """Deletes a class pattern from the config"""
         if index < 0 or index >= len(json_config.time_slot_config.classes):
-            return "Class pattern index out of range."
+            raise IndexError("Class pattern index out of range.")
         del json_config.time_slot_config.classes[index]
         return "Class pattern deleted successfully."
