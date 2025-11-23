@@ -28,6 +28,7 @@ class FacultyEditorController:
             self.view.list.addItem(self.json_config.scheduler_config.faculty[i].name)
         self.view.list.clearSelection()
 
+
     def open_edit_faculty_window(self, item: QListWidgetItem) -> None:
         name = item.text()
         for i, _faculty in enumerate(self.json_config.scheduler_config.faculty):

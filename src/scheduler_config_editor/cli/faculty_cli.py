@@ -3,7 +3,7 @@ from click_shell import shell
 
 from ..model.faculty import Faculty
 from ..model.json import JsonConfig
-from .base_cli import clear, get_json_config, run, save, show
+from .base_cli import clear, get_json_config, run, save, show, undo, redo
 
 """
 This module implements a command-line interface (CLI) for managing faculty in the configuration file.
@@ -31,6 +31,8 @@ def faculty() -> None:
     faculty.add_command(clear)
     faculty.add_command(run)
     faculty.add_command(save)
+    faculty.add_command(undo)
+    faculty.add_command(redo)
 
 
 def normalize_range(r: str) -> str:
