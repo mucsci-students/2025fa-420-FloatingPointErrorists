@@ -14,7 +14,8 @@ dependencies = [
     "dotenv",
     "langchain-openai",
     "langchain",
-    "langgraph"
+    "langgraph",
+    "rerportlab"
 ]
 
 [project.optional-dependencies]

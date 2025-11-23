@@ -366,7 +366,7 @@ class SchedulerController:
         """Saves the current schedule as a PDF."""
         schedule = self.cur_schedules.schedules[self.index]
         mode = PdfMode.ROOM if self.mode == 2 else PdfMode.FACULTY
-        PdfWriter.export_graph_pdf(
+        PdfWriter.export_pdf(
             ScheduleHandler.room_schedule_columns(schedule)
             if mode == PdfMode.ROOM
             else ScheduleHandler.faculty_schedule_columns(schedule),

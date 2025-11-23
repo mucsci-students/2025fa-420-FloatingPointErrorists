@@ -1,11 +1,10 @@
-import threading
 import time
 from enum import Enum
 import click
 from click_shell import shell
 from scheduler.json_types import CourseInstanceJSON
 from ..model import ScheduleHandler, PdfWriter, PdfMode
-from .base_cli import HANDLER_KEY, clear, spinner
+from .base_cli import HANDLER_KEY, clear
 
 
 class DisplayMode(Enum):
@@ -19,22 +18,13 @@ class DisplayMode(Enum):
 def pdf_export(mode: PdfMode, schedule: list[CourseInstanceJSON]) -> None:
     """Export the current schedule to a PDF file."""
     name = click.prompt("Enter filename for PDF export", default="schedule")
-    stop_event = threading.Event()
-    spinner_thread = threading.Thread(
-        target=spinner, args=(stop_event, "Generating PDF")
+    PdfWriter.export_pdf(
+        ScheduleHandler.room_schedule_columns(schedule)
+        if mode == PdfMode.ROOM
+        else ScheduleHandler.faculty_schedule_columns(schedule),
+        name,
+        mode,
     )
-    spinner_thread.start()
-    try:
-        PdfWriter.export_graph_pdf(
-            ScheduleHandler.room_schedule_columns(schedule)
-            if mode == PdfMode.ROOM
-            else ScheduleHandler.faculty_schedule_columns(schedule),
-            name,
-            mode,
-        )
-    finally:
-        stop_event.set()
-        spinner_thread.join()
     click.echo(f"Schedule exported to {name}.pdf")
     time.sleep(1.5)
 

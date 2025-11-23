@@ -1,8 +1,5 @@
-from inspect import signature
-from typing import Callable
-
 from PyQt6 import QtCore, QtGui
-from PyQt6.QtCore import Qt, QTimer, QSettings, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, QSettings
 from PyQt6.QtGui import QGuiApplication, QShowEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
@@ -21,8 +18,6 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QVBoxLayout,
     QWidget,
-    QDialog,
-    QProgressBar,
 )
 from scheduler.models import CourseInstance
 
@@ -506,32 +501,8 @@ class SimpleTabs(QWidget):
         def pdf_export() -> None:
             """Export current schedule as PDF using a background worker and a spinner dialog."""
             name = self.schedule_viewer_filename.text() or "_"
-
-            # Work callable: try to call sc.save_as_pdf providing a progress callback if supported.
-            def work(progress_cb=None):
-                self.sc.save_as_pdf(name)
-
-            # Create worker and dialog, keep references on self to avoid GC
-            self._pdf_worker = PdfExportWorker(work)
-            self._pdf_loading = LoadingDialog(
-                self, title="Exporting PDF", message="Generating PDF, please wait..."
-            )
-            self._pdf_worker.progress.connect(self._pdf_loading.update_progress)
-
-            def on_done() -> None:
-                self._pdf_loading.close()
-                QMessageBox.information(self, "Information", "PDF Export Complete.")
-
-            def on_error(msg: str) -> None:
-                self._pdf_loading.close()
-                QMessageBox.critical(self, "Export Error", msg)
-
-            self._pdf_worker.finished.connect(on_done)
-            self._pdf_worker.error.connect(on_error)
-
-            # show modal dialog and start worker
-            self._pdf_loading.show()
-            self._pdf_worker.start()
+            self.sc.save_as_pdf(name)
+            QMessageBox.information(self, "Information", "PDF Export Complete.")
 
         self.schedule_viewer_pdfbutton = QPushButton("Export PDF")
         self.schedule_viewer_pdfbutton.clicked.connect(pdf_export)
@@ -841,74 +812,3 @@ class SimpleTabs(QWidget):
             QMessageBox.information(self, "Redo Error", str(error))
         self.config.save()
         self.refresh()
-
-
-class PdfExportWorker(QThread):
-    """Background worker that runs a callable; emits progress if the callable calls the provided callback."""
-
-    finished = pyqtSignal()
-    error = pyqtSignal(str)
-    progress = pyqtSignal(int, int)  # current, total
-
-    def __init__(self, work: Callable[..., None]) -> None:
-        super().__init__()
-        self._work = work
-
-    def _emit_progress(self, current: int, total: int) -> None:
-        self.progress.emit(current, total)
-
-    def run(self) -> None:
-        """Executes the work callable, providing a progress callback if supported."""
-        try:
-            accepts_progress = len(signature(self._work).parameters) == 1
-        except (ValueError, TypeError):
-            accepts_progress = False
-        # invoke the work; handle a TypeError fallback if the signature proved incorrect
-        try:
-            if accepts_progress:
-                self._work(self._emit_progress)
-            else:
-                self._work()
-        except TypeError:
-            # signature lied / bound-method mismatch — try without args once
-            try:
-                self._work()
-            except Exception as exc:
-                self.error.emit(str(exc))
-                return
-        except Exception as exc:
-            # surface any error from the work
-            self.error.emit(str(exc))
-            return
-
-        self.finished.emit()
-
-
-class LoadingDialog(QDialog):
-    """Modal dialog with a QProgressBar. Call update_progress(current, total)."""
-
-    def __init__(
-        self, parent=None, title: str = "Please wait", message: str = "Working..."
-    ) -> None:
-        super().__init__(parent)
-        self.setWindowTitle(title)
-        self.setModal(True)
-        self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
-
-        layout = QVBoxLayout(self)
-        self.label = QLabel(message)
-        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.label)
-
-        self.progress = QProgressBar()
-        self.progress.setRange(0, 0)  # indeterminate initially
-        self.progress.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.progress)
-
-    def update_progress(self, current: int, total: int) -> None:
-        if total <= 0:
-            # indeterminate / busy
-            self.progress.setRange(0, 0)
-        else:
-            self.progress.setRange(0, total)
-            self.progress.setValue(current)

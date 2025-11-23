@@ -1,18 +1,19 @@
 import os
-import pickle
-import subprocess
-import sys
 from enum import Enum
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPainter
-from PyQt6.QtPrintSupport import QPrinter
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+
 from scheduler_config_editor.model import INDEX_TO_DAY
 from scheduler_config_editor.model.schedule_handler import CourseMeeting
 
 
+MINUTES_PER_HOUR = 60
+
+
 class PdfMode(Enum):
-    """Modes for PDF schedule export."""
+    """Modes for exporting schedules to PDF."""
 
     FACULTY = "faculty"
     ROOM = "room"
@@ -22,209 +23,141 @@ class PdfWriter:
     """Class for exporting schedules to PDF files."""
 
     @staticmethod
-    def _graph_schedule(
-        mode: PdfMode, week: list[list[CourseMeeting]], name: str
-    ) -> QWidget:
-        """Create a graphical representation of the schedule."""
-        graph_widget = QWidget()
-        graph_layout = QVBoxLayout(graph_widget)
-        graph_layout.setSpacing(0)
+    def _convert_to_timestr(minutes: int) -> str:
+        """Convert total minutes to 'H:MM AM/PM'."""
+        hour = minutes // MINUTES_PER_HOUR
+        minute = minutes % MINUTES_PER_HOUR
 
-        # Header
-        graph_name = QLabel(name)
-        graph_name.setAlignment(Qt.AlignmentFlag.AlignTop)
-        graph_name.setStyleSheet("font-size: 24px; font-weight: bold;")
-        graph_layout.addWidget(graph_name)
+        ampm = "AM" if hour < 12 else "PM"
+        hour = hour % 12 or 12
 
-        # Table Layout
-        schedule = QHBoxLayout()
-        graph_layout.addLayout(schedule)
-        schedule.setSpacing(0)
+        return f"{hour}:{minute:02d} {ampm}"
 
-        # Time Column
-        time_index = QVBoxLayout()
-        top_label = QLabel()
-        top_label.setStyleSheet("border: 1px solid black;")
-        top_label.setFixedHeight(50)
-        time_index.addWidget(top_label)
+    @staticmethod
+    def _hex_to_color(hex_code: str) -> colors.Color:
+        """Convert '#RRGGBB' → ReportLab color."""
+        hex_code = hex_code.lstrip("#")
+        r = int(hex_code[0:2], 16) / 255
+        g = int(hex_code[2:4], 16) / 255
+        b = int(hex_code[4:6], 16) / 255
+        return colors.Color(r, g, b)
 
-        for hour in range(8, 21):
-            time_label = QLabel(
-                PdfWriter._convert_to_timestr(PdfWriter._convert_to_minutes(hour * 100))
-            )
-            time_label.setStyleSheet(
-                "border: 1px solid black; font-size: 16px; font-weight: bold;"
-            )
-            time_label.setMinimumHeight(100)
-            time_label.setAlignment(Qt.AlignmentFlag.AlignTop)
-            time_index.addWidget(time_label)
+    @staticmethod
+    def export_pdf(
+        schedule: list[tuple[str, list[list[CourseMeeting]]]], name: str, mode: PdfMode
+    ) -> None:
+        """Export the given schedule to a PDF file."""
+        output_path = os.path.join("pdf", f"{name}.pdf")
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-        schedule.addLayout(time_index)
+        c = canvas.Canvas(output_path, pagesize=letter)
+        width, height = letter
 
-        # Colors
-        colors = [
-            ("#0066ff", "#ffffff"),  # 50% light
-            ("#0052cc", "#ffffff"),  # 40% light
-            ("#33adff", "#000000"),  # 60% light
-            ("#005c99", "#ffffff"),  # 30% light
-            ("#66a3ff", "#000000"),  # 70% light
-            ("#002966", "#ffffff"),  # 20% light
-            ("#99c2ff", "#000000"),  # 80% light
-            ("#001433", "#ffffff"),  # 10% light
-            ("#b3d1ff", "#000000"),  # 90% light
-            ("#000000", "#ffffff"),  # 00% light
+        start_minutes = min(
+            course.time[0] for _, week in schedule for day in week for course in day
+        )
+        end_minutes = max(
+            course.time[1] for _, week in schedule for day in week for course in day
+        )
+
+        start_hour = start_minutes // MINUTES_PER_HOUR
+        end_hour = (end_minutes + 59) // MINUTES_PER_HOUR
+        total_hours = (end_minutes - start_minutes) / MINUTES_PER_HOUR
+
+        margin = 0.5 * inch
+        title_spacing = 0.3 * inch
+
+        column_width = (width - 2 * margin) / 6  # time + 5 days
+        row_height = (height - 2 * margin) / (total_hours + 2)
+
+        title_y = height - margin
+        header_y = title_y - title_spacing - row_height
+        first_time_row_top = header_y - row_height
+
+        color_pairs = [
+            ("#0066ff", "#ffffff"),
+            ("#0052cc", "#ffffff"),
+            ("#33adff", "#000000"),
+            ("#005c99", "#ffffff"),
+            ("#66a3ff", "#000000"),
+            ("#002966", "#ffffff"),
+            ("#99c2ff", "#000000"),
+            ("#001433", "#ffffff"),
+            ("#b3d1ff", "#000000"),
+            ("#000000", "#ffffff"),
         ]
-        found_classes = []
-        # Day Columns
-        for idx, day in enumerate(week):
-            day_container = QVBoxLayout()
-            day_label = QLabel(INDEX_TO_DAY[idx + 1])
-            day_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            day_label.setFixedHeight(50)
-            day_label.setMinimumWidth(125)
-            day_label.setStyleSheet(
-                "border: 1px solid black; font-size: 16px; font-weight: bold;"
-            )
-            day_container.addWidget(day_label)
-            cur_time = PdfWriter._convert_to_minutes(800)
-            day_column = QVBoxLayout()
 
-            # Render courses in order
-            for course in day:
-                # Blank space before course
-                day_column.addStretch(course.time[0] - cur_time)
+        for page_name, week in schedule:
+            c.setFont("Helvetica-Bold", 18)
+            c.drawString(margin, title_y, page_name)
 
-                # Course widget
-                if mode == PdfMode.FACULTY:
-                    content = (
-                        f"{course.name}\n{course.room}\n"
-                        f"{PdfWriter._convert_to_timestr(course.time[0])} to "
-                        f"{PdfWriter._convert_to_timestr(course.time[1])}"
-                    )
-                else:
-                    content = (
-                        f"{course.name}\n{course.faculty}\n"
-                        f"{PdfWriter._convert_to_timestr(course.time[0])} to "
-                        f"{PdfWriter._convert_to_timestr(course.time[1])}"
-                    )
+            c.setFont("Helvetica-Bold", 14)
+            for i in range(1, 6):
+                x = margin + column_width * i
 
-                block = QLabel(content)
-
-                # Consistent color assignment
-                if course.name not in found_classes:
-                    found_classes.append(course.name)
-                bg, fg = colors[found_classes.index(course.name)]
-
-                block.setStyleSheet(
-                    f"background-color: {bg}; color: {fg}; "
-                    f"border: 1px solid black; border-radius: 5px;"
-                    f"font-size: 16px; font-weight: bold;"
+                c.rect(x, header_y, column_width, row_height)
+                c.drawCentredString(
+                    x + column_width / 2, header_y + row_height / 2 - 6, INDEX_TO_DAY[i]
                 )
 
-                # Height based on duration
-                stretch = course.time[1] - course.time[0]
-                day_column.addWidget(block, stretch=stretch)
+            for hour in range(start_hour, end_hour + 1):
+                y = header_y - row_height * (hour - start_hour + 1)
+                c.rect(margin, y, column_width, row_height)
+                c.drawString(
+                    margin + 5,
+                    y + row_height / 2 - 6,
+                    PdfWriter._convert_to_timestr(hour * 60),
+                )
 
-                cur_time = course.time[1]
+            used_classes: list[str] = []
+            text_font_size = 8 if total_hours <= 12 else 6
+            text_line_step = 12 if total_hours <= 12 else 8
 
-            # Space after last course
-            day_column.addStretch(PdfWriter._convert_to_minutes(2000) - cur_time)
+            for day_index, day in enumerate(week, start=1):
+                x = margin + column_width * day_index
 
-            day_container.addLayout(day_column)
-            schedule.addLayout(day_container)
+                for course in day:
+                    if course.name not in used_classes:
+                        used_classes.append(course.name)
 
-        return graph_widget
+                    bg_hex, fg_hex = color_pairs[used_classes.index(course.name)]
+                    bg = PdfWriter._hex_to_color(bg_hex)
+                    fg = PdfWriter._hex_to_color(fg_hex)
 
-    @staticmethod
-    def _convert_to_minutes(i: int) -> int:
-        """Convert HHMM to total minutes."""
-        return i // 100 * 60 + i % 100
+                    start, end = course.time
+                    duration = end - start
+                    start_offset = start - start_minutes
 
-    @staticmethod
-    def _convert_to_timestr(i: int) -> str:
-        """Convert total minutes to a formatted time string."""
-        m = i % 60
-        h = i // 60
-        # minute placeholder
-        mp = ""
-        # hour suffix
-        hs = "AM"
-        # make single digit minutes take 2 characters
-        if m < 10:
-            mp = "0"
-        # am pm
-        if h >= 12:
-            h -= 12
-            hs = "PM"
-        if h == 0:
-            h = 12
-        return f"{h}:{mp}{m} {hs}"
+                    y = first_time_row_top - (start_offset / 60) * row_height
+                    h = (duration / 60) * row_height
 
-    @staticmethod
-    def _export_to_pdf(schedule: list[QWidget], name: str) -> None:
-        """Export the given schedule widgets to a PDF file."""
-        path = os.path.join("pdf", f"{name}.pdf")
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
-        printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
-        printer.setOutputFileName(path)
-        painter = QPainter()
-        painter.begin(printer)
-        first_page = True
-        for widget in schedule:
-            widget.resize(1100, 1600)
-            if not first_page:
-                printer.newPage()
-            first_page = False
-            page_rect = printer.pageRect(QPrinter.Unit.DevicePixel)
-            scale_x = page_rect.width() / widget.width()
-            scale_y = page_rect.height() / widget.height()
-            scale = max(scale_x, scale_y)
-            painter.save()
-            painter.scale(scale, scale)
-            widget.render(painter)
-            painter.restore()
-        painter.end()
+                    c.setFillColor(bg)
+                    c.rect(x, y - h, column_width, h, fill=1, stroke=1)
 
-    @staticmethod
-    def _export_graph_pdf_direct(
-        schedule: list[tuple[str, list[list[CourseMeeting]]]],
-        output_path: str,
-        mode: PdfMode,
-    ) -> None:
-        """Export the schedule as a graphical PDF."""
-        widgets = []
-        for name, week in schedule:
-            widget = PdfWriter._graph_schedule(mode, week, name)
-            widgets.append(widget)
-        PdfWriter._export_to_pdf(widgets, output_path)
+                    c.setFillColor(fg)
+                    c.setFont("Helvetica-Bold", text_font_size)
 
-    @staticmethod
-    def export_graph_pdf(
-        schedule: list[tuple[str, list[list[CourseMeeting]]]],
-        output_path: str,
-        mode: PdfMode,
-    ) -> None:
-        """Run the Qt PDF generation in a clean subprocess."""
-        worker_path = os.path.join(os.path.dirname(__file__), "pdf_worker.py")
-        cmd = [sys.executable, worker_path]
-        # Serialize the arguments
-        payload = pickle.dumps(
-            {
-                "schedule": schedule,
-                "output_path": output_path,
-                "mode": mode,
-            }
-        )
-        try:
-            proc = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=False,
-            )
-            stdout, stderr = proc.communicate(payload)
-        except KeyboardInterrupt:
-            proc.kill()
-            raise
+                    if mode == PdfMode.FACULTY:
+                        lines = [
+                            course.name,
+                            course.room,
+                        ]
+                    else:
+                        lines = [
+                            course.name,
+                            course.faculty,
+                        ]
+
+                    lines.append(
+                        f"{PdfWriter._convert_to_timestr(start)} - "
+                        f"{PdfWriter._convert_to_timestr(end)}"
+                    )
+
+                    text_y = y - text_line_step
+                    for line in lines:
+                        c.drawString(x + 5, text_y, line)
+                        text_y -= text_line_step
+
+            c.showPage()
+
+        c.save()
