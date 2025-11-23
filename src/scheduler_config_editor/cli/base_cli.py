@@ -77,6 +77,8 @@ def enable_configuration_commands() -> None:
     base_cli.add_command(rooms)  # Add rooms sub-shell
     base_cli.add_command(labs)  # Add labs sub-shell
     base_cli.add_command(chat)  # Add chat command
+    base_cli.add_command(undo)  # Add undo command
+    base_cli.add_command(redo)  # Add redo command
 
 
 def check_valid_config(json_config: JsonConfig) -> None:
@@ -203,6 +205,29 @@ def chat(ctx: click.Context) -> None:
         click.echo(response)
 
 
+@click.command()
+@click.pass_context
+def undo(ctx: click.Context) -> None:
+    """Undo the last change made to the configuration."""
+    try:
+        get_json_config(ctx).undo()
+        click.echo("Undid successfully.")
+    except IndexError:
+        click.echo("Nothing to undo.")
+
+
+@click.command()
+@click.pass_context
+def redo(ctx: click.Context) -> None:
+    """Redo the last change that was undone."""
+    try:
+        get_json_config(ctx).redo()
+        click.echo("Redid successfully.")
+    except IndexError:
+        click.echo("Nothing to redo.")
+
+
+def spinner(stop_event: threading.Event) -> None:
 def spinner(stop_event: threading.Event, text: str) -> None:
     """Display a spinner while waiting for a response."""
     spinner_chars = "|/-\\"

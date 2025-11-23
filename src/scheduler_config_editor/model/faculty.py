@@ -81,6 +81,7 @@ class Faculty:
             room_preferences,
             lab_preferences,
         )
+        json_config.add_to_undo_stack()
         times_casted = cast(dict[Day, list[TimeRange]], times)
         faculty_config = FacultyConfig(
             name=name,
@@ -148,6 +149,7 @@ class Faculty:
                     new_faculty.room_preferences,
                     new_faculty.lab_preferences,
                 )
+                json_config.add_to_undo_stack()
                 json_config.scheduler_config.faculty[i] = new_faculty
                 found = True
         for course in json_config.scheduler_config.courses:
@@ -177,6 +179,7 @@ class Faculty:
     @staticmethod
     def del_faculty(json_config: JsonConfig, name: str) -> str:
         """finds the faculty within the scheduler and removes it"""
+        json_config.add_to_undo_stack()
         found = False
         for i, _faculty in enumerate(json_config.scheduler_config.faculty):
             if json_config.scheduler_config.faculty[i].name == name:

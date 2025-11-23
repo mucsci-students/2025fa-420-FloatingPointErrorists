@@ -3,7 +3,7 @@ from click_shell import shell
 
 from ..model.courses import Course
 from ..model.json_config import JsonConfig
-from .base_cli import clear, get_json_config, run, save, show
+from .base_cli import clear, get_json_config, run, save, show, undo, redo
 
 """
 This module implements a command-line interface (CLI) for managing courses in the configuration file.
@@ -31,6 +31,8 @@ def courses() -> None:
     courses.add_command(clear)
     courses.add_command(run)
     courses.add_command(save)
+    courses.add_command(undo)
+    courses.add_command(redo)
 
 
 def get_course_index(json_config: JsonConfig, prompt_text: str) -> int:
