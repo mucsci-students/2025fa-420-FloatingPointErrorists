@@ -746,7 +746,7 @@ class SimpleTabs(QWidget):
 
             # enable button
             self.schedule_viewer_savebutton.setEnabled(True)
-            
+
     def undo(self) -> None:
         try:
             self.config.undo()

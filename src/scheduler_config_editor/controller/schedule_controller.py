@@ -207,7 +207,7 @@ class SchedulerController:
                     popup_toptimelabel.setFixedHeight(50)
                     popup_time_index.addWidget(popup_toptimelabel)
 
-                    #find earliest start time and latest end time
+                    # find earliest start time and latest end time
                     earliest_start = None
                     latest_end = None
                     while earliest_start is None:
@@ -234,7 +234,7 @@ class SchedulerController:
                         latest_end += 60
 
                     # 8am-7pm
-                    for i in range(earliest_start//60, latest_end//60):
+                    for i in range(earliest_start // 60, latest_end // 60):
                         time_label = QLabel(
                             self.convert_to_timestr(self.convert_to_minutes(i * 100))
                         )
