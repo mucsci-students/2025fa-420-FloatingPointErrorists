@@ -19,11 +19,11 @@ from scheduler_config_editor.model import ScheduleHandler, INDEX_TO_DAY
 # (background, text)
 colors = [
     ("#0066ff", "#ffffff"),  # 50% light
+    ("#66a3ff", "#000000"),  # 70% light
+    ("#002966", "#ffffff"),  # 20% light
     ("#0052cc", "#ffffff"),  # 40% light
     ("#33adff", "#000000"),  # 60% light
     ("#005c99", "#ffffff"),  # 30% light
-    ("#66a3ff", "#000000"),  # 70% light
-    ("#002966", "#ffffff"),  # 20% light
     ("#99c2ff", "#000000"),  # 80% light
     ("#001433", "#ffffff"),  # 10% light
     ("#b3d1ff", "#000000"),  # 90% light
