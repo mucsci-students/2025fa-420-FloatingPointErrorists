@@ -2,7 +2,7 @@ from inspect import signature
 from typing import Callable
 
 from PyQt6 import QtCore, QtGui
-from PyQt6.QtCore import Qt, QTimer, QSettings
+from PyQt6.QtCore import Qt, QTimer, QSettings, QThread, pyqtSignal
 from PyQt6.QtGui import QGuiApplication, QShowEvent
 from PyQt6.QtWidgets import (
     QCheckBox,

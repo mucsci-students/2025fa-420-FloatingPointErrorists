@@ -227,7 +227,6 @@ def redo(ctx: click.Context) -> None:
         click.echo("Nothing to redo.")
 
 
-def spinner(stop_event: threading.Event) -> None:
 def spinner(stop_event: threading.Event, text: str) -> None:
     """Display a spinner while waiting for a response."""
     spinner_chars = "|/-\\"
