@@ -1,21 +1,8 @@
 import os
-import shutil
 import pytest
-from unittest.mock import MagicMock, patch
 
 from scheduler_config_editor.model import PdfWriter, PdfMode
 from scheduler_config_editor.model.schedule_handler import CourseMeeting
-from scheduler_config_editor.model import INDEX_TO_DAY
-
-
-@pytest.fixture(autouse=True)
-def cleanup_pdf_folder():
-    """Ensure the PDF output folder is cleared before and after tests."""
-    if os.path.exists("pdf"):
-        shutil.rmtree("pdf")
-    yield
-    if os.path.exists("pdf"):
-        shutil.rmtree("pdf")
 
 
 def test_convert_to_timestr():
@@ -51,9 +38,11 @@ def make_fake_schedule():
 
     # week = list of 5 days, each day is list of CourseMeeting
     week = [
-        [cm1],   # Monday
-        [cm2],   # Tuesday
-        [], [], []  # Wed/Thu/Fri empty
+        [cm1],  # Monday
+        [cm2],  # Tuesday
+        [],
+        [],
+        [],  # Wed/Thu/Fri empty
     ]
 
     return [("TestPage", week)]
@@ -69,6 +58,7 @@ def test_export_pdf_faculty():
     PdfWriter.export_pdf(schedule, "test_faculty", PdfMode.FACULTY)
 
     assert os.path.exists(output_path)
+    os.remove(output_path)
 
 
 def test_export_pdf_room():
@@ -81,3 +71,4 @@ def test_export_pdf_room():
     PdfWriter.export_pdf(schedule, "test_room", PdfMode.ROOM)
 
     assert os.path.exists(output_path)
+    os.remove(output_path)
