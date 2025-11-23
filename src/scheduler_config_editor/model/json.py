@@ -12,6 +12,7 @@ from scheduler import (
 
 DAYS = Literal["MON", "TUE", "WED", "THU", "FRI"]
 
+
 class JsonConfig:
     """
     Class to handle loading, saving, and displaying scheduler configuration from a JSON file.
