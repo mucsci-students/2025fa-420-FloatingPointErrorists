@@ -176,7 +176,7 @@ class PdfWriter:
     @staticmethod
     def _export_to_pdf(schedule: list[QWidget], name: str) -> None:
         """Export the given schedule widgets to a PDF file."""
-        path = os.path.join("schedulePDFs", f"{name}.pdf")
+        path = os.path.join("pdf", f"{name}.pdf")
         os.makedirs(os.path.dirname(path), exist_ok=True)
         printer = QPrinter(QPrinter.PrinterMode.HighResolution)
         printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
