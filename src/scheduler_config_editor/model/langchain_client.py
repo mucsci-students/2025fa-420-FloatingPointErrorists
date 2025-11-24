@@ -6,7 +6,9 @@ from langchain_core.messages import HumanMessage
 from langchain_core.tools import StructuredTool
 from langchain.agents import create_agent
 from pydantic import BaseModel
-from scheduler_config_editor.model import JsonConfig, Faculty, Course, Room, Lab
+from scheduler import TimeString, Meeting
+
+from scheduler_config_editor.model import JsonConfig, Faculty, Course, Room, Lab, TimeSlot
 
 
 # ----- Wrappers & Argument Schemas for JsonConfig ----- #
@@ -305,6 +307,48 @@ class DelLabArgs(BaseModel):
     lab: str
 
 
+# ----- Wrappers & Argument Schema for Timeslot functions ----- #
+
+
+class SetMaxTimeGapArgs(BaseModel):
+    max_time_gap: int
+
+class SetMinTimeOverlapArgs(BaseModel):
+    min_time_overlap: int
+
+class AddTimeBlockArgs(BaseModel):
+    day_index: int
+    start: TimeString
+    spacing: int
+    end: TimeString
+
+class AddClassPatternArgs(BaseModel):
+    creds: int
+    meetings: list[Meeting]
+    disabled: bool
+    start_time: TimeString | None
+
+class ModTimeBlockArgs(BaseModel):
+    day_index: int
+    index: int
+    start: TimeString
+    spacing: int
+    end: TimeString
+
+class ModClassPatternArgs(BaseModel):
+    index: int
+    creds: int
+    meetings: list[Meeting]
+    disabled: bool
+    start_time: TimeString | None
+
+class DelTimeBlockArgs(BaseModel):
+    day_index: int
+    index: int
+
+class DelClassPatternArgs(BaseModel):
+    index: int
+
 # ----- Tool List Definition ----- #
 
 
@@ -468,6 +512,68 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
             description="List all labs in the scheduler configuration.",
             return_direct=True,
         ),
+        StructuredTool.from_function(
+            name="set_max_time_gap",
+            func=bind_config(TimeSlot.set_max_time_gap, json_config=json_config),
+            description="Set the maximum time gap allowed between scheduled classes in the scheduler configuration.",
+            return_direct=True,
+            args_schema=SetMaxTimeGapArgs,
+        ),
+        StructuredTool.from_function(
+            name="set_min_time_overlap",
+            func=bind_config(TimeSlot.set_min_time_overlap, json_config=json_config),
+            description="Set the minimum time overlap required between scheduled classes in the scheduler configuration.",
+            return_direct=True,
+            args_schema=SetMinTimeOverlapArgs,
+        ),
+        StructuredTool.from_function(
+            name="add_time_block",
+            func=bind_config(TimeSlot.add_time_block, json_config=json_config),
+            description="Add a time block to the scheduler configuration.",
+            return_direct=True,
+            args_schema=AddTimeBlockArgs,
+        ),
+        StructuredTool.from_function(
+            name="add_class_pattern",
+            func=bind_config(TimeSlot.add_class_pattern, json_config=json_config),
+            description="Add a class pattern to the scheduler configuration.",
+            return_direct=True,
+            args_schema=AddClassPatternArgs,
+        ),
+        StructuredTool.from_function(
+            name="mod_time_block",
+            func=bind_config(TimeSlot.mod_time_block, json_config=json_config),
+            description="Modify a time block in the scheduler configuration.",
+            return_direct=True,
+            args_schema=ModTimeBlockArgs,
+        ),
+        StructuredTool.from_function(
+            name="mod_class_pattern",
+            func=bind_config(TimeSlot.mod_class_pattern, json_config=json_config),
+            description="Modify a class pattern in the scheduler configuration.",
+            return_direct=True,
+            args_schema=ModClassPatternArgs,
+        ),
+        StructuredTool.from_function(
+            name="del_time_block",
+            func=bind_config(TimeSlot.del_time_block, json_config=json_config),
+            description="Delete a time block from the scheduler configuration.",
+            return_direct=True,
+            args_schema=DelTimeBlockArgs,
+        ),
+        StructuredTool.from_function(
+            name="del_class_pattern",
+            func=bind_config(TimeSlot.del_class_pattern, json_config=json_config),
+            description="Delete a class pattern from the scheduler configuration.",
+            return_direct=True,
+            args_schema=DelClassPatternArgs,
+        ),
+        StructuredTool.from_function(
+            name="time_slot_str",
+            func=json_config.time_slot_str,
+            description="List the time slots in the scheduler configuration.",
+            return_direct=True,
+        )
     ]
 
 
