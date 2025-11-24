@@ -122,7 +122,7 @@ class SimpleTabs(QWidget):
 
         # Dropdown code
         self.editor_combo_box = QComboBox()
-        self.editor_combo_box.addItems(["Course", "Room/Lab", "Faculty"])
+        self.editor_combo_box.addItems(["Course", "Room/Lab", "Faculty", "Time Slot"])
         editor_layout.addWidget(
             self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft
         )
@@ -152,6 +152,8 @@ class SimpleTabs(QWidget):
         # Generator placeholders
         self.generator_controller = GeneratorController(self.config)
         self.generator_gui = self.generator_controller.view
+
+        # Time Slot placeholders
 
         self.generator_controller.on_schedules_generated = (
             self.handle_schedules_generated
@@ -188,8 +190,12 @@ class SimpleTabs(QWidget):
                 if not self.faculty_controller:
                     self.editor_content_area.addWidget(self.config_prompt)
                 else:
-                    # self.faculty_gui = FacultyEditorGui(self.faculty_controller)
                     self.editor_content_area.addWidget(self.faculty_controller.view)
+            elif selected == "Time Slot":
+                if not self.time_slot_controller:
+                    self.editor_content_area.addWidget(self.config_prompt)
+                else:
+                    self.editor_content_area.addWidget(self.time_slot_controller.view)
 
         self.editor_combo_box.currentTextChanged.connect(on_editor_selection_change)
 
