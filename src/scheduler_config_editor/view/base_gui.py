@@ -32,7 +32,6 @@ from scheduler_config_editor.controller.room_controller import RoomEditorControl
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
 from scheduler_config_editor.model.json_config import JsonConfig
 from scheduler_config_editor.controller.time_slot_controller import TimeSlotController
-from scheduler_config_editor.model.json import JsonConfig
 from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
 from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
 from scheduler_config_editor.view.schedule_window import newWindow
