@@ -30,6 +30,7 @@ from scheduler_config_editor.controller.faculty_controller import (
 from scheduler_config_editor.controller.generator_controller import GeneratorController
 from scheduler_config_editor.controller.room_controller import RoomEditorController
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
+from scheduler_config_editor.model.json_config import JsonConfig
 from scheduler_config_editor.controller.time_slot_controller import TimeSlotController
 from scheduler_config_editor.model.json import JsonConfig
 from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
@@ -354,60 +355,6 @@ class SimpleTabs(QWidget):
         set_schedule_label("""Schedule by course will be shown here""")
         self.my_scroll.setWidget(self.schedule_viewer_label)
 
-        # test schedule
-        # testing = QWidget()
-        # self.testing = QVBoxLayout(testing)
-        # self.schedule_viewer_test = QHBoxLayout()
-        # self.scheduleTime = QVBoxLayout()
-        # self.scheduleTime.setSpacing(0)
-        # self.schedule_viewer_monday = QVBoxLayout()
-        # self.schedule_viewer_monday.setSpacing(0)
-        # self.schedule_viewer_tuesday = QVBoxLayout()
-        # self.schedule_viewer_tuesday.setSpacing(0)
-        # self.schedule_viewer_wednesday = QVBoxLayout()
-        # self.schedule_viewer_wednesday.setSpacing(0)
-        # self.schedule_viewer_thursday = QVBoxLayout()
-        # self.schedule_viewer_thursday.setSpacing(0)
-        # self.schedule_viewer_friday = QVBoxLayout()
-        # self.schedule_viewer_friday.setSpacing(0)
-
-        # tempor = QLabel("Fac Name")
-        # self.testing.addWidget(tempor)
-
-        # temp = QLabel()
-        # temp.setStyleSheet("border: 1px solid black")
-        # temp.setMinimumHeight(100)
-        # self.scheduleTime.addWidget(temp)
-        # for i in range(8, 20):
-        #     temp = QLabel(str(i))
-        #     temp.setStyleSheet("border: 1px solid black")
-        #     temp.setMinimumHeight(100)
-        #     self.scheduleTime.addWidget(temp)
-        # self.schedule_viewer_test.addLayout(self.scheduleTime)
-
-        # self.mondayLabel = QLabel("Monday")
-        # self.mondayLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # self.mondayLabel.setStyleSheet("border: 1px solid black")
-        # self.emptyLabel1 = QLabel()
-        # self.classLabel1 = QLabel("Course 111 9-9:50\nRoom 100")
-        # self.classLabel1.setStyleSheet("background-color: red; color: white; border: 1px solid black; border-radius: 5px")
-        # self.emptyLabel2 = QLabel()
-        # self.classLabel2 = QLabel("Course 222 13-16:35\nRoom 200")
-        # self.classLabel2.setStyleSheet("background-color: blue; color: white; border: 1px solid black; border-radius: 5px")
-        # self.emptyLabel3 = QLabel()
-        # self.schedule_viewer_monday.addWidget(self.mondayLabel, stretch=60)
-        # self.schedule_viewer_monday.addWidget(self.emptyLabel1, stretch=60)
-        # self.schedule_viewer_monday.addWidget(self.classLabel1, stretch=50)
-        # self.schedule_viewer_monday.addWidget(self.emptyLabel2, stretch=190)
-        # self.schedule_viewer_monday.addWidget(self.classLabel2, stretch=215)
-        # self.schedule_viewer_monday.addWidget(self.emptyLabel3, stretch=205)
-
-        # self.schedule_viewer_test.addLayout(self.schedule_viewer_monday)
-
-        # self.testing.addLayout(self.schedule_viewer_test)
-
-        # self.my_scroll.setWidget(testing)
-
         # table
         self.schedule_table = QTableWidget()
 
@@ -419,9 +366,14 @@ class SimpleTabs(QWidget):
         def schedule_back() -> None:
             if self.sc.length > 0:
                 self.sc.previous_schedule()
-                self.sc.set_tables()
-                self.schedule_table_widgets = self.sc.cur_widgets
-                self.my_scroll.setWidget(self.sc.cur_widgets)
+                if self.sc.mode == 0:
+                    self.sc.set_tables()
+                    self.schedule_table_widgets = self.sc.cur_widgets
+                    self.my_scroll.setWidget(self.sc.cur_widgets)
+                else:
+                    self.sc.graph_schedule()
+                    self.schedule_table = self.sc.graph_widget
+                    self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
             else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
@@ -449,9 +401,14 @@ class SimpleTabs(QWidget):
                     self.sc.index = self.sc.length - 1
                 else:
                     self.sc.index = newIndex - 1
-                self.sc.set_tables()
-                self.schedule_table_widgets = self.sc.cur_widgets
-                self.my_scroll.setWidget(self.sc.cur_widgets)
+                if self.sc.mode == 0:
+                    self.sc.set_tables()
+                    self.schedule_table_widgets = self.sc.cur_widgets
+                    self.my_scroll.setWidget(self.sc.cur_widgets)
+                else:
+                    self.sc.graph_schedule()
+                    self.schedule_table = self.sc.graph_widget
+                    self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
             else:
                 QMessageBox.warning(self, "Error", "No schedule loaded.")
@@ -475,9 +432,14 @@ class SimpleTabs(QWidget):
         def schedule_forward() -> None:
             if self.sc.length > 0:
                 self.sc.next_schedule()
-                self.sc.set_tables()
-                self.schedule_table_widgets = self.sc.cur_widgets
-                self.my_scroll.setWidget(self.sc.cur_widgets)
+                if self.sc.mode == 0:
+                    self.sc.set_tables()
+                    self.schedule_table_widgets = self.sc.cur_widgets
+                    self.my_scroll.setWidget(self.sc.cur_widgets)
+                else:
+                    self.sc.graph_schedule()
+                    self.schedule_table = self.sc.graph_widget
+                    self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
             else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
@@ -494,9 +456,9 @@ class SimpleTabs(QWidget):
         view_bot_right_layout.addStretch()
 
         # add checkboxs
-        self.checkboxjson = QCheckBox("json")
+        self.checkboxjson = QCheckBox("JSON")
         view_bot_right_layout.addWidget(self.checkboxjson)
-        self.checkboxcsv = QCheckBox("csv")
+        self.checkboxcsv = QCheckBox("CSV")
         view_bot_right_layout.addWidget(self.checkboxcsv)
 
         # add filename lineedit
@@ -504,6 +466,17 @@ class SimpleTabs(QWidget):
         self.schedule_viewer_filename.setPlaceholderText("Filename")
         self.schedule_viewer_filename.setAlignment(Qt.AlignmentFlag.AlignRight)
         view_bot_right_layout.addWidget(self.schedule_viewer_filename)
+
+        def pdf_export() -> None:
+            """Export current schedule as PDF using a background worker and a spinner dialog."""
+            name = self.schedule_viewer_filename.text() or "_"
+            self.sc.save_as_pdf(name)
+            QMessageBox.information(self, "Information", "PDF Export Complete.")
+
+        self.schedule_viewer_pdfbutton = QPushButton("Export PDF")
+        self.schedule_viewer_pdfbutton.clicked.connect(pdf_export)
+        self.schedule_viewer_pdfbutton.setEnabled(False)
+        view_bot_right_layout.addWidget(self.schedule_viewer_pdfbutton)
 
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
@@ -548,14 +521,20 @@ class SimpleTabs(QWidget):
                 self.schedules = []
 
                 # show first schedule
-                self.sc.set_tables()
-                self.schedule_table_widgets = self.sc.cur_widgets
-                self.my_scroll.setWidget(self.schedule_table_widgets)
+                if self.sc.mode == 0:
+                    self.sc.set_tables()
+                    self.schedule_table_widgets = self.sc.cur_widgets
+                    self.my_scroll.setWidget(self.schedule_table_widgets)
+                else:
+                    self.sc.graph_schedule()
+                    self.schedule_table = self.sc.graph_widget
+                    self.my_scroll.setWidget(self.schedule_table)
                 self.schedule_viewer_index.setText(str(self.sc.index + 1))
                 self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
 
                 # Disable Save Button
                 self.schedule_viewer_savebutton.setEnabled(False)
+                self.schedule_viewer_pdfbutton.setEnabled(True)
 
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"{e}")
@@ -704,7 +683,7 @@ class SimpleTabs(QWidget):
         config_path, _ = QFileDialog.getOpenFileName(
             self,
             "Select Scheduler Config File",
-            "",
+            "configs",
             "JSON Files (*.json);;All Files (*)",
         )
 
@@ -782,9 +761,14 @@ class SimpleTabs(QWidget):
             self.sc.length = len(self.sc.cur_schedules.schedules)
 
             # show first schedule
-            self.sc.set_tables()
-            self.schedule_table_widgets = self.sc.cur_widgets
-            self.my_scroll.setWidget(self.sc.cur_widgets)
+            if self.sc.mode == 0:
+                self.sc.set_tables()
+                self.schedule_table_widgets = self.sc.cur_widgets
+                self.my_scroll.setWidget(self.sc.cur_widgets)
+            else:
+                self.sc.graph_schedule()
+                self.schedule_table = self.sc.graph_widget
+                self.my_scroll.setWidget(self.schedule_table)
             self.schedule_viewer_index.setText(str(self.sc.index + 1))
             self.schedule_viewer_label_len.setText("/" + str(self.sc.length))
 
@@ -793,6 +777,7 @@ class SimpleTabs(QWidget):
 
             # enable button
             self.schedule_viewer_savebutton.setEnabled(True)
+            self.schedule_viewer_pdfbutton.setEnabled(True)
 
     def undo(self) -> None:
         try:

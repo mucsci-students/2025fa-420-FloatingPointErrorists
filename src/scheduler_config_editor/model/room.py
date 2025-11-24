@@ -1,4 +1,4 @@
-from .json import JsonConfig
+from .json_config import JsonConfig
 
 
 class Room:
@@ -59,6 +59,14 @@ class Room:
         else:
             raise Room.RoomMissingError(f"Room {room} does not exist.")
         return f"Room {room} successfully deleted."
+
+    @staticmethod
+    def room_string(json_config: JsonConfig) -> str:
+        """Returns a string of all rooms in the config"""
+        room_list = json_config.scheduler_config.rooms
+        if not room_list:
+            return "No rooms available."
+        return "Rooms:\n" + "\n".join(f"- {room}" for room in room_list)
 
     class RoomExistsError(Exception):
         # Exception for when a room already exists in the JSON

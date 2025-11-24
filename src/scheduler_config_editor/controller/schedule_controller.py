@@ -12,18 +12,18 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFontMetrics
 from scheduler.models import CourseInstance
 
-from scheduler_config_editor.model import ScheduleWriter
+from scheduler_config_editor.model import ScheduleWriter, PdfWriter, PdfMode
 from scheduler_config_editor.model import ScheduleHandler, INDEX_TO_DAY
 
 # colors for classes
 # (background, text)
 colors = [
     ("#0066ff", "#ffffff"),  # 50% light
+    ("#66a3ff", "#000000"),  # 70% light
+    ("#002966", "#ffffff"),  # 20% light
     ("#0052cc", "#ffffff"),  # 40% light
     ("#33adff", "#000000"),  # 60% light
     ("#005c99", "#ffffff"),  # 30% light
-    ("#66a3ff", "#000000"),  # 70% light
-    ("#002966", "#ffffff"),  # 20% light
     ("#99c2ff", "#000000"),  # 80% light
     ("#001433", "#ffffff"),  # 10% light
     ("#b3d1ff", "#000000"),  # 90% light
@@ -182,9 +182,11 @@ class SchedulerController:
                     # Create OverHeader Fac Name
                     cur_graph_name = QLabel(graph_name)
                     cur_graph_name.setAlignment(Qt.AlignmentFlag.AlignTop)
+                    cur_graph_name.setStyleSheet("font-weight: bold; font-size: 32px")
                     self.graph_layout.addWidget(cur_graph_name)
                     popup_graph_name = QLabel(graph_name)
                     popup_graph_name.setAlignment(Qt.AlignmentFlag.AlignTop)
+                    popup_graph_name.setStyleSheet("font-weight: bold; font-size: 32px")
                     self.popup_graph_layout.addWidget(popup_graph_name)
 
                     # MAIN TABLE
@@ -205,8 +207,34 @@ class SchedulerController:
                     popup_toptimelabel.setFixedHeight(50)
                     popup_time_index.addWidget(popup_toptimelabel)
 
+                    # find earliest start time and latest end time
+                    earliest_start = None
+                    latest_end = None
+                    while earliest_start is None:
+                        for day in week:
+                            for course in day:
+                                earliest_start = course.time[0]
+                                latest_end = course.time[1]
+                                if earliest_start is not None:
+                                    break
+
+                    for day in week:
+                        for course in day:
+                            if course.time[0] < earliest_start or earliest_start == 0:
+                                earliest_start = course.time[0]
+                            if course.time[1] > latest_end:
+                                latest_end = course.time[1]
+
+                    # round to nearest hour
+                    if earliest_start % 60 != 0:
+                        earliest_start -= earliest_start % 60
+                    if latest_end % 60 != 0:
+                        latest_end += 60 - (latest_end % 60)
+                    else:
+                        latest_end += 60
+
                     # 8am-7pm
-                    for i in range(8, 20):
+                    for i in range(earliest_start // 60, latest_end // 60):
                         time_label = QLabel(
                             self.convert_to_timestr(self.convert_to_minutes(i * 100))
                         )
@@ -257,8 +285,7 @@ class SchedulerController:
                         popup_coursespaceing.addStretch(1)
 
                         # keep track of time for stretch sizeing
-                        ######################################NEEEDS CHANGE AFTER TIMESLOT CONFIG IS ADDED#####################################
-                        cur_time = self.convert_to_minutes(800)
+                        cur_time = earliest_start
 
                         day_column = QVBoxLayout()
                         popup_daycolumn = QVBoxLayout()
@@ -311,10 +338,8 @@ class SchedulerController:
                             cur_time = courses.time[1]
 
                         # add space after last course
-                        day_column.addStretch(self.convert_to_minutes(2000) - cur_time)
-                        popup_daycolumn.addStretch(
-                            self.convert_to_minutes(2000) - cur_time
-                        )
+                        day_column.addStretch(latest_end - cur_time)
+                        popup_daycolumn.addStretch(latest_end - cur_time)
 
                         day_cousrse_spaceing.addLayout(day_column, stretch=40)
                         day_cousrse_spaceing.addStretch(1)
@@ -361,3 +386,15 @@ class SchedulerController:
     @staticmethod
     def save_as_csv(my_schedules: list[list[CourseInstance]], name: str) -> None:
         ScheduleWriter.write_as_csv(my_schedules, name)
+
+    def save_as_pdf(self, name: str) -> None:
+        """Saves the current schedule as a PDF."""
+        schedule = self.cur_schedules.schedules[self.index]
+        mode = PdfMode.ROOM if self.mode == 2 else PdfMode.FACULTY
+        PdfWriter.export_pdf(
+            ScheduleHandler.room_schedule_columns(schedule)
+            if mode == PdfMode.ROOM
+            else ScheduleHandler.faculty_schedule_columns(schedule),
+            name,
+            mode,
+        )

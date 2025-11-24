@@ -2,8 +2,8 @@ import click
 from click_shell import shell
 
 from ..model.courses import Course
-from ..model.json import JsonConfig
-from .base_cli import clear, get_json_config, run, save, show, undo, redo
+from ..model.json_config import JsonConfig
+from .base_cli import clear, get_json_config, run, save, undo, redo
 
 """
 This module implements a command-line interface (CLI) for managing courses in the configuration file.
@@ -27,7 +27,6 @@ To read up on how to use click, visit: https://click.palletsprojects.com/en/stab
 )  # type: ignore
 def courses() -> None:
     """Manage courses."""
-    courses.add_command(show)
     courses.add_command(clear)
     courses.add_command(run)
     courses.add_command(save)
@@ -101,6 +100,14 @@ def add_new_faculty(valid_faculty: list[str], default: bool) -> list[str]:
         faculty.append(new_faculty)
         valid_faculty.remove(new_faculty)
     return faculty
+
+
+@courses.command()  # type: ignore
+@click.pass_context
+def show(ctx: click.Context) -> None:
+    """Show all courses."""
+    config = get_json_config(ctx)
+    click.echo(Course.courses_string(config))
 
 
 @courses.command()  # type: ignore

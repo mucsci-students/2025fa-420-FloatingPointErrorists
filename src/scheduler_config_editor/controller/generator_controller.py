@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QDialog, QLabel, QMessageBox, QProgressBar, QVBoxLay
 from scheduler import OptimizerFlags, Scheduler
 from scheduler.models import CourseInstance
 
-from scheduler_config_editor.model.json import JsonConfig
+from scheduler_config_editor.model.json_config import JsonConfig
 from scheduler_config_editor.view.generator_gui import GeneratorGui
 
 

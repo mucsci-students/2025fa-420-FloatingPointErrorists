@@ -1,9 +1,8 @@
 import unittest
 from unittest.mock import patch
 import copy
-import os
 
-from scheduler_config_editor.model.json import (
+from scheduler_config_editor.model.json_config import (
     JsonConfig,
 )  # change this to where JsonConfig actually lives
 
@@ -45,9 +44,9 @@ class DummyCombinedConfig:
 # ----------------------------------------------------------------------
 class TestUndoRedo(unittest.TestCase):
     def setUp(self):
-        patcher1 = patch("scheduler_config_editor.model.json.os.makedirs")
+        patcher1 = patch("scheduler_config_editor.model.json_config.os.makedirs")
         patcher2 = patch(
-            "scheduler_config_editor.model.json.load_config_from_file",
+            "scheduler_config_editor.model.json_config.load_config_from_file",
             return_value=DummyCombinedConfig(1, 2),
         )
 
