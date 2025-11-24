@@ -32,6 +32,7 @@ class TimeSlot:
         end: TimeString,
     ) -> str:
         """Adds a time block to the config"""
+        json_config.add_to_undo_stack()
         day = INDEX_TO_DAY[day_index]
         time_block = TimeBlock(start=start, spacing=spacing, end=end)
         json_config.time_slot_config.times.get(day).append(time_block)
@@ -46,6 +47,7 @@ class TimeSlot:
         start_time: TimeString | None,
     ) -> str:
         """Adds a class pattern to the config"""
+        json_config.add_to_undo_stack()
         class_pattern = ClassPattern(
             credits=creds, meetings=meetings, disabled=disabled, start_time=start_time
         )
@@ -65,6 +67,7 @@ class TimeSlot:
         day = INDEX_TO_DAY[day_index]
         if index < 0 or index >= len(json_config.time_slot_config.times.get(day, [])):
             raise IndexError("Time block index out of range.")
+        json_config.add_to_undo_stack()
         old_time_block = json_config.time_slot_config.times.get(day, [])[index]
         time_block = TimeBlock(
             start=start if start is not None else old_time_block.start,
@@ -86,6 +89,7 @@ class TimeSlot:
         """Finds class pattern in config and replaces it with the updated one"""
         if index < 0 or index >= len(json_config.time_slot_config.classes):
             raise IndexError("Class pattern index out of range.")
+        json_config.add_to_undo_stack()
         old_class_pattern = json_config.time_slot_config.classes[index]
         class_pattern = ClassPattern(
             credits=creds if creds is not None else old_class_pattern.credits,
@@ -107,6 +111,7 @@ class TimeSlot:
             return f"No time block found for day {day}"
         if index < 0 or index >= len(json_config.time_slot_config.times.get(day, [])):
             raise IndexError("Time block index out of range.")
+        json_config.add_to_undo_stack()
         del time_blocks[index]
         return "Time block deleted successfully."
 
@@ -115,5 +120,6 @@ class TimeSlot:
         """Deletes a class pattern from the config"""
         if index < 0 or index >= len(json_config.time_slot_config.classes):
             raise IndexError("Class pattern index out of range.")
+        json_config.add_to_undo_stack()
         del json_config.time_slot_config.classes[index]
         return "Class pattern deleted successfully."
