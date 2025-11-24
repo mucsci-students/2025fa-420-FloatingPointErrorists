@@ -59,7 +59,8 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
     * `rooms` to manage rooms in the rooms shell.
     * `labs` to manage labs in the labs shell.
     * `courses` to manage courses in the courses shell.
-    * Within the `faculty`, `rooms`, `labs`, and `courses` shells, you can use:
+    * `time-slot' to manage time slots in the time slot shell.
+    * Within the `faculty`, `rooms`, `labs`, `time-slot`, and `courses` shells, you can use:
         * `add` to add a new item.
         * `delete` to remove an item.
         * `modify` to update an existing item.

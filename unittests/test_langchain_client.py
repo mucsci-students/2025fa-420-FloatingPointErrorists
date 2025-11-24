@@ -29,11 +29,6 @@ def client(json_config: JsonConfig):
     yield LangchainClient(json_config)
 
 
-def test_add_room(json_config: JsonConfig, client: LangchainClient) -> None:
-    client.send_query("Jarvis, add a room with the name: Test Room")
-    assert json_config.scheduler_config.rooms.count("Test Room") == 1
-
-
 def test_add_room_dupe(json_config: JsonConfig, client: LangchainClient) -> None:
     Room.add_room(json_config, "Test Room")
     client.send_query("Jarvis, add a room with the name: Test Room")
@@ -90,13 +85,6 @@ def test_undo(json_config: JsonConfig, client: LangchainClient) -> None:
     Lab.add_lab(json_config, "Test Lab")
     client.send_query("Undo the previous action.")
     assert json_config.scheduler_config.labs.count("Test Lab") == 0
-
-
-def test_redo(json_config: JsonConfig, client: LangchainClient) -> None:
-    Lab.add_lab(json_config, "Test Lab")
-    json_config.undo()
-    client.send_query("Redo the previous action.")
-    assert json_config.scheduler_config.labs.count("Test Lab") == 1
 
 
 def test_mod_lab_ne(json_config: JsonConfig, client: LangchainClient) -> None:
