@@ -362,7 +362,7 @@ class EditFacultyWindow(QMainWindow):
         else:
             end_time.setTime(QTime(0, 0, 0))
 
-        remove_button = QPushButton("🗑️")
+        remove_button = QPushButton("🗑")
         remove_button.setMaximumWidth(70)
 
         def remove_interval() -> None:

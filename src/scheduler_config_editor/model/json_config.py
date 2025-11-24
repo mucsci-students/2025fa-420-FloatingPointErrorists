@@ -1,4 +1,6 @@
 import os
+import copy
+from typing import Literal, List
 
 from scheduler import (
     CombinedConfig,
@@ -8,7 +10,8 @@ from scheduler import (
     load_config_from_file,
 )
 
-import copy
+DAYS = Literal["MON", "TUE", "WED", "THU", "FRI"]
+DayList: List[DAYS] = ["MON", "TUE", "WED", "THU", "FRI"]
 
 
 class JsonConfig:
@@ -118,19 +121,30 @@ class JsonConfig:
         """String representation of the time slot configuration."""
         time_slot_config = self._time_slot_config
         lines = ["\nTime Slot Config:"]
-        for day, slots in time_slot_config.times.items():
+        for day in DayList:
+            slots = time_slot_config.times.get(day, [])
             lines.append(f"  {day}:")
-            for slot in slots:
-                lines.append(
-                    f"    - Start: {slot.start}, End: {slot.end}, Spacing: {slot.spacing}"
-                )
+            if not slots:
+                lines.append("")
+            else:
+                for i, slot in enumerate(slots):
+                    lines.append(
+                        f"    [{i}]- Start: {slot.start}, End: {slot.end}, Spacing: {slot.spacing}"
+                    )
         lines.append("\nClasses:")
-        for cls in time_slot_config.classes:
-            meetings_str = ", ".join(
-                f"{m.day} (Duration={m.duration}, lab={getattr(m, 'lab', False)})"
-                for m in cls.meetings
-            )
-            lines.append(f"  - Credits: {cls.credits}, Meetings: [{meetings_str}]")
+        if not time_slot_config.classes:
+            lines.append("")
+        else:
+            for i, cls in enumerate(time_slot_config.classes):
+                meetings_str = ", ".join(
+                    f"{m.day} (Duration={m.duration}, lab={getattr(m, 'lab', False)})"
+                    for m in cls.meetings
+                )
+                lines.append(
+                    f" [{i}] - Credits: {cls.credits}, Meetings: [{meetings_str}], Disabled:{cls.disabled}"
+                )
+        lines.append(f"\nMax Time Gap: {time_slot_config.max_time_gap}")
+        lines.append(f"\nMin Time Overlap: {time_slot_config.min_time_overlap}")
         return "\n".join(lines)
 
     def __str__(self) -> str:
