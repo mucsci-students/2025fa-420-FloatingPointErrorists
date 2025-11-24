@@ -54,9 +54,9 @@ class TimeSlot:
 
     @staticmethod
     def mod_time_block(
+        json_config: JsonConfig,
         day_index: int,
         index: int,
-        json_config: JsonConfig,
         start: TimeString,
         spacing: int,
         end: TimeString,
@@ -76,8 +76,8 @@ class TimeSlot:
 
     @staticmethod
     def mod_class_pattern(
-        index: int,
         json_config: JsonConfig,
+        index: int,
         creds: int,
         meetings: list[Meeting],
         disabled: bool,

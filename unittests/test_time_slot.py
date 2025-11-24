@@ -55,9 +55,9 @@ class TestTimeSlot:
         index = len(json_config.time_slot_config.times.get("MON")) - 1
         test = TimeBlock(start="10:00", spacing=10, end="15:00")
         result = TimeSlot.mod_time_block(
+            json_config=json_config,
             index=index,
             day_index=1,
-            json_config=json_config,
             start="10:00",
             spacing=10,
             end="15:00",
@@ -77,8 +77,8 @@ class TestTimeSlot:
             start_time="12:00",
         )
         result = TimeSlot.mod_class_pattern(
-            index=index,
             json_config=json_config,
+            index=index,
             creds=4,
             meetings=[Meeting(day="TUE", start_time="11:00", duration=75, lab=True)],
             disabled=True,
@@ -120,9 +120,9 @@ class TestTimeSlot:
         index = len(json_config.time_slot_config.times.get("MON")) + 5
         with pytest.raises(IndexError, match="Time block index out of range."):
             TimeSlot.mod_time_block(
+            json_config=json_config,
             index=index,
             day_index=1,
-            json_config=json_config,
             start="10:00",
             spacing=10,
             end="15:00",
@@ -132,8 +132,8 @@ class TestTimeSlot:
         index = len(json_config.time_slot_config.classes) + 5
         with pytest.raises(IndexError, match = "Class pattern index out of range."):
             TimeSlot.mod_class_pattern(
-            index=index,
             json_config=json_config,
+            index=index,
             creds=4,
             meetings=[Meeting(day="TUE", start_time="11:00", duration=75, lab=True)],
             disabled=True,
