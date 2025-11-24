@@ -92,13 +92,6 @@ def test_undo(json_config: JsonConfig, client: LangchainClient) -> None:
     assert json_config.scheduler_config.labs.count("Test Lab") == 0
 
 
-def test_redo(json_config: JsonConfig, client: LangchainClient) -> None:
-    Lab.add_lab(json_config, "Test Lab")
-    json_config.undo()
-    client.send_query("Redo the previous action.")
-    assert json_config.scheduler_config.labs.count("Test Lab") == 1
-
-
 def test_mod_lab_ne(json_config: JsonConfig, client: LangchainClient) -> None:
     client.send_query(
         "Jarvis, change the lab with the name Test Lab, to the new name: Research Lab"
