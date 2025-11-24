@@ -529,42 +529,64 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
         StructuredTool.from_function(
             name="add_time_block",
             func=bind_config(TimeSlot.add_time_block, json_config=json_config),
-            description="Add a time block to the scheduler configuration.",
+            description="""
+                Add a time block to the scheduler configuration. It takes a day index
+                (1=MON, 2=TUE, 3=WED, 4=THU, 5=FRI), a start time (HH:MM), spacing in minutes,
+                and an end time (HH:MM).
+            """,
             return_direct=True,
             args_schema=AddTimeBlockArgs,
         ),
         StructuredTool.from_function(
             name="add_class_pattern",
             func=bind_config(TimeSlot.add_class_pattern, json_config=json_config),
-            description="Add a class pattern to the scheduler configuration.",
+            description="""
+                Add a class pattern to the scheduler configuration. It takes the number of credits,
+                a list of meetings where each meeting looks like {"day": "MON", "duration": 75, "lab": true},
+                a disabled flag, and an optional start time (HH:MM).
+            """,
             return_direct=True,
             args_schema=AddClassPatternArgs,
         ),
         StructuredTool.from_function(
             name="mod_time_block",
             func=bind_config(TimeSlot.mod_time_block, json_config=json_config),
-            description="Modify a time block in the scheduler configuration.",
+            description="""
+                Modify a time block in the scheduler configuration. It takes a day index
+                (1=MON, 2=TUE, 3=WED, 4=THU, 5=FRI), the index of the time block to modify,
+                a start time (HH:MM), spacing in minutes, and an end time (HH:MM).
+            """,
             return_direct=True,
             args_schema=ModTimeBlockArgs,
         ),
         StructuredTool.from_function(
             name="mod_class_pattern",
             func=bind_config(TimeSlot.mod_class_pattern, json_config=json_config),
-            description="Modify a class pattern in the scheduler configuration.",
+            description="""
+                Modify a class pattern in the scheduler configuration. It the index of the class pattern to modify,
+                the number of credits, a list of meetings where each meeting looks like
+                {"day": "MON", "duration": 75, "lab": true}, a disabled flag, and an optional start time (HH:MM).
+            """,
             return_direct=True,
             args_schema=ModClassPatternArgs,
         ),
         StructuredTool.from_function(
             name="del_time_block",
             func=bind_config(TimeSlot.del_time_block, json_config=json_config),
-            description="Delete a time block from the scheduler configuration.",
+            description="""
+                Delete a time block from the scheduler configuration. It takes a day index
+                (1=MON, 2=TUE, 3=WED, 4=THU, 5=FRI), and an index to specify which time block to delete.
+            """,
             return_direct=True,
             args_schema=DelTimeBlockArgs,
         ),
         StructuredTool.from_function(
             name="del_class_pattern",
             func=bind_config(TimeSlot.del_class_pattern, json_config=json_config),
-            description="Delete a class pattern from the scheduler configuration.",
+            description="""
+                Delete a class pattern from the scheduler configuration. It takes an index to specify which class
+                pattern to delete.
+            """,
             return_direct=True,
             args_schema=DelClassPatternArgs,
         ),

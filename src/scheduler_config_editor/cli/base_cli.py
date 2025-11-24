@@ -47,7 +47,7 @@ def base_cli(ctx: click.Context) -> None:
 def handle_sigint(signum: int, frame: types.FrameType | None) -> None:
     """Handle SIGINT (Ctrl+C) signal."""
     click.echo("\nExiting on user interrupt (Ctrl+C).")
-    raise SystemExit
+    raise EOFError
 
 
 def apply_signal_handlers() -> None:
@@ -72,6 +72,9 @@ def enable_configuration_commands() -> None:
     from .lab_cli import labs
     from .room_cli import rooms
 
+    base_cli.add_command(run) # Add run scheduler command
+    base_cli.add_command(save) # Add save configuration command
+    base_cli.add_command(show) # Add show configuration command
     base_cli.add_command(faculty)  # Add faculty sub-shell
     base_cli.add_command(courses)  # Add courses sub-shell
     base_cli.add_command(rooms)  # Add rooms sub-shell
@@ -119,7 +122,7 @@ def load_config(ctx: click.Context, file_path: str) -> None:
         raise click.ClickException("Invalid Configuration") from e
 
 
-@base_cli.command()  # type: ignore
+@click.command()
 @click.pass_context
 def show(ctx: click.Context) -> None:
     """Show the loaded configuration."""
@@ -127,7 +130,7 @@ def show(ctx: click.Context) -> None:
     click.echo(config)
 
 
-@base_cli.command()  # type: ignore
+@click.command()
 @click.pass_context
 def save(ctx: click.Context) -> None:
     """Save the current configuration back to the file."""
@@ -162,7 +165,7 @@ def load_schedules(ctx: click.Context, file_path: str) -> None:
         raise click.ClickException(f"{e}") from e
 
 
-@base_cli.command()  # type: ignore
+@click.command()
 @click.pass_context
 def run(ctx: click.Context) -> None:
     """Run the scheduler with the current configuration."""

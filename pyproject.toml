@@ -15,7 +15,8 @@ dependencies = [
     "langchain-openai",
     "langchain",
     "langgraph",
-    "reportlab"
+    "reportlab",
+    "pyreadline3"
 ]
 
 [project.optional-dependencies]
