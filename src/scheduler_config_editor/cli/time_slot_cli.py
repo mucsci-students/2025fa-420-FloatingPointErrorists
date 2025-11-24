@@ -178,9 +178,9 @@ def modify_time_block(ctx: click.Context) -> None:
     spacing = click.prompt("Spacing (minutes)", type=click.IntRange(min=0))
     click.echo(
         TimeSlot.mod_time_block(
+            json_config=json_config,
             day_index=day_index,
             index=index,
-            json_config=json_config,
             start=start if start is not None else old_time_block.start,
             end=end if end is not None else old_time_block.end,
             spacing=spacing if spacing is not None else old_time_block.spacing,
@@ -222,8 +222,8 @@ def modify_class_pattern(ctx: click.Context) -> None:
     cp_start_time = normalize_time(click.prompt("Start time (e.g., 9 or 09:00)"))
     click.echo(
         TimeSlot.mod_class_pattern(
-            index=index,
             json_config=json_config,
+            index=index,
             creds=creds if creds is not None else old_class_pattern.creits,
             meetings=meetings if meetings is not None else old_class_pattern.meetings,
             disabled=disabled if disabled is not None else old_class_pattern.disabled,
