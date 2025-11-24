@@ -17,6 +17,7 @@ from ..model.schedule_writer import ScheduleWriter
 from ..model.schedule_handler import ScheduleHandler
 
 """
+
 This module implements a command-line interface (CLI) for managing JSON configuration files.
 It allows users to load, view, and save configurations interactively.
 
@@ -28,6 +29,7 @@ To utilize it for a command:
 3- If you want to add something to the context object, use ctx.obj[key] = value.
 
 To read up on how to use click, visit: https://click.palletsprojects.com/en/stable/
+
 """
 
 HANDLER_KEY = "SCHEDULER_CLI_HANDLER"
