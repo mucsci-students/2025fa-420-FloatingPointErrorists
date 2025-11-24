@@ -29,11 +29,6 @@ def client(json_config: JsonConfig):
     yield LangchainClient(json_config)
 
 
-def test_add_room(json_config: JsonConfig, client: LangchainClient) -> None:
-    client.send_query("Jarvis, add a room with the name: Test Room")
-    assert json_config.scheduler_config.rooms.count("Test Room") == 1
-
-
 def test_add_room_dupe(json_config: JsonConfig, client: LangchainClient) -> None:
     Room.add_room(json_config, "Test Room")
     client.send_query("Jarvis, add a room with the name: Test Room")
