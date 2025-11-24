@@ -8,7 +8,14 @@ from langchain.agents import create_agent
 from pydantic import BaseModel
 from scheduler import TimeString, Meeting
 
-from scheduler_config_editor.model import JsonConfig, Faculty, Course, Room, Lab, TimeSlot
+from scheduler_config_editor.model import (
+    JsonConfig,
+    Faculty,
+    Course,
+    Room,
+    Lab,
+    TimeSlot,
+)
 
 
 # ----- Wrappers & Argument Schemas for JsonConfig ----- #
@@ -313,8 +320,10 @@ class DelLabArgs(BaseModel):
 class SetMaxTimeGapArgs(BaseModel):
     max_time_gap: int
 
+
 class SetMinTimeOverlapArgs(BaseModel):
     min_time_overlap: int
+
 
 class AddTimeBlockArgs(BaseModel):
     day_index: int
@@ -322,11 +331,13 @@ class AddTimeBlockArgs(BaseModel):
     spacing: int
     end: TimeString
 
+
 class AddClassPatternArgs(BaseModel):
     creds: int
     meetings: list[Meeting]
     disabled: bool
     start_time: TimeString | None
+
 
 class ModTimeBlockArgs(BaseModel):
     day_index: int
@@ -335,6 +346,7 @@ class ModTimeBlockArgs(BaseModel):
     spacing: int
     end: TimeString
 
+
 class ModClassPatternArgs(BaseModel):
     index: int
     creds: int
@@ -342,12 +354,15 @@ class ModClassPatternArgs(BaseModel):
     disabled: bool
     start_time: TimeString | None
 
+
 class DelTimeBlockArgs(BaseModel):
     day_index: int
     index: int
 
+
 class DelClassPatternArgs(BaseModel):
     index: int
+
 
 # ----- Tool List Definition ----- #
 
@@ -595,7 +610,7 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
             func=json_config.time_slot_str,
             description="List the time slots in the scheduler configuration.",
             return_direct=True,
-        )
+        ),
     ]
 
 

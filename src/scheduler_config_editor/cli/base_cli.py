@@ -73,9 +73,9 @@ def enable_configuration_commands() -> None:
     from .room_cli import rooms
     from .time_slot_cli import time_slot
 
-    base_cli.add_command(run) # Add run scheduler command
-    base_cli.add_command(save) # Add save configuration command
-    base_cli.add_command(show) # Add show configuration command
+    base_cli.add_command(run)  # Add run scheduler command
+    base_cli.add_command(save)  # Add save configuration command
+    base_cli.add_command(show)  # Add show configuration command
     base_cli.add_command(faculty)  # Add faculty sub-shell
     base_cli.add_command(courses)  # Add courses sub-shell
     base_cli.add_command(rooms)  # Add rooms sub-shell
