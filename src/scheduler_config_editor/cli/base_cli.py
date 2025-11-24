@@ -12,11 +12,12 @@ from scheduler import OptimizerFlags, Scheduler, CombinedConfig
 from scheduler.models import CourseInstance
 from scheduler_config_editor.model.langchain_client import LangchainClient
 
-from ..model.json import JsonConfig
+from ..model.json_config import JsonConfig
 from ..model.schedule_writer import ScheduleWriter
 from ..model.schedule_handler import ScheduleHandler
 
 """
+
 This module implements a command-line interface (CLI) for managing JSON configuration files.
 It allows users to load, view, and save configurations interactively.
 
@@ -28,6 +29,7 @@ To utilize it for a command:
 3- If you want to add something to the context object, use ctx.obj[key] = value.
 
 To read up on how to use click, visit: https://click.palletsprojects.com/en/stable/
+
 """
 
 HANDLER_KEY = "SCHEDULER_CLI_HANDLER"
@@ -47,7 +49,7 @@ def base_cli(ctx: click.Context) -> None:
 def handle_sigint(signum: int, frame: types.FrameType | None) -> None:
     """Handle SIGINT (Ctrl+C) signal."""
     click.echo("\nExiting on user interrupt (Ctrl+C).")
-    raise SystemExit
+    raise EOFError
 
 
 def apply_signal_handlers() -> None:
@@ -71,12 +73,19 @@ def enable_configuration_commands() -> None:
     from .faculty_cli import faculty
     from .lab_cli import labs
     from .room_cli import rooms
+    from .time_slot_cli import time_slot
 
+    base_cli.add_command(run)  # Add run scheduler command
+    base_cli.add_command(save)  # Add save configuration command
+    base_cli.add_command(show)  # Add show configuration command
     base_cli.add_command(faculty)  # Add faculty sub-shell
     base_cli.add_command(courses)  # Add courses sub-shell
     base_cli.add_command(rooms)  # Add rooms sub-shell
     base_cli.add_command(labs)  # Add labs sub-shell
     base_cli.add_command(chat)  # Add chat command
+    base_cli.add_command(undo)  # Add undo command
+    base_cli.add_command(redo)  # Add redo command
+    base_cli.add_command(time_slot)  # Add time slot sub-shell
 
 
 def check_valid_config(json_config: JsonConfig) -> None:
@@ -90,6 +99,10 @@ def check_valid_config(json_config: JsonConfig) -> None:
         raise click.ClickException("No faculty defined in the configuration.")
     if len(config.courses) == 0:
         raise click.ClickException("No courses defined in the configuration.")
+    if all(len(slots) == 0 for slots in json_config.time_slot_config.times.values()):
+        raise click.ClickException("No time blocks defined in the configuration.")
+    if len(json_config.time_slot_config.classes) == 0:
+        raise click.ClickException("No class patterns defined in the configuration.")
 
 
 @base_cli.command()  # type: ignore
@@ -117,7 +130,7 @@ def load_config(ctx: click.Context, file_path: str) -> None:
         raise click.ClickException("Invalid Configuration") from e
 
 
-@base_cli.command()  # type: ignore
+@click.command()
 @click.pass_context
 def show(ctx: click.Context) -> None:
     """Show the loaded configuration."""
@@ -125,7 +138,7 @@ def show(ctx: click.Context) -> None:
     click.echo(config)
 
 
-@base_cli.command()  # type: ignore
+@click.command()
 @click.pass_context
 def save(ctx: click.Context) -> None:
     """Save the current configuration back to the file."""
@@ -160,7 +173,7 @@ def load_schedules(ctx: click.Context, file_path: str) -> None:
         raise click.ClickException(f"{e}") from e
 
 
-@base_cli.command()  # type: ignore
+@click.command()
 @click.pass_context
 def run(ctx: click.Context) -> None:
     """Run the scheduler with the current configuration."""
@@ -191,7 +204,9 @@ def chat(ctx: click.Context) -> None:
             click.echo("Exiting chat.")
             break
         stop_event = threading.Event()
-        spinner_thread = threading.Thread(target=spinner, args=(stop_event,))
+        spinner_thread = threading.Thread(
+            target=spinner, args=(stop_event, "Jarvis is thinking")
+        )
         spinner_thread.start()
         try:
             response = langchain_client.send_query(command)
@@ -201,14 +216,34 @@ def chat(ctx: click.Context) -> None:
         click.echo(response)
 
 
-def spinner(stop_event: threading.Event) -> None:
+@click.command()
+@click.pass_context
+def undo(ctx: click.Context) -> None:
+    """Undo the last change made to the configuration."""
+    try:
+        get_json_config(ctx).undo()
+        click.echo("Undid successfully.")
+    except IndexError:
+        click.echo("Nothing to undo.")
+
+
+@click.command()
+@click.pass_context
+def redo(ctx: click.Context) -> None:
+    """Redo the last change that was undone."""
+    try:
+        get_json_config(ctx).redo()
+        click.echo("Redid successfully.")
+    except IndexError:
+        click.echo("Nothing to redo.")
+
+
+def spinner(stop_event: threading.Event, text: str) -> None:
     """Display a spinner while waiting for a response."""
     spinner_chars = "|/-\\"
     i = 0
     while not stop_event.is_set():
-        click.echo(
-            f"\rJarvis is thinking... {spinner_chars[i % len(spinner_chars)]}", nl=False
-        )
+        click.echo(f"\r{text}... {spinner_chars[i % len(spinner_chars)]}", nl=False)
         time.sleep(0.1)
         i += 1
         # This is how I got it to clear the line properly. If you have a better way, please change it.

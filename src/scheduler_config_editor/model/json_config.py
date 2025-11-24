@@ -1,4 +1,6 @@
 import os
+import copy
+from typing import Literal, List
 
 from scheduler import (
     CombinedConfig,
@@ -7,6 +9,9 @@ from scheduler import (
     TimeSlotConfig,
     load_config_from_file,
 )
+
+DAYS = Literal["MON", "TUE", "WED", "THU", "FRI"]
+DayList: List[DAYS] = ["MON", "TUE", "WED", "THU", "FRI"]
 
 
 class JsonConfig:
@@ -40,6 +45,8 @@ class JsonConfig:
         self._combined_config: CombinedConfig = load_config_from_file(
             CombinedConfig, file_path
         )
+        self.__undo_stack: list[CombinedConfig] = []
+        self.__redo_stack: list[CombinedConfig] = []
         self._scheduler_config: SchedulerConfig = self._combined_config.config
         self._time_slot_config: TimeSlotConfig = self._combined_config.time_slot_config
 
@@ -114,19 +121,30 @@ class JsonConfig:
         """String representation of the time slot configuration."""
         time_slot_config = self._time_slot_config
         lines = ["\nTime Slot Config:"]
-        for day, slots in time_slot_config.times.items():
+        for day in DayList:
+            slots = time_slot_config.times.get(day, [])
             lines.append(f"  {day}:")
-            for slot in slots:
-                lines.append(
-                    f"    - Start: {slot.start}, End: {slot.end}, Spacing: {slot.spacing}"
-                )
+            if not slots:
+                lines.append("")
+            else:
+                for i, slot in enumerate(slots):
+                    lines.append(
+                        f"    [{i}]- Start: {slot.start}, End: {slot.end}, Spacing: {slot.spacing}"
+                    )
         lines.append("\nClasses:")
-        for cls in time_slot_config.classes:
-            meetings_str = ", ".join(
-                f"{m.day} (Duration={m.duration}, lab={getattr(m, 'lab', False)})"
-                for m in cls.meetings
-            )
-            lines.append(f"  - Credits: {cls.credits}, Meetings: [{meetings_str}]")
+        if not time_slot_config.classes:
+            lines.append("")
+        else:
+            for i, cls in enumerate(time_slot_config.classes):
+                meetings_str = ", ".join(
+                    f"{m.day} (Duration={m.duration}, lab={getattr(m, 'lab', False)})"
+                    for m in cls.meetings
+                )
+                lines.append(
+                    f" [{i}] - Credits: {cls.credits}, Meetings: [{meetings_str}], Disabled:{cls.disabled}"
+                )
+        lines.append(f"\nMax Time Gap: {time_slot_config.max_time_gap}")
+        lines.append(f"\nMin Time Overlap: {time_slot_config.min_time_overlap}")
         return "\n".join(lines)
 
     def __str__(self) -> str:
@@ -140,3 +158,46 @@ class JsonConfig:
         for flag in getattr(combined_config, "optimizer_flags", []):
             lines.append(f"  - {flag}")
         return "\n".join(lines)
+
+    # Undo button is pressed
+    def undo(self) -> None:
+        if self.__undo_stack.__len__() == 0:
+            raise IndexError("No changes to undo.")
+
+        # Save current state to redo
+        self.__redo_stack.append(copy.deepcopy(self._combined_config))
+
+        # Restore previous state
+        prev = self.__undo_stack.pop()
+        self._combined_config = prev
+        self._scheduler_config = prev.config
+        self._time_slot_config = prev.time_slot_config
+
+    # Redo button is pressed
+    def redo(self) -> None:
+        if self.__redo_stack.__len__() == 0:
+            raise IndexError("No changes to redo.")
+
+        # Save current state to undo
+        self.__undo_stack.append(copy.deepcopy(self._combined_config))
+
+        # Restore next state
+        next_state = self.__redo_stack.pop()
+        self._combined_config = next_state
+        self._scheduler_config = next_state.config
+        self._time_slot_config = next_state.time_slot_config
+
+    # Called when a change is made to the config and saved, meaning we should push our old config onto the stack
+    def add_to_undo_stack(self):
+        self.__undo_stack.append(copy.deepcopy(self._combined_config))
+        self.__redo_stack.clear()
+
+    def get_undo_stack_size(self) -> int:
+        return len(self.__undo_stack)
+
+    def get_redo_stack_size(self) -> int:
+        return len(self.__redo_stack)
+
+    def clear_stacks(self) -> None:
+        self.__undo_stack.clear()
+        self.__redo_stack.clear()

@@ -3,7 +3,7 @@ from typing import Annotated, Optional, cast
 
 from scheduler import Day, FacultyConfig, TimeRange
 
-from .json import JsonConfig
+from .json_config import JsonConfig
 
 
 class Faculty:
@@ -81,6 +81,7 @@ class Faculty:
             room_preferences,
             lab_preferences,
         )
+        json_config.add_to_undo_stack()
         times_casted = cast(dict[Day, list[TimeRange]], times)
         faculty_config = FacultyConfig(
             name=name,
@@ -148,6 +149,7 @@ class Faculty:
                     new_faculty.room_preferences,
                     new_faculty.lab_preferences,
                 )
+                json_config.add_to_undo_stack()
                 json_config.scheduler_config.faculty[i] = new_faculty
                 found = True
         for course in json_config.scheduler_config.courses:
@@ -177,6 +179,7 @@ class Faculty:
     @staticmethod
     def del_faculty(json_config: JsonConfig, name: str) -> str:
         """finds the faculty within the scheduler and removes it"""
+        json_config.add_to_undo_stack()
         found = False
         for i, _faculty in enumerate(json_config.scheduler_config.faculty):
             if json_config.scheduler_config.faculty[i].name == name:
@@ -192,3 +195,14 @@ class Faculty:
             if found
             else f"Faculty member {name} not found."
         )
+
+    @staticmethod
+    def faculty_string(json_config: JsonConfig) -> str:
+        """returns a string representation of all faculty members in the config"""
+        faculty_list = json_config.scheduler_config.faculty
+        if not faculty_list:
+            return "No faculty members found."
+        result = "Faculty Members:\n"
+        for faculty in faculty_list:
+            result += f"- {faculty.name}, Max Credits: {faculty.maximum_credits}, Min Credits: {faculty.minimum_credits}, Unique Course Limit: {faculty.unique_course_limit}\n"
+        return result

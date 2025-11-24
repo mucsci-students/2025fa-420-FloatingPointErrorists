@@ -215,10 +215,11 @@ class EditFacultyWindow(QMainWindow):
 
             self.intervals_container = QVBoxLayout()
             self.day_layout.addLayout(self.intervals_container)
-            self.day_interval_widgets[day] = {
+            entry: DayIntervalData = {
                 "container": self.intervals_container,
                 "intervals": [],
             }
+            self.day_interval_widgets[day] = entry
             self.time_layout.addLayout(self.day_layout, 0, i)
 
         # Loading previous availabilities
@@ -361,7 +362,7 @@ class EditFacultyWindow(QMainWindow):
         else:
             end_time.setTime(QTime(0, 0, 0))
 
-        remove_button = QPushButton("🗑️")
+        remove_button = QPushButton("🗑")
         remove_button.setMaximumWidth(70)
 
         def remove_interval() -> None:

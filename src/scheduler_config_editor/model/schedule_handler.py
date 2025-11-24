@@ -3,8 +3,8 @@ import json
 import os
 import re
 from collections import defaultdict
-from collections.abc import Callable
-from typing import Any, cast
+from dataclasses import dataclass
+from typing import Any, cast, Tuple, Optional
 
 from scheduler.json_types import CourseInstanceJSON, TimeInstanceJSON
 from scheduler.models import CourseInstance
@@ -13,6 +13,16 @@ from tabulate import tabulate
 DAY_TO_INDEX = {"MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5}
 INDEX_TO_DAY = {1: "MON", 2: "TUE", 3: "WED", 4: "THU", 5: "FRI"}
 DAYS = ["MON", "TUE", "WED", "THU", "FRI"]
+
+
+@dataclass
+class CourseMeeting:
+    """A dataclass representing a single meeting of a course."""
+
+    name: str
+    time: Tuple[int, int]
+    room: str
+    faculty: str
 
 
 class ScheduleHandler:
@@ -35,14 +45,10 @@ class ScheduleHandler:
 
     def load_schedules(self, schedules: list[list[CourseInstance]]) -> None:
         """Load schedules from a list of CourseInstance lists."""
-        self._schedules = []
-        for other_schedule in schedules:
-            new_schedule = []
-            for course_instance in other_schedule:
-                new_schedule.append(
-                    course_instance.model_dump(by_alias=True, exclude_none=True)
-                )
-            self._schedules.append(new_schedule)
+        self._schedules = [
+            [ci.model_dump(by_alias=True, exclude_none=True) for ci in sched]
+            for sched in schedules
+        ]
 
     def import_schedules(self, file_path: str) -> None:
         """
@@ -163,23 +169,27 @@ class ScheduleHandler:
         )
 
     @staticmethod
-    def _group_by(
-        schedule: list[CourseInstanceJSON], key_fn: Callable[[CourseInstanceJSON], Any]
+    def _group_by_faculty(
+        schedule: list[CourseInstanceJSON],
     ) -> dict[Any, list[CourseInstanceJSON]]:
-        """Group courses in the schedule by a key function."""
-        groups: dict[Any, list[CourseInstanceJSON]] = defaultdict(list)
+        """Group courses in the schedule by faculty."""
+        faculty_map: dict[Any, list[CourseInstanceJSON]] = defaultdict(list)
         for course in schedule:
-            groups[key_fn(course)].append(course)
-        return groups
+            faculty_map[course["faculty"]].append(course)
+        return faculty_map
 
     @staticmethod
-    def _build_rows(
-        courses: list[CourseInstanceJSON],
-        row_fn: Callable[[CourseInstanceJSON, list[str]], list[str]],
-        days: list[str],
-    ) -> list[list[str]]:
-        """Build table rows for a group of courses using a row builder function"""
-        return [row_fn(course, days) for course in courses]
+    def _group_by_room(
+        schedule: list[CourseInstanceJSON],
+    ) -> dict[Any, list[CourseInstanceJSON]]:
+        """Group courses in the schedule by room."""
+        room_map: dict[Any, list[CourseInstanceJSON]] = defaultdict(list)
+        for course in schedule:
+            if course.get("room") is not None:
+                room_map[course["room"]].append(course)
+            if course.get("lab") is not None:
+                room_map[course["lab"]].append(course)
+        return room_map
 
     @staticmethod
     def _avg_start(course: CourseInstanceJSON) -> float:
@@ -222,6 +232,29 @@ class ScheduleHandler:
         return row
 
     @staticmethod
+    def _day_column(
+        courses: list[CourseInstanceJSON], room_filter: Optional[str] = None
+    ) -> list[list[CourseMeeting]]:
+        """Build a column for a faculty or room schedule table."""
+        meetings: list[list[CourseMeeting]] = [[] for _ in range(5)]
+        for course in courses:
+            lab_index = course.get("lab_index")
+            for idx, time in enumerate(course["times"]):
+                meeting = (time["start"], time["start"] + time["duration"])
+                room = course["lab"] if idx == lab_index else course.get("room")
+                if room_filter is not None and room is not None and room != room_filter:
+                    continue
+                meetings[time["day"] - 1].append(
+                    CourseMeeting(
+                        name=course["course"],
+                        time=meeting,
+                        room=room if room is not None else "",
+                        faculty=course["faculty"],
+                    )
+                )
+        return meetings
+
+    @staticmethod
     def schedule_rows(schedule: list[CourseInstanceJSON]) -> list[list[str]]:
         """Build rows for the general schedule table."""
         rows: list[list[str]] = []
@@ -243,84 +276,71 @@ class ScheduleHandler:
         return rows
 
     @staticmethod
-    def faculty_schedule_rows(
+    def faculty_schedule_columns(
         schedule: list[CourseInstanceJSON],
-    ) -> list[tuple[str, list[list[str]]]]:
-        """Build rows for the faculty schedule table."""
-        faculty_map = ScheduleHandler._group_by(schedule, lambda c: c["faculty"])
-        faculty_schedules = []
-        for faculty, courses in faculty_map.items():
-            sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
-            rows = ScheduleHandler._build_rows(
-                sorted_courses, ScheduleHandler._faculty_row, DAYS
+    ) -> list[tuple[str, list[list[CourseMeeting]]]]:
+        """Build Columns for the faculty schedule table."""
+        faculty_map = ScheduleHandler._group_by_faculty(schedule)
+        return [
+            (
+                faculty,
+                ScheduleHandler._day_column(
+                    sorted(courses, key=ScheduleHandler._avg_start)
+                ),
             )
-            faculty_schedules.append((faculty, rows))
-        return faculty_schedules
+            for faculty, courses in faculty_map.items()
+        ]
 
     @staticmethod
-    def room_schedule_rows(
+    def room_schedule_columns(
         schedule: list[CourseInstanceJSON],
-    ) -> list[tuple[str, list[list[str]]]]:
-        """Build rows for the room schedule table."""
-        room_map: dict[str, list[CourseInstanceJSON]] = defaultdict(list)
-        for course in schedule:
-            room = course.get("room")
-            lab = course.get("lab")
-            if room is not None:
-                room_map[room].append(course)
-            if lab is not None:
-                room_map[lab].append(course)
-        room_schedules = []
-        for room, courses in room_map.items():
-            sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
-            rows = [
-                ScheduleHandler._room_row(course, DAYS, room)
-                for course in sorted_courses
-            ]
-            room_schedules.append((room, rows))
-        return room_schedules
+    ) -> list[tuple[str, list[list[CourseMeeting]]]]:
+        """Build Columns for the room schedule table."""
+        room_map = ScheduleHandler._group_by_room(schedule)
+        return [
+            (
+                room,
+                ScheduleHandler._day_column(
+                    sorted(courses, key=ScheduleHandler._avg_start), room
+                ),
+            )
+            for room, courses in room_map.items()
+        ]
 
     @staticmethod
     def format_schedule_str(schedule: list[CourseInstanceJSON]) -> str:
         """Format the general schedule as a table string."""
         headers = ["Course", "Faculty", "Room", "Lab", "Times"]
-        rows = ScheduleHandler.schedule_rows(schedule)
-        return tabulate(rows, headers=headers, tablefmt="github")
+        return tabulate(
+            ScheduleHandler.schedule_rows(schedule), headers=headers, tablefmt="github"
+        )
 
     @staticmethod
     def faculty_schedule_str(schedule: list[CourseInstanceJSON]) -> str:
         """Format the faculty schedule as a table string."""
-        faculty_map = ScheduleHandler._group_by(schedule, lambda c: c["faculty"])
-        final_str = ""
+        faculty_map = ScheduleHandler._group_by_faculty(schedule)
+        out = ""
         for faculty, courses in faculty_map.items():
-            sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
-            final_str += f"\n{faculty}:\n"
+            out += f"\n{faculty}:\n"
             headers = ["Course", "Room (Lab)"] + DAYS
-            rows = ScheduleHandler._build_rows(
-                sorted_courses, ScheduleHandler._faculty_row, DAYS
-            )
-            final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
-        return final_str
+            rows = [
+                ScheduleHandler._faculty_row(c, DAYS)
+                for c in sorted(courses, key=ScheduleHandler._avg_start)
+            ]
+            out += tabulate(rows, headers=headers, tablefmt="github") + "\n"
+        return out
 
     @staticmethod
     def room_schedule_str(schedule: list[CourseInstanceJSON]) -> str:
         """Format the room schedule as a table string."""
-        room_map: dict[str, list[CourseInstanceJSON]] = defaultdict(list)
-        for course in schedule:
-            room = course.get("room")
-            lab = course.get("lab")
-            if room is not None:
-                room_map[room].append(course)
-            if lab is not None:
-                room_map[lab].append(course)
-        final_str = ""
+        room_map = ScheduleHandler._group_by_room(schedule)
+        out = ""
         for room, courses in room_map.items():
-            sorted_courses = sorted(courses, key=ScheduleHandler._avg_start)
-            final_str += f"\n{room}:\n"
+            out += f"\n{room}:\n"
             headers = ["Course", "Faculty"] + DAYS
             rows = [
-                ScheduleHandler._room_row(course, DAYS, room)
-                for course in sorted_courses
+                ScheduleHandler._room_row(c, DAYS, room)
+                for c in sorted(courses, key=ScheduleHandler._avg_start)
             ]
-            final_str += tabulate(rows, headers=headers, tablefmt="github") + "\n"
-        return final_str
+            out += tabulate(rows, headers=headers, tablefmt="github") + "\n"
+        return out

@@ -1,22 +1,54 @@
-import functools
 import os
 from typing import Optional
 from dotenv import load_dotenv
-from langgraph.prebuilt import create_react_agent
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import StructuredTool
+from langchain.agents import create_agent
 from pydantic import BaseModel
-from scheduler_config_editor.model import JsonConfig, Faculty, Course, Room, Lab
+from scheduler import TimeString, Meeting
+
+from scheduler_config_editor.model import (
+    JsonConfig,
+    Faculty,
+    Course,
+    Room,
+    Lab,
+    TimeSlot,
+)
 
 
-# ----- Show Config Function ----- #
+# ----- Wrappers & Argument Schemas for JsonConfig ----- #
+
+
 def make_show(json_config):
     def show() -> str:
         """Show the current scheduler configuration in a pretty-printed format."""
         return str(json_config)
 
     return show
+
+
+def make_undo(json_config: JsonConfig):
+    def undo_wrapper() -> str:
+        try:
+            json_config.undo()
+            return "Successfully undid the last change."
+        except IndexError:
+            return "Nothing to undo."
+
+    return undo_wrapper
+
+
+def make_redo(json_config: JsonConfig):
+    def redo_wrapper() -> str:
+        try:
+            json_config.redo()
+            return "Successfully redid the last undone change."
+        except IndexError:
+            return "Nothing to redo."
+
+    return redo_wrapper
 
 
 # ------ Wrappers & Argument Schemas for Faculty functions ----- #
@@ -76,6 +108,13 @@ def mod_faculty(
         )
     except ValueError as e:
         return str(e)
+
+
+def make_show_faculty(json_config):
+    def show_faculty() -> str:
+        return Faculty.faculty_string(json_config)
+
+    return show_faculty
 
 
 class AddFacultyArgs(BaseModel):
@@ -235,6 +274,20 @@ def del_lab(json_config: JsonConfig, lab: str) -> str:
         return str(e)
 
 
+def make_show_rooms(json_config):
+    def show_rooms() -> str:
+        return Room.room_string(json_config)
+
+    return show_rooms
+
+
+def make_show_labs(json_config):
+    def show_labs() -> str:
+        return Lab.lab_string(json_config)
+
+    return show_labs
+
+
 class AddRoomArgs(BaseModel):
     new_room: str
 
@@ -261,14 +314,76 @@ class DelLabArgs(BaseModel):
     lab: str
 
 
+# ----- Wrappers & Argument Schema for Timeslot functions ----- #
+
+
+class SetMaxTimeGapArgs(BaseModel):
+    max_time_gap: int
+
+
+class SetMinTimeOverlapArgs(BaseModel):
+    min_time_overlap: int
+
+
+class AddTimeBlockArgs(BaseModel):
+    day_index: int
+    start: TimeString
+    spacing: int
+    end: TimeString
+
+
+class AddClassPatternArgs(BaseModel):
+    creds: int
+    meetings: list[Meeting]
+    disabled: bool
+    start_time: TimeString | None
+
+
+class ModTimeBlockArgs(BaseModel):
+    day_index: int
+    index: int
+    start: TimeString
+    spacing: int
+    end: TimeString
+
+
+class ModClassPatternArgs(BaseModel):
+    index: int
+    creds: int
+    meetings: list[Meeting]
+    disabled: bool
+    start_time: TimeString | None
+
+
+class DelTimeBlockArgs(BaseModel):
+    day_index: int
+    index: int
+
+
+class DelClassPatternArgs(BaseModel):
+    index: int
+
+
 # ----- Tool List Definition ----- #
+
+
+def bind_config(fn, json_config: JsonConfig):
+    """Wrap a function while preserving name and annotations so LangChain accepts it."""
+
+    def wrapper(*args, **kwargs):
+        return fn(json_config, *args, **kwargs)
+
+    wrapper.__name__ = fn.__name__
+    wrapper.__doc__ = fn.__doc__
+    wrapper.__annotations__ = fn.__annotations__
+    return wrapper
 
 
 def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
     return [
         StructuredTool.from_function(
             name="add_faculty",
-            func=functools.partial(add_faculty, json_config),
+            func=bind_config(add_faculty, json_config),
             description=(
                 "Add a faculty member to the scheduler configuration. "
                 "Required fields: name, maximum_credits, minimum_credits, unique_course_limit, times. "
@@ -283,7 +398,7 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
         ),
         StructuredTool.from_function(
             name="mod_faculty",
-            func=functools.partial(mod_faculty, json_config),
+            func=bind_config(mod_faculty, json_config),
             description=(
                 "Modify a faculty member in the scheduler configuration. "
                 "Required fields: old_name, new_name, maximum_credits, minimum_credits, unique_course_limit, times. "
@@ -298,35 +413,35 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
         ),
         StructuredTool.from_function(
             name="del_faculty",
-            func=functools.partial(Faculty.del_faculty, json_config),
+            func=bind_config(Faculty.del_faculty, json_config),
             description="Delete a faculty member from the scheduler config.",
             return_direct=True,
             args_schema=DelFacultyArgs,
         ),
         StructuredTool.from_function(
             name="courses_string",
-            func=functools.partial(Course.courses_string, json_config),
+            func=bind_config(Course.courses_string, json_config),
             description="List all courses in the scheduler configuration.",
             return_direct=True,
             args_schema=ListCoursesArgs,
         ),
         StructuredTool.from_function(
             name="del_course",
-            func=functools.partial(del_course, json_config=json_config),
+            func=bind_config(del_course, json_config=json_config),
             description="Delete a course from the scheduler configuration by its index.",
             return_direct=True,
             args_schema=DelCourseArgs,
         ),
         StructuredTool.from_function(
             name="add_course",
-            func=functools.partial(add_course, json_config=json_config),
+            func=bind_config(add_course, json_config=json_config),
             description="Add a course to the scheduler configuration.",
             return_direct=True,
             args_schema=AddCourseArgs,
         ),
         StructuredTool.from_function(
             name="mod_course",
-            func=functools.partial(mod_course, json_config=json_config),
+            func=bind_config(mod_course, json_config=json_config),
             description=(
                 "Modify a course in the scheduler configuration."
                 "if you are told to remove all items from a list field, pass an empty list for that field."
@@ -336,42 +451,42 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
         ),
         StructuredTool.from_function(
             name="add_room",
-            func=functools.partial(add_room, json_config=json_config),
+            func=bind_config(add_room, json_config=json_config),
             description="Add a room to the scheduler configuration.",
             return_direct=True,
             args_schema=AddRoomArgs,
         ),
         StructuredTool.from_function(
             name="mod_room",
-            func=functools.partial(mod_room, json_config=json_config),
+            func=bind_config(mod_room, json_config=json_config),
             description="Modify a room in the scheduler configuration.",
             return_direct=True,
             args_schema=ModRoomArgs,
         ),
         StructuredTool.from_function(
             name="del_room",
-            func=functools.partial(del_room, json_config=json_config),
+            func=bind_config(del_room, json_config=json_config),
             description="Delete a room from the scheduler configuration.",
             return_direct=True,
             args_schema=DelRoomArgs,
         ),
         StructuredTool.from_function(
             name="add_lab",
-            func=functools.partial(add_lab, json_config=json_config),
+            func=bind_config(add_lab, json_config=json_config),
             description="Add a lab to the scheduler configuration.",
             return_direct=True,
             args_schema=AddLabArgs,
         ),
         StructuredTool.from_function(
             name="mod_lab",
-            func=functools.partial(mod_lab, json_config=json_config),
+            func=bind_config(mod_lab, json_config=json_config),
             description="Modify a lab in the scheduler configuration.",
             return_direct=True,
             args_schema=ModLabArgs,
         ),
         StructuredTool.from_function(
             name="del_lab",
-            func=functools.partial(del_lab, json_config=json_config),
+            func=bind_config(del_lab, json_config=json_config),
             description="Delete a lab from the scheduler configuration.",
             return_direct=True,
             args_schema=DelLabArgs,
@@ -380,6 +495,120 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
             name="show",
             func=make_show(json_config),
             description="Show the current scheduler configuration in a pretty-printed format.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="undo",
+            func=make_undo(json_config),
+            description="Undo the last change made to the configuration.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="redo",
+            func=make_redo(json_config),
+            description="Redo the last undone change to the configuration.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="show_faculty",
+            func=make_show_faculty(json_config),
+            description="List all faculty members in the scheduler configuration.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="show_rooms",
+            func=make_show_rooms(json_config),
+            description="List all rooms in the scheduler configuration.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="show_labs",
+            func=make_show_labs(json_config),
+            description="List all labs in the scheduler configuration.",
+            return_direct=True,
+        ),
+        StructuredTool.from_function(
+            name="set_max_time_gap",
+            func=bind_config(TimeSlot.set_max_time_gap, json_config=json_config),
+            description="Set the maximum time gap allowed between scheduled classes in the scheduler configuration.",
+            return_direct=True,
+            args_schema=SetMaxTimeGapArgs,
+        ),
+        StructuredTool.from_function(
+            name="set_min_time_overlap",
+            func=bind_config(TimeSlot.set_min_time_overlap, json_config=json_config),
+            description="Set the minimum time overlap required between scheduled classes in the scheduler configuration.",
+            return_direct=True,
+            args_schema=SetMinTimeOverlapArgs,
+        ),
+        StructuredTool.from_function(
+            name="add_time_block",
+            func=bind_config(TimeSlot.add_time_block, json_config=json_config),
+            description="""
+                Add a time block to the scheduler configuration. It takes a day index
+                (1=MON, 2=TUE, 3=WED, 4=THU, 5=FRI), a start time (HH:MM), spacing in minutes,
+                and an end time (HH:MM).
+            """,
+            return_direct=True,
+            args_schema=AddTimeBlockArgs,
+        ),
+        StructuredTool.from_function(
+            name="add_class_pattern",
+            func=bind_config(TimeSlot.add_class_pattern, json_config=json_config),
+            description="""
+                Add a class pattern to the scheduler configuration. It takes the number of credits,
+                a list of meetings where each meeting looks like {"day": "MON", "duration": 75, "lab": true},
+                a disabled flag, and an optional start time (HH:MM).
+            """,
+            return_direct=True,
+            args_schema=AddClassPatternArgs,
+        ),
+        StructuredTool.from_function(
+            name="mod_time_block",
+            func=bind_config(TimeSlot.mod_time_block, json_config=json_config),
+            description="""
+                Modify a time block in the scheduler configuration. It takes a day index
+                (1=MON, 2=TUE, 3=WED, 4=THU, 5=FRI), the index of the time block to modify,
+                a start time (HH:MM), spacing in minutes, and an end time (HH:MM).
+            """,
+            return_direct=True,
+            args_schema=ModTimeBlockArgs,
+        ),
+        StructuredTool.from_function(
+            name="mod_class_pattern",
+            func=bind_config(TimeSlot.mod_class_pattern, json_config=json_config),
+            description="""
+                Modify a class pattern in the scheduler configuration. It the index of the class pattern to modify,
+                the number of credits, a list of meetings where each meeting looks like
+                {"day": "MON", "duration": 75, "lab": true}, a disabled flag, and an optional start time (HH:MM).
+            """,
+            return_direct=True,
+            args_schema=ModClassPatternArgs,
+        ),
+        StructuredTool.from_function(
+            name="del_time_block",
+            func=bind_config(TimeSlot.del_time_block, json_config=json_config),
+            description="""
+                Delete a time block from the scheduler configuration. It takes a day index
+                (1=MON, 2=TUE, 3=WED, 4=THU, 5=FRI), and an index to specify which time block to delete.
+            """,
+            return_direct=True,
+            args_schema=DelTimeBlockArgs,
+        ),
+        StructuredTool.from_function(
+            name="del_class_pattern",
+            func=bind_config(TimeSlot.del_class_pattern, json_config=json_config),
+            description="""
+                Delete a class pattern from the scheduler configuration. It takes an index to specify which class
+                pattern to delete.
+            """,
+            return_direct=True,
+            args_schema=DelClassPatternArgs,
+        ),
+        StructuredTool.from_function(
+            name="time_slot_str",
+            func=json_config.time_slot_str,
+            description="List the time slots in the scheduler configuration.",
             return_direct=True,
         ),
     ]
@@ -406,13 +635,14 @@ class LangchainClient:
         model = init_chat_model("gpt-5-mini", model_provider="openai")
         tool_list = get_tool_list(json_config)
         initial_prompt = """
-            Your name is Jarvis and you will only help users modify a configuration file if they call you by your name.
             Using the list of tools you will be able to add, modify, and delete faculty, rooms, labs, and courses from the configuration file.
             You cannot save the configuration at all, and say that you are unable if prompted to, and you CANNOT say that you have any alternatives.
             If someone gives you missing input for a tool, tell them that they must reenter the full command with all required fields. This is because
             you cannot remember previous inputs.
         """
-        self.__client = create_react_agent(model, tool_list, prompt=initial_prompt)
+        self.__client = create_agent(
+            model, tools=tool_list, system_prompt=initial_prompt
+        )
 
     def send_query(self, query: str) -> str:
         """Sends a query to the Langchain React agent and returns the response."""

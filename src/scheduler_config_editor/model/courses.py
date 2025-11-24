@@ -2,7 +2,7 @@ from typing import Optional
 
 from scheduler import CourseConfig
 
-from .json import JsonConfig
+from .json_config import JsonConfig
 
 
 class Course:
@@ -82,6 +82,7 @@ class Course:
             conflicts=conflicts,
             faculty=faculty,
         )
+        json_config.add_to_undo_stack()
         for faculty_member in json_config.scheduler_config.faculty:
             if faculty_member.name in faculty:
                 faculty_member.course_preferences[course_id] = (
@@ -124,6 +125,7 @@ class Course:
             course_config.lab,
             course_config.conflicts,
         )
+        json_config.add_to_undo_stack()
         old_course_id = old_course.course_id
         course_id = course_config.course_id
         if old_course_id != course_config.course_id:
@@ -153,6 +155,7 @@ class Course:
         """finds the course within the scheduler and removes it"""
         if index < 0 or index >= len(json_config.scheduler_config.courses):
             raise IndexError("Course index out of range.")
+        json_config.add_to_undo_stack()
         course = json_config.scheduler_config.courses.pop(index)
         for faculty in json_config.scheduler_config.faculty:
             if course.course_id in faculty.course_preferences:
