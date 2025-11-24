@@ -4,7 +4,7 @@ import pytest
 from scheduler.config import TimeBlock, Meeting, ClassPattern
 
 from scheduler_config_editor.model import JsonConfig, TimeSlot
-from scheduler_config_editor.model.json import DayList
+from scheduler_config_editor.model.json_config import DayList
 
 
 @pytest.fixture()
