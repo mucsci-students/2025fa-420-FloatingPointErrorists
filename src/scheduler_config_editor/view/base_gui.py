@@ -31,10 +31,12 @@ from scheduler_config_editor.controller.generator_controller import GeneratorCon
 from scheduler_config_editor.controller.room_controller import RoomEditorController
 from scheduler_config_editor.controller.schedule_controller import SchedulerController
 from scheduler_config_editor.model.json_config import JsonConfig
+from scheduler_config_editor.controller.time_slot_controller import TimeSlotController
 from scheduler_config_editor.view.course_editor_gui import CourseEditorGUI
 from scheduler_config_editor.view.faculty_editor_gui import FacultyEditorGui
 from scheduler_config_editor.view.schedule_window import newWindow
 from scheduler_config_editor.view.jarvis_gui import JarvisGUI
+from scheduler_config_editor.view.time_slot_editor_gui import TimeSlotEditorGui
 
 """Simple Gui Window Initializer"""
 
@@ -122,7 +124,7 @@ class SimpleTabs(QWidget):
 
         # Dropdown code
         self.editor_combo_box = QComboBox()
-        self.editor_combo_box.addItems(["Course", "Room/Lab", "Faculty"])
+        self.editor_combo_box.addItems(["Course", "Room/Lab", "Faculty", "Time Slot"])
         editor_layout.addWidget(
             self.editor_combo_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft
         )
@@ -152,6 +154,10 @@ class SimpleTabs(QWidget):
         # Generator placeholders
         self.generator_controller = GeneratorController(self.config)
         self.generator_gui = self.generator_controller.view
+
+        # Time Slot placeholders
+        self.time_slot_controller: TimeSlotController | None = None
+        self.time_slot_gui: TimeSlotEditorGui | None = None
 
         self.generator_controller.on_schedules_generated = (
             self.handle_schedules_generated
@@ -188,8 +194,12 @@ class SimpleTabs(QWidget):
                 if not self.faculty_controller:
                     self.editor_content_area.addWidget(self.config_prompt)
                 else:
-                    # self.faculty_gui = FacultyEditorGui(self.faculty_controller)
                     self.editor_content_area.addWidget(self.faculty_controller.view)
+            elif selected == "Time Slot":
+                if not self.time_slot_controller:
+                    self.editor_content_area.addWidget(self.config_prompt)
+                else:
+                    self.editor_content_area.addWidget(self.time_slot_controller.view)
 
         self.editor_combo_box.currentTextChanged.connect(on_editor_selection_change)
 
@@ -714,6 +724,7 @@ class SimpleTabs(QWidget):
         self.faculty_controller = FacultyEditorController(self.config)
         self.course_controller = CourseEditorController(self.config)
         self.room_controller = RoomEditorController(self.config)
+        self.time_slot_controller = TimeSlotController(self.config)
         while self.editor_content_area.count():
             item = self.editor_content_area.takeAt(0)
             if item is not None:
@@ -725,6 +736,8 @@ class SimpleTabs(QWidget):
             self.editor_content_area.addWidget(self.faculty_controller.view)
         elif self.editor_combo_box.currentText() == "Room/Lab":
             self.editor_content_area.addWidget(self.room_controller.view)
+        elif self.editor_combo_box.currentText() == "Time Slot":
+            self.editor_content_area.addWidget(self.time_slot_controller.view)
         else:
             self.editor_content_area.addWidget(self.course_controller.view)
 
