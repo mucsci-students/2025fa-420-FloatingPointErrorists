@@ -146,14 +146,14 @@ class JarvisGUI(QMainWindow):
         dots = "." * self.dot_count
         self.thinking_label.setText(f"Jarvis is thinking{dots}")
 
-    def keyPressEvent(self, event) -> None:
+    def keyPressEvent(self, a0) -> None:
         """Up/Down arrow recall for previous messages."""
         if self.input_field.hasFocus():
-            if event.key() == Qt.Key.Key_Up:
+            if a0.key() == Qt.Key.Key_Up:
                 self.show_previous_message()
-            elif event.key() == Qt.Key.Key_Down:
+            elif a0.key() == Qt.Key.Key_Down:
                 self.show_next_message()
-        super().keyPressEvent(event)
+        super().keyPressEvent(a0)
 
     def show_previous_message(self) -> None:
         if not self.history:

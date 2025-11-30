@@ -604,9 +604,9 @@ class SimpleTabs(QWidget):
         # When changing tab, show popup
         self.tabs.currentChanged.connect(self.on_tab_changed)
 
-    def showEvent(self, event: QShowEvent | None) -> None:
+    def showEvent(self, a0: QShowEvent | None) -> None:
         """Called automatically when the window is first shown."""
-        super().showEvent(event)
+        super().showEvent(a0)
 
         if not self.initial_popup_shown:
             self.initial_popup_shown = True
