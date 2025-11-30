@@ -1,6 +1,6 @@
 from PyQt6 import QtGui
 from PyQt6.QtCore import Qt, pyqtSignal, QThread, QTimer
-from PyQt6.QtGui import QGuiApplication, QKeyEvent
+from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -146,7 +146,7 @@ class JarvisGUI(QMainWindow):
         dots = "." * self.dot_count
         self.thinking_label.setText(f"Jarvis is thinking{dots}")
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
+    def keyPressEvent(self, event: QtGui.QKeyEvent | None) -> None:
         """Up/Down arrow recall for previous messages."""
         if self.input_field.hasFocus():
             if event.key() == Qt.Key.Key_Up:
