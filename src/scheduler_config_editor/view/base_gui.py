@@ -606,7 +606,8 @@ class SimpleTabs(QWidget):
 
     def showEvent(self, event: QtGui.QShowEvent | None) -> None:
         """Called automatically when the window is first shown."""
-        super().showEvent(event)
+        if event is not None:
+            super().showEvent(event)
 
         if not self.initial_popup_shown:
             self.initial_popup_shown = True

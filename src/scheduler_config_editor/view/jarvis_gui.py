@@ -148,6 +148,8 @@ class JarvisGUI(QMainWindow):
 
     def keyPressEvent(self, event: QtGui.QKeyEvent | None) -> None:
         """Up/Down arrow recall for previous messages."""
+        if event is None:
+            return
         if self.input_field.hasFocus():
             if event.key() == Qt.Key.Key_Up:
                 self.show_previous_message()
