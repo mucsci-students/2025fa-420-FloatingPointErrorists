@@ -1,6 +1,6 @@
 from PyQt6 import QtCore, QtGui
 from PyQt6.QtCore import Qt, QTimer, QSettings
-from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtGui import QGuiApplication, QShowEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -604,9 +604,9 @@ class SimpleTabs(QWidget):
         # When changing tab, show popup
         self.tabs.currentChanged.connect(self.on_tab_changed)
 
-    def showEvent(self, event: QtGui.QShowEvent) -> None:
+    def showEvent(self, a0: QShowEvent | None) -> None:
         """Called automatically when the window is first shown."""
-        super().showEvent(event)
+        super().showEvent(a0)
 
         if not self.initial_popup_shown:
             self.initial_popup_shown = True
