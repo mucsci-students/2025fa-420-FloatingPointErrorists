@@ -125,8 +125,14 @@ class TimeSlotEditorGui(QMainWindow):
         self.input_min_overlap.returnPressed.connect(self.save_min_max_inputs)
         self.input_min_overlap.editingFinished.connect(self.save_min_max_inputs)
 
+        # Clears cursor after pressing enter
+        self.input_min_overlap.returnPressed.connect(self.input_min_overlap.clearFocus)
+
         self.input_max_gap.returnPressed.connect(self.save_min_max_inputs)
         self.input_max_gap.editingFinished.connect(self.save_min_max_inputs)
+
+        # Clears cursor after pressing enter
+        self.input_max_gap.editingFinished.connect(self.input_max_gap.clearFocus)
 
         # Splitting the window into two panels, one for time blocks and one for class patterns
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -468,6 +474,7 @@ class TimeSlotEditorGui(QMainWindow):
             creds = int(creds)
 
             disabled = self.user_disabled.currentText() == "True"
+
             start_time = self.user_start.text().strip()
             if start_time == "":
                 start_time = None
@@ -481,14 +488,18 @@ class TimeSlotEditorGui(QMainWindow):
 
             meetings = []
             for _, day_edit, start_edit, duration_edit, lab_edit in self.meeting_rows:
-                start_edit = normalize_time(start_edit.text().strip())
-                if start_edit is None:
-                    QMessageBox.warning(
-                        self, "Invalid Input", "Must enter a valid start time."
-                    )
-                    return
-                duration_val = duration_edit.text().strip()
+                start_edit = start_edit.text().strip()
+                if start_edit == "":
+                    start_edit = None
+                else:
+                    start_edit = normalize_time(start_edit)
+                    if start_edit is None:
+                        QMessageBox.warning(
+                            self, "Invalid Input", "Must enter a valid start time."
+                        )
+                        return
 
+                duration_val = duration_edit.text().strip()
                 if not duration_val.isdigit():
                     QMessageBox.warning(
                         self, "Invalid Input", "Duration must be an integer."
@@ -504,6 +515,12 @@ class TimeSlotEditorGui(QMainWindow):
                         lab=lab_edit.currentText() == "True",
                     )
                 )
+            if meetings is None or len(meetings) == 0:
+                QMessageBox.warning(
+                    self, "Invalid Input", "There must be at least one meeting."
+                )
+                return
+
             if self.index is None:
                 self.controller.add_class_pattern(creds, meetings, disabled, start_time)
             else:
