@@ -69,9 +69,16 @@ def add_class_pattern(ctx: click.Context) -> None:
         meeting_day = click.prompt(
             "Meeting day", type=click.Choice(DAYS, case_sensitive=False)
         )
-        start_time = normalize_time(click.prompt("Start time (e.g., 9 or 09:00)"))
+        start_time = click.prompt("Meeting start time (e.g., 9 or 09:00)", default="")
+        if start_time == "":
+            start_time = None
+        else:
+            start_time = normalize_time(start_time)
+
         duration = click.prompt("Duration (minutes)", type=click.IntRange(min=0))
         lab = click.confirm("Is this a lab meeting?", default=False)
+        if start_time == "":
+            start_time = None
         meeting = Meeting(
             day=meeting_day, start_time=start_time, duration=duration, lab=lab
         )
@@ -83,7 +90,13 @@ def add_class_pattern(ctx: click.Context) -> None:
     )
     while click.confirm("Add another meeting?", default=False):
         add_meeting()
-    cp_start_time = normalize_time(click.prompt("Start time (e.g., 9 or 09:00)"))
+    cp_start_time = click.prompt(
+        "Class pattern start time (e.g., 9 or 09:00)", default=""
+    )
+    if cp_start_time == "":
+        cp_start_time = None
+    else:
+        cp_start_time = normalize_time(cp_start_time)
     click.echo(
         TimeSlot.add_class_pattern(
             json_config=json_config,
@@ -205,7 +218,9 @@ def modify_class_pattern(ctx: click.Context) -> None:
         meeting_day = click.prompt(
             "Meeting day", type=click.Choice(DAYS, case_sensitive=False)
         ).upper()
-        start_time = normalize_time(click.prompt("Start time (e.g., 9 or 09:00)"))
+        start_time = normalize_time(
+            click.prompt("Meeting start time (e.g., 9 or 09:00)", default=None)
+        )
         duration = click.prompt("Duration (minutes)", type=click.IntRange(min=0))
         lab = click.confirm("Is this a lab meeting?", default=False)
         meeting = Meeting(
@@ -219,7 +234,9 @@ def modify_class_pattern(ctx: click.Context) -> None:
     disabled = click.confirm(
         "Do you want to disable this class pattern?", default=False
     )
-    cp_start_time = normalize_time(click.prompt("Start time (e.g., 9 or 09:00)"))
+    cp_start_time = normalize_time(
+        click.prompt("Class pattern start time (e.g., 9 or 09:00)", default=None)
+    )
     click.echo(
         TimeSlot.mod_class_pattern(
             json_config=json_config,
