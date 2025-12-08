@@ -1,7 +1,7 @@
 import sys
 from typing import TYPE_CHECKING, cast, Literal
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtGui import QGuiApplication, QFont
 from PyQt6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -16,8 +16,10 @@ from PyQt6.QtWidgets import (
     QDialog,
     QLineEdit,
     QMessageBox,
+    QInputDialog,
 )
 from scheduler import Meeting
+from scheduler.config import ClassPattern
 
 if TYPE_CHECKING:
     from scheduler_config_editor.controller.time_slot_controller import (
@@ -88,33 +90,23 @@ class TimeSlotEditorGui(QMainWindow):
             screen_height = 1080
         self.resize(int(screen_width * 0.5), int(screen_height * 0.5))
 
-        # Top layout of day selector and min_overlap and max_gap
+        # Top layout of min_overlap and max_gap
         top_layout = QHBoxLayout()
         main_layout.addLayout(top_layout)
 
-        # Day selector for time blocks
-        day_layout = QHBoxLayout()
-        top_layout.addLayout(day_layout)
-        top_layout.addStretch(1)
-
-        day_layout.addWidget(QLabel("Select Time Block Day:"))
-        self.day_selector = QComboBox()
-        self.day_selector.addItems(["MON", "TUE", "WED", "THU", "FRI"])
-        day_layout.addWidget(self.day_selector)
-
-        # Refreshes time blocks when a new day is selected
-        self.day_selector.currentTextChanged.connect(self.load_time_blocks_for_day)
-
         # Add editing spaces for max_time_gap and min_time_overlap and populating based on current values
         min_max_layout = QHBoxLayout()
+        min_max_layout.addStretch()
         top_layout.addLayout(min_max_layout)
 
         min_max_layout.addWidget(QLabel("Minimum Time Overlap:"))
         self.input_min_overlap = QLineEdit()
+        self.input_min_overlap.setFixedWidth(50)
         min_max_layout.addWidget(self.input_min_overlap)
 
         min_max_layout.addWidget(QLabel("Maximum Time Gap:"))
         self.input_max_gap = QLineEdit()
+        self.input_max_gap.setFixedWidth(50)
         min_max_layout.addWidget(self.input_max_gap)
 
         self.input_min_overlap.setText(
@@ -122,13 +114,11 @@ class TimeSlotEditorGui(QMainWindow):
         )
         self.input_max_gap.setText(str(self.json_config.time_slot_config.max_time_gap))
 
-        self.input_min_overlap.returnPressed.connect(self.save_min_max_inputs)
         self.input_min_overlap.editingFinished.connect(self.save_min_max_inputs)
 
         # Clears cursor after pressing enter
         self.input_min_overlap.returnPressed.connect(self.input_min_overlap.clearFocus)
 
-        self.input_max_gap.returnPressed.connect(self.save_min_max_inputs)
         self.input_max_gap.editingFinished.connect(self.save_min_max_inputs)
 
         # Clears cursor after pressing enter
@@ -141,11 +131,27 @@ class TimeSlotEditorGui(QMainWindow):
         # Time block panel layout (left side)
         left_panel = QWidget()
         left_layout = QVBoxLayout(left_panel)
-        left_layout.addWidget(QLabel("Time Blocks"))
 
-        self.blocks_list = QListWidget()
-        self.blocks_list.clicked.connect(self.on_time_block_clicked)
-        left_layout.addWidget(self.blocks_list)
+        # Font size for time block and class pattern titles
+        label_font = QFont()
+        label_font.setPointSize(13)
+        label_font.setBold(True)
+        time_block_label = QLabel("Time Blocks:")
+        time_block_label.setFont(label_font)
+        left_layout.addWidget(time_block_label)
+
+        self.day_lists: dict[str, QListWidget] = {}
+        days_container = QVBoxLayout()
+        left_layout.addLayout(days_container)
+
+        for day in DAYS:
+            days_container.addWidget(QLabel(day))
+            lst = QListWidget()
+            lst.clicked.connect(
+                lambda index, d=day: self.on_time_block_clicked(d, index)
+            )
+            days_container.addWidget(lst)
+            self.day_lists[day] = lst
 
         add_block_button = QPushButton("Add Time Block")
         add_block_button.clicked.connect(self.add_time_block_clicked)
@@ -154,7 +160,9 @@ class TimeSlotEditorGui(QMainWindow):
         # Class pattern panel layout (right side)
         right_panel = QWidget()
         right_layout = QVBoxLayout(right_panel)
-        right_layout.addWidget(QLabel("Class Patterns"))
+        pattern_label = QLabel("Class Patterns:")
+        pattern_label.setFont(label_font)
+        right_layout.addWidget(pattern_label)
 
         self.class_list = QListWidget()
         self.class_list.clicked.connect(self.on_class_pattern_clicked)
@@ -181,31 +189,76 @@ class TimeSlotEditorGui(QMainWindow):
             )
             return
         if not max_gap.isdigit():
-            QMessageBox.warning(self, "Invalid Input", "Max gap must be a number.")
+            QMessageBox.warning(self, "Invalid Input", "Max gap must be an integer.")
             return
 
         min_overlap = int(min_overlap)
         max_gap = int(max_gap)
+
+        if max_gap == 0:
+            QMessageBox.warning(self, "Invalid Input", "Max gap cannot be zero.")
+            return
+        if min_overlap == 0:
+            QMessageBox.warning(self, "Invalid Input", "Min overlap cannot be zero.")
+            return
+
         self.json_config.time_slot_config.min_time_overlap = min_overlap
         self.json_config.time_slot_config.max_time_gap = max_gap
         self.json_config.save()
 
-    def load_time_blocks_for_day(self, day: str) -> None:
+    def load_time_blocks(self) -> None:
         """Populates the list of time blocks for the day selected."""
-        self.blocks_list.clear()
-        blocks = self.controller.get_time_blocks(day)
-        for i, block in enumerate(blocks):
-            item = QListWidgetItem(f"[{i}] {block}")
-            self.blocks_list.addItem(item)
+        for day in DAYS:
+            lst = self.day_lists[day]
+            lst.clear()
+            blocks = self.controller.get_time_blocks(day)
+            for i, block in enumerate(blocks):
+                item = QListWidgetItem(
+                    f"[{i}] {block.start} - {block.end} with a spacing of {block.spacing} minutes"
+                )
+                lst.addItem(item)
+
+    def format_class_pattern(self, pattern: ClassPattern) -> str:
+        """Formats the given class pattern according to the time slot config."""
+        # Disabled
+        status = "Disabled - " if pattern.disabled else ""
+
+        # Credits
+        creds = f"{pattern.credits} credits"
+
+        # Meetings
+        meeting_parts = []
+        for m in pattern.meetings:
+            day = m.day
+            if m.lab:
+                day += " Lab"
+            meeting_parts.append(day)
+            if m.start_time is not None:
+                day += f" {m.start_time}"
+        meeting_str = "/".join(meeting_parts)
+
+        # Start Time
+        if pattern.start_time is not None:
+            start = f", {pattern.start_time} start"
+        else:
+            start = ""
+        return f"{status} {creds}, {meeting_str} {start}"
 
     def load_class_patterns(self):
         self.class_list.clear()
         class_patterns = self.controller.get_class_patterns()
         for i, class_pattern in enumerate(class_patterns):
-            item = QListWidgetItem(f"[{i}] {class_pattern}")
+            pattern_str = self.format_class_pattern(class_pattern)
+            item = QListWidgetItem(f"[{i}] {pattern_str}")
             self.class_list.addItem(item)
 
-    def open_time_block_editor(self, day: str, index: int | None) -> None:
+    def open_time_block_editor(self, day: str | None, index: int | None) -> None:
+        if day is None:
+            day, ok = QInputDialog.getItem(
+                self, "Choose Day", "Add time block to which day?", DAYS, 0, False
+            )
+            if not ok:
+                return
         dialog = self.TimeBlockEditorWindow(self.controller, day, index)
         dialog.exec()
         self.controller.refresh_list()
@@ -215,22 +268,14 @@ class TimeSlotEditorGui(QMainWindow):
         dialog.exec()
         self.controller.refresh_list()
 
-    def on_time_block_clicked(self, index) -> None:
-        day_str = self.day_selector.currentText()
-        if day_str not in DAYS:
-            raise ValueError("Invalid day selected")
-        day: Day = cast(Day, day_str)
+    def on_time_block_clicked(self, day, index) -> None:
         self.open_time_block_editor(day, index.row())
 
     def on_class_pattern_clicked(self, index) -> None:
         self.open_class_pattern_editor(index.row())
 
     def add_time_block_clicked(self) -> None:
-        day_str = self.day_selector.currentText()
-        if day_str not in DAYS:
-            raise ValueError("Invalid day selected")
-        day: Day = cast(Day, day_str)
-        self.open_time_block_editor(day, None)
+        self.open_time_block_editor(None, None)
 
     def add_class_pattern_clicked(self) -> None:
         self.open_class_pattern_editor(None)
@@ -370,7 +415,7 @@ class TimeSlotEditorGui(QMainWindow):
             layout.addWidget(self.user_credits)
             self.user_disabled = QComboBox()
             layout.addWidget(QLabel("Pattern Disabled:"))
-            self.user_disabled.addItems(["False", "True"])
+            self.user_disabled.addItems(["Yes", "No"])
             layout.addWidget(self.user_disabled)
             self.user_start = QLineEdit()
             layout.addWidget(QLabel("Start Time (Optional):"))
@@ -388,6 +433,11 @@ class TimeSlotEditorGui(QMainWindow):
             if index is not None:
                 pattern = self.json_config.time_slot_config.classes[index]
                 self.user_credits.setText(str(pattern.credits))
+                if pattern.disabled:
+                    self.user_disabled.setCurrentText("Yes")
+                else:
+                    self.user_disabled.setCurrentText("No")
+
                 if pattern.start_time:
                     self.user_start.setText(pattern.start_time)
                 for meeting in pattern.meetings:
@@ -439,9 +489,11 @@ class TimeSlotEditorGui(QMainWindow):
             row.addWidget(duration_edit)
 
             lab_edit = QComboBox()
-            lab_edit.addItems(["False", "True"])
+            lab_edit.addItems(["Yes", "No"])
             if lab:
-                lab_edit.setCurrentText(str(lab))
+                lab_edit.setCurrentText("Yes")
+            else:
+                lab_edit.setCurrentText("No")
             row.addWidget(QLabel("Lab:"))
             row.addWidget(lab_edit)
 
@@ -473,7 +525,7 @@ class TimeSlotEditorGui(QMainWindow):
                 return
             creds = int(creds)
 
-            disabled = self.user_disabled.currentText() == "True"
+            disabled = self.user_disabled.currentText() == "Yes"
 
             start_time = self.user_start.text().strip()
             if start_time == "":
@@ -512,7 +564,7 @@ class TimeSlotEditorGui(QMainWindow):
                         day=day_edit.currentText(),
                         start_time=start_edit,
                         duration=duration_val,
-                        lab=lab_edit.currentText() == "True",
+                        lab=lab_edit.currentText() == "Yes",
                     )
                 )
             if meetings is None or len(meetings) == 0:

@@ -27,7 +27,7 @@ class TimeSlotController:
         return self.json_config.time_slot_config.classes
 
     def refresh_list(self) -> None:
-        self.view.load_time_blocks_for_day(self.view.day_selector.currentText())
+        self.view.load_time_blocks()
         self.view.load_class_patterns()
 
     def open_edit_time_block_window(self, day: str, index: int) -> None:

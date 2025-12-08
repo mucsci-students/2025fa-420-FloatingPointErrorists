@@ -14,6 +14,33 @@ class TimeSlot:
     """
 
     @staticmethod
+    def check_time_block_values(
+        day_index: int, start: TimeString, spacing: int, end: TimeString
+    ) -> None:
+        """Checks that the values provided are valid"""
+        if day_index not in INDEX_TO_DAY:
+            raise ValueError("Invalid day index.")
+        if start >= end:
+            raise ValueError("Start time must be before the end time.")
+        if spacing < 1:
+            raise ValueError("Spacing must be greater than 0.")
+
+    @staticmethod
+    def check_class_pattern(
+        creds: int,
+        meetings: list[Meeting],
+    ) -> None:
+        if creds < 1:
+            raise ValueError("Credits must be greater than 0.")
+        if meetings is None or len(meetings) == 0:
+            raise ValueError("There must be at least one meeting.")
+        for meeting in meetings:
+            if meeting.day not in DAY_TO_INDEX:
+                raise ValueError("Invalid meeting day.")
+            if meeting.duration < 1:
+                raise ValueError("Meeting duration must be greater than 0.")
+
+    @staticmethod
     def set_max_time_gap(json_config: JsonConfig, max_time_gap: int = 30):
         json_config.time_slot_config.max_time_gap = max_time_gap
         return "Maximum time gap is now " + str(max_time_gap) + " minutes."
@@ -34,6 +61,7 @@ class TimeSlot:
         """Adds a time block to the config"""
         json_config.add_to_undo_stack()
         day = INDEX_TO_DAY[day_index]
+        TimeSlot.check_time_block_values(day_index, start, spacing, end)
         time_block = TimeBlock(start=start, spacing=spacing, end=end)
         json_config.time_slot_config.times.get(day).append(time_block)
         return "Time block added successfully."
@@ -47,6 +75,7 @@ class TimeSlot:
         start_time: TimeString | None,
     ) -> str:
         """Adds a class pattern to the config"""
+        TimeSlot.check_class_pattern(creds, meetings)
         json_config.add_to_undo_stack()
         class_pattern = ClassPattern(
             credits=creds, meetings=meetings, disabled=disabled, start_time=start_time
@@ -67,6 +96,7 @@ class TimeSlot:
         day = INDEX_TO_DAY[day_index]
         if index < 0 or index >= len(json_config.time_slot_config.times.get(day, [])):
             raise IndexError("Time block index out of range.")
+        TimeSlot.check_time_block_values(day_index, start, spacing, end)
         json_config.add_to_undo_stack()
         old_time_block = json_config.time_slot_config.times.get(day, [])[index]
         time_block = TimeBlock(
@@ -89,6 +119,7 @@ class TimeSlot:
         """Finds class pattern in config and replaces it with the updated one"""
         if index < 0 or index >= len(json_config.time_slot_config.classes):
             raise IndexError("Class pattern index out of range.")
+        TimeSlot.check_class_pattern(creds, meetings)
         json_config.add_to_undo_stack()
         old_class_pattern = json_config.time_slot_config.classes[index]
         class_pattern = ClassPattern(
