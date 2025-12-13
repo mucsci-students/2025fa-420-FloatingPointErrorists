@@ -468,8 +468,15 @@ class SimpleTabs(QWidget):
 
         def pdf_export() -> None:
             """Export current schedule as PDF using a background worker and a spinner dialog."""
-            name = self.schedule_viewer_filename.text() or "_"
-            self.sc.save_as_pdf(name)
+            file_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Save PDF",
+                "schedule.pdf",
+                "PDF Files (*.pdf)"
+            )
+            if not file_path:
+                return
+            self.sc.save_as_pdf(file_path)
             QMessageBox.information(self, "Information", "PDF Export Complete.")
 
         self.schedule_viewer_pdfbutton = QPushButton("Export PDF")

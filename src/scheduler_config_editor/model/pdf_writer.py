@@ -47,7 +47,9 @@ class PdfWriter:
         schedule: list[tuple[str, list[list[CourseMeeting]]]], name: str, mode: PdfMode
     ) -> None:
         """Export the given schedule to a PDF file."""
-        output_path = os.path.join("pdf", f"{name}.pdf")
+        output_path = os.path.join("pdf", f"{name}")
+        if not output_path.endswith(".pdf"):
+            output_path += ".pdf"
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         c = canvas.Canvas(output_path, pagesize=letter)
@@ -91,19 +93,19 @@ class PdfWriter:
             c.drawString(margin, title_y, page_name)
 
             c.setFont("Helvetica-Bold", 14)
-            for i in range(1, 6):
+            for i in range(0, 6):
                 x = margin + column_width * i
-
                 c.rect(x, header_y, column_width, row_height)
-                c.drawCentredString(
-                    x + column_width / 2, header_y + row_height / 2 - 6, INDEX_TO_DAY[i]
-                )
+                if i != 0:
+                    c.drawCentredString(
+                        x + column_width / 2, header_y + row_height / 2 - 6, INDEX_TO_DAY[i]
+                    )
 
             for hour in range(start_hour, end_hour + 1):
                 y = header_y - row_height * (hour - start_hour + 1)
                 c.rect(margin, y, column_width, row_height)
                 c.drawString(
-                    margin + 5,
+                    margin + 15,
                     y + row_height / 2 - 6,
                     PdfWriter._convert_to_timestr(hour * 60),
                 )

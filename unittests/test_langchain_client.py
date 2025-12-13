@@ -12,7 +12,11 @@ from scheduler_config_editor.model import (
     Course,
 )
 from scheduler_config_editor.model import LangchainClient, JsonConfig, Room, Lab
-from scheduler_config_editor.model.langchain_client import make_show_faculty, make_show_labs, make_show_rooms
+from scheduler_config_editor.model.langchain_client import (
+    make_show_faculty,
+    make_show_labs,
+    make_show_rooms,
+)
 
 """
     Tests for the module src/scheduler_config_editor/model/langchain_client.py
@@ -121,13 +125,16 @@ def test_langchain_client_initialization(json_config: JsonConfig) -> None:
     LangchainClient(json_config, "test_key")
     assert os.environ["OPENAI_API_KEY"] == "test_key"
 
+
 def test_make_show_faculty(json_config) -> None:
     fn = make_show_faculty(json_config)
     assert "Zoppetti" in fn()
 
+
 def test_make_show_labs(json_config) -> None:
     fn = make_show_labs(json_config)
     assert "Linux" in fn()
+
 
 def test_make_show_rooms(json_config) -> None:
     fn = make_show_rooms(json_config)

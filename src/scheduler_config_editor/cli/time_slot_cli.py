@@ -11,7 +11,7 @@ INDEX_TO_DAY = {1: "MON", 2: "TUE", 3: "WED", 4: "THU", 5: "FRI"}
 
 # ===== Time Slot Shell =====
 @shell(
-    prompt="time slot>",
+    prompt="time slot> ",
     intro="You may now add, modify, or delete time blocks and class patterns.\nYou may also set the maximum time gap and minimum time overlap.\nType 'help' to see available commands, 'exit' to return to main shell.\n",
 )
 def time_slot() -> None:
