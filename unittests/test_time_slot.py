@@ -93,10 +93,10 @@ class TestTimeSlot:
         assert modified_class_pattern.start_time == test.start_time
 
     def test_del_time_block(self, json_config: JsonConfig):
-        old_length = len(json_config.time_slot_config.times.get("MON"))
-        result = TimeSlot.del_time_block(json_config, 1, old_length - 1)
+        old_length = len(json_config.time_slot_config.times.get("TUE"))
+        result = TimeSlot.del_time_block(json_config, 2, old_length - 1)
         assert result == "Time block deleted successfully."
-        assert len(json_config.time_slot_config.times.get("MON")) == old_length - 1
+        assert len(json_config.time_slot_config.times.get("TUE")) == old_length - 1
 
     def test_del_class_pattern(self, json_config: JsonConfig):
         old_length = len(json_config.time_slot_config.classes)
@@ -107,7 +107,7 @@ class TestTimeSlot:
     def test_del_invalid_time_block(self, json_config: JsonConfig):
         index = len(json_config.time_slot_config.times.get("MON")) + 5
         with pytest.raises(IndexError, match="Time block index out of range"):
-            TimeSlot.del_time_block(json_config, 1, index)
+            TimeSlot.del_time_block(json_config, 2, index)
 
     def test_del_invalid_class_pattern(self, json_config: JsonConfig):
         index = len(json_config.time_slot_config.classes) + 5

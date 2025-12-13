@@ -8,7 +8,6 @@ import types
 
 import click
 from click_shell import shell
-from pydantic import ValidationError
 from scheduler import OptimizerFlags, Scheduler, CombinedConfig
 from scheduler.models import CourseInstance
 from scheduler_config_editor.model.langchain_client import LangchainClient
@@ -125,6 +124,26 @@ def load_config(ctx: click.Context, file_path: str) -> None:
         ctx.obj["config"] = config
         enable_configuration_commands()
         click.echo("Configuration loaded")
+    except json.JSONDecodeError as e:
+        raise click.ClickException(f"Invalid JSON: {e}") from e
+    except TypeError as e:
+        raise click.ClickException("Invalid Configuration") from e
+    except FileNotFoundError as e:
+        raise click.ClickException(f"{e}") from e
+
+
+@base_cli.command()  # type: ignore
+@click.argument("name", type=click.Path())
+@click.pass_context
+def new_config(ctx: click.Context, name: str) -> None:
+    """Create a new JSON configuration file."""
+    import json
+
+    try:
+        config = JsonConfig(name, JsonConfig.Mode.CREATE)
+        ctx.obj["config"] = config
+        enable_configuration_commands()
+        click.echo("Configuration created")
     except json.JSONDecodeError as e:
         raise click.ClickException(f"Invalid JSON: {e}") from e
     except TypeError as e:

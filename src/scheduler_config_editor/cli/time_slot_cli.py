@@ -122,20 +122,24 @@ def delete_time_block(ctx: click.Context) -> None:
     if len(json_config.time_slot_config.times.get(day, [])) == 0:
         click.echo("No time blocks to delete.")
         return
-    click.echo(json_config.time_slot_str())
+    click.echo(json_config.time_block_str())
     index = click.prompt(
         "Enter the number time block to delete",
         type=click.IntRange(
             0, len(json_config.time_slot_config.times.get(day, [])) - 1
         ),
     )
-    click.echo(
-        TimeSlot.del_time_block(
-            json_config=json_config, day_index=day_index, index=index
+    try:
+        click.echo(
+            TimeSlot.del_time_block(
+                json_config=json_config, day_index=day_index, index=index
+            )
         )
-    )
+    except ValueError as e:
+        click.echo(e)
+        return
     while click.confirm("Delete another time block?", default=False):
-        click.echo(json_config.time_slot_str())
+        click.echo(json_config.time_block_str())
         index = click.prompt(
             "Enter the number time block to delete",
             type=click.IntRange(
@@ -154,13 +158,18 @@ def delete_time_block(ctx: click.Context) -> None:
 def delete_class_pattern(ctx: click.Context) -> None:
     """Delete a class pattern."""
     json_config = get_json_config(ctx)
+    click.echo(json_config.class_pattern_str())
     index = click.prompt(
         "Enter the number class pattern to delete",
         type=click.IntRange(0, len(json_config.time_slot_config.classes) - 1),
     )
-    click.echo(TimeSlot.del_class_pattern(json_config=json_config, index=index))
+    try:
+        click.echo(TimeSlot.del_class_pattern(json_config=json_config, index=index))
+    except ValueError as e:
+        click.echo(e)
+        return
     while click.confirm("Delete another class pattern?", default=False):
-        click.echo(json_config.time_slot_str())
+        click.echo(json_config.class_pattern_str())
         index = click.prompt(
             "Enter the number class pattern to delete",
             type=click.IntRange(0, len(json_config.time_slot_config.classes) - 1),
@@ -180,7 +189,7 @@ def modify_time_block(ctx: click.Context) -> None:
     if len(json_config.time_slot_config.times.get(day, [])) == 0:
         click.echo("No time blocks to modify.")
         return
-    click.echo(json_config.time_slot_str())
+    click.echo(json_config.time_block_str())
     index = click.prompt(
         "Enter the number time block to modify",
         type=click.IntRange(
@@ -188,9 +197,15 @@ def modify_time_block(ctx: click.Context) -> None:
         ),
     )
     old_time_block = json_config.time_slot_config.times.get(day, [])[index]
-    start = normalize_time(click.prompt("Start time (e.g., 9 or 09:00)"))
-    end = normalize_time(click.prompt("End time (e.g., 9 or 09:00)"))
-    spacing = click.prompt("Spacing (minutes)", type=click.IntRange(min=0))
+    start = normalize_time(
+        click.prompt("Start time (e.g., 9 or 09:00)", default=old_time_block.start)
+    )
+    end = normalize_time(
+        click.prompt("End time (e.g., 9 or 09:00)", default=old_time_block.end)
+    )
+    spacing = click.prompt(
+        "Spacing (minutes)", type=click.IntRange(min=0), default=old_time_block.spacing
+    )
     click.echo(
         TimeSlot.mod_time_block(
             json_config=json_config,
@@ -208,17 +223,22 @@ def modify_time_block(ctx: click.Context) -> None:
 def modify_class_pattern(ctx: click.Context) -> None:
     """Modify a class pattern."""
     json_config = get_json_config(ctx)
+    click.echo(json_config.class_pattern_str())
     index = click.prompt(
         "Enter the number class pattern to modify",
         type=click.IntRange(0, len(json_config.time_slot_config.classes) - 1),
     )
     old_class_pattern = json_config.time_slot_config.classes[index]
-    creds = click.prompt("Credits", type=int)
-    meetings: list[Meeting] = []
+    creds = click.prompt(
+        "Credits", type=click.IntRange(min=1), default=old_class_pattern.credits
+    )
+    meetings: list[Meeting] = old_class_pattern.meetings
 
     def add_meeting() -> None:
         meeting_day = click.prompt(
-            "Meeting day", type=click.Choice(DAYS, case_sensitive=False)
+            "Meeting day",
+            type=click.Choice(DAYS, case_sensitive=False),
+            default=old_class_pattern.day,
         ).upper()
         start_time = normalize_time(
             click.prompt("Meeting start time (e.g., 9 or 09:00)", default=None)
@@ -230,14 +250,22 @@ def modify_class_pattern(ctx: click.Context) -> None:
         )
         meetings.append(meeting)
 
-    add_meeting()
-    while click.confirm("Add another meeting?", default=False):
+    if click.confirm(
+        "Modify meetings? (You will have to create a list of meetings from scratch)",
+        default=False,
+    ):
+        meetings = []
         add_meeting()
+        while click.confirm("Add another meeting?", default=False):
+            add_meeting()
     disabled = click.confirm(
-        "Do you want to disable this class pattern?", default=False
+        "Do you want to disable this class pattern?", default=old_class_pattern.disabled
     )
     cp_start_time = normalize_time(
-        click.prompt("Class pattern start time (e.g., 9 or 09:00)", default=None)
+        click.prompt(
+            "Class pattern start time (e.g., 9 or 09:00)",
+            default=old_class_pattern.start_time,
+        )
     )
     click.echo(
         TimeSlot.mod_class_pattern(

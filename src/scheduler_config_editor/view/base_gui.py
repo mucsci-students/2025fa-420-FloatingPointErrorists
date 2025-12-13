@@ -206,6 +206,9 @@ class SimpleTabs(QWidget):
 
         # Button Layout for Load/Save Config and Undo/Redo
         bottom_buttons_layout = QHBoxLayout()
+        self.new_config_button = QPushButton("New Config")
+        self.new_config_button.clicked.connect(self.new_config)
+
         self.load_config_button = QPushButton("Load Config")
         self.load_config_button.clicked.connect(self.load_config)
 
@@ -223,6 +226,7 @@ class SimpleTabs(QWidget):
         self.redo_button.setEnabled(False)
 
         bottom_buttons_layout.addStretch()
+        bottom_buttons_layout.addWidget(self.new_config_button)
         bottom_buttons_layout.addWidget(self.load_config_button)
         bottom_buttons_layout.addWidget(self.save_config_button)
         bottom_buttons_layout.addWidget(self.undo_button)
@@ -677,6 +681,41 @@ class SimpleTabs(QWidget):
             )
             self.on_tab_changed(self.tabs.currentIndex())
 
+    def new_config(self) -> None:
+        config_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Select Scheduler Config File",
+            "configs/config.json",
+            "JSON Files (*.json);;All Files (*)",
+        )
+        if not config_path:
+            return
+        try:
+            self.config = JsonConfig(config_path, JsonConfig.Mode.CREATE)
+            QMessageBox.information(self, "Config Loaded", "Successfully loaded config")
+            self.faculty_controller = FacultyEditorController(self.config)
+            self.course_controller = CourseEditorController(self.config)
+            self.generator_controller.update_config(self.config)
+            self.generator_gui.update_config(self.config)
+            self.room_controller = RoomEditorController(self.config)
+            self.jarvis_gui = JarvisGUI(self.config)
+            self.jarvis_gui.data_changed.connect(self.refresh)
+
+            # Enables save and jarvis button
+            self.save_config_button.setEnabled(True)
+            self.jarvis_button.setEnabled(True)
+
+            # Set memento config
+            self.redo_button.setEnabled(True)
+            self.undo_button.setEnabled(True)
+            self.config.clear_stacks()
+
+            # refresh GUI
+            self.refresh()
+
+        except Exception as error:
+            QMessageBox.critical(self, "Load Error", str(error))
+
     # Asks user for config file
     def load_config(self) -> None:
         config_path, _ = QFileDialog.getOpenFileName(
@@ -685,10 +724,8 @@ class SimpleTabs(QWidget):
             "configs",
             "JSON Files (*.json);;All Files (*)",
         )
-
         if not config_path:
             return
-
         try:
             self.config = JsonConfig(config_path)
             QMessageBox.information(self, "Config Loaded", "Successfully loaded config")
