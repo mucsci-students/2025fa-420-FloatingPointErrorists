@@ -2,7 +2,7 @@ import click
 from click_shell import shell
 from scheduler.config import Meeting
 
-from .base_cli import clear, get_json_config, run, save
+from .base_cli import clear, get_json_config, run, save, undo, redo
 from ..model.time_slot import TimeSlot
 
 DAY_TO_INDEX = {"MON": 1, "TUE": 2, "WED": 3, "THU": 4, "FRI": 5}
@@ -20,6 +20,8 @@ def time_slot() -> None:
     time_slot.add_command(clear)
     time_slot.add_command(run)
     time_slot.add_command(save)
+    time_slot.add_command(undo)
+    time_slot.add_command(redo)
 
 
 def normalize_time(time: str) -> str:

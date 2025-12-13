@@ -1,6 +1,6 @@
 from PyQt6 import QtCore, QtGui
-from PyQt6.QtCore import Qt, QTimer, QSettings, QSize
-from PyQt6.QtGui import QGuiApplication, QShowEvent, QIcon
+from PyQt6.QtCore import Qt, QTimer, QSettings
+from PyQt6.QtGui import QGuiApplication, QShowEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -17,7 +17,8 @@ from PyQt6.QtWidgets import (
     QTableWidget,
     QTabWidget,
     QVBoxLayout,
-    QWidget, QApplication,
+    QWidget,
+    QApplication,
 )
 from scheduler.models import CourseInstance
 
@@ -378,7 +379,9 @@ class SimpleTabs(QWidget):
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
         self.schedule_viewer_button = QPushButton()
-        self.schedule_viewer_button.setIcon(QApplication.style().standardIcon(QStyle.StandardPixmap.SP_ArrowBack))
+        self.schedule_viewer_button.setIcon(
+            QApplication.style().standardIcon(QStyle.StandardPixmap.SP_ArrowBack)
+        )
         self.schedule_viewer_button.clicked.connect(schedule_back)
         view_bot_layout.addWidget(self.schedule_viewer_button)
 
@@ -445,7 +448,9 @@ class SimpleTabs(QWidget):
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
         self.schedule_viewer_button = QPushButton()
-        self.schedule_viewer_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowRight))
+        self.schedule_viewer_button.setIcon(
+            self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowRight)
+        )
         self.schedule_viewer_button.clicked.connect(schedule_forward)
         view_bot_layout.addWidget(self.schedule_viewer_button)
 
@@ -459,10 +464,7 @@ class SimpleTabs(QWidget):
         def pdf_export() -> None:
             """Export current schedule as PDF using a background worker and a spinner dialog."""
             file_path, _ = QFileDialog.getSaveFileName(
-                self,
-                "Save PDF",
-                "schedule.pdf",
-                "PDF Files (*.pdf)"
+                self, "Save PDF", "schedule.pdf", "PDF Files (*.pdf)"
             )
             if not file_path:
                 return
@@ -483,7 +485,7 @@ class SimpleTabs(QWidget):
                 self,
                 "Save Schedule as JSON",
                 "Schedules.json",
-                "JSON Files (*.json);;CSV Files (*.csv)"
+                "JSON Files (*.json);;CSV Files (*.csv)",
             )
             if not path:
                 return
@@ -656,6 +658,7 @@ class SimpleTabs(QWidget):
 
     # Open Jarvis
     def activate_jarvis(self) -> None:
+        self.jarvis_gui.setWindowModality(Qt.WindowModality.ApplicationModal)
         self.jarvis_gui.show()
 
     # Reset all tab popups

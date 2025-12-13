@@ -8,6 +8,7 @@ import types
 
 import click
 from click_shell import shell
+from pydantic import ValidationError
 from scheduler import OptimizerFlags, Scheduler, CombinedConfig
 from scheduler.models import CourseInstance
 from scheduler_config_editor.model.langchain_client import LangchainClient

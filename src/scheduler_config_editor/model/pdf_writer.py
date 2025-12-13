@@ -98,7 +98,9 @@ class PdfWriter:
                 c.rect(x, header_y, column_width, row_height)
                 if i != 0:
                     c.drawCentredString(
-                        x + column_width / 2, header_y + row_height / 2 - 6, INDEX_TO_DAY[i]
+                        x + column_width / 2,
+                        header_y + row_height / 2 - 6,
+                        INDEX_TO_DAY[i],
                     )
 
             for hour in range(start_hour, end_hour + 1):
