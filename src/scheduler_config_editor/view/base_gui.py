@@ -1,6 +1,6 @@
 from PyQt6 import QtCore, QtGui
-from PyQt6.QtCore import Qt, QTimer, QSettings
-from PyQt6.QtGui import QGuiApplication, QShowEvent
+from PyQt6.QtCore import Qt, QTimer, QSettings, QSize
+from PyQt6.QtGui import QGuiApplication, QShowEvent, QIcon
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import (
     QTableWidget,
     QTabWidget,
     QVBoxLayout,
-    QWidget,
+    QWidget, QApplication,
 )
 from scheduler.models import CourseInstance
 
@@ -377,7 +377,8 @@ class SimpleTabs(QWidget):
             else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
-        self.schedule_viewer_button = QPushButton("<--")
+        self.schedule_viewer_button = QPushButton()
+        self.schedule_viewer_button.setIcon(QApplication.style().standardIcon(QStyle.StandardPixmap.SP_ArrowBack))
         self.schedule_viewer_button.clicked.connect(schedule_back)
         view_bot_layout.addWidget(self.schedule_viewer_button)
 
@@ -443,7 +444,8 @@ class SimpleTabs(QWidget):
             else:
                 QMessageBox.warning(self, "Error", "No Schedule Loaded")
 
-        self.schedule_viewer_button = QPushButton("-->")
+        self.schedule_viewer_button = QPushButton()
+        self.schedule_viewer_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ArrowRight))
         self.schedule_viewer_button.clicked.connect(schedule_forward)
         view_bot_layout.addWidget(self.schedule_viewer_button)
 
@@ -453,18 +455,6 @@ class SimpleTabs(QWidget):
         # bot_right sub main_layout
         view_bot_right_layout = QVBoxLayout()
         view_bot_right_layout.addStretch()
-
-        # add checkboxs
-        self.checkboxjson = QCheckBox("JSON")
-        view_bot_right_layout.addWidget(self.checkboxjson)
-        self.checkboxcsv = QCheckBox("CSV")
-        view_bot_right_layout.addWidget(self.checkboxcsv)
-
-        # add filename lineedit
-        self.schedule_viewer_filename = QLineEdit()
-        self.schedule_viewer_filename.setPlaceholderText("Filename")
-        self.schedule_viewer_filename.setAlignment(Qt.AlignmentFlag.AlignRight)
-        view_bot_right_layout.addWidget(self.schedule_viewer_filename)
 
         def pdf_export() -> None:
             """Export current schedule as PDF using a background worker and a spinner dialog."""
@@ -486,24 +476,22 @@ class SimpleTabs(QWidget):
 
         # Save button for Schedule Viewer Tab
         def save_button() -> None:
-            if self.schedules:
-                if (
-                    not self.checkboxjson.isChecked()
-                    and not self.checkboxcsv.isChecked()
-                ):
-                    QMessageBox.warning(self, "Error", "No file format selected.")
-                    return
-                if self.checkboxjson.isChecked():
-                    self.sc.save_as_json(
-                        self.schedules, self.schedule_viewer_filename.text() or "_"
-                    )
-                if self.checkboxcsv.isChecked():
-                    self.sc.save_as_csv(
-                        self.schedules, self.schedule_viewer_filename.text() or "_"
-                    )
-                QMessageBox.information(self, "Information", "Save Complete.")
-            else:
+            if not self.schedules:
                 QMessageBox.warning(self, "Error", "No schedules generated to save.")
+                return
+            path, file_format = QFileDialog.getSaveFileName(
+                self,
+                "Save Schedule as JSON",
+                "Schedules.json",
+                "JSON Files (*.json);;CSV Files (*.csv)"
+            )
+            if not path:
+                return
+            if file_format == "CSV Files (*.csv)":
+                self.sc.save_as_csv(self.schedules, path)
+            else:
+                self.sc.save_as_json(self.schedules, path)
+            QMessageBox.information(self, "Information", "Save Complete.")
 
         self.schedule_viewer_savebutton = QPushButton("Save")
         self.schedule_viewer_savebutton.clicked.connect(save_button)
@@ -515,13 +503,15 @@ class SimpleTabs(QWidget):
             # open a file dialog to select file
             try:
                 self.sc.reset_index()
-                my_file = QFileDialog.getOpenFileName(
+                my_file, _ = QFileDialog.getOpenFileName(
                     self,
                     "Open file",
                     "schedules",
                     "All Files (*);; JSON files (*.json);; CSV files (*.csv)",
                 )
-                self.sc.cur_schedules.import_schedules(my_file[0])
+                if not my_file:
+                    return
+                self.sc.cur_schedules.import_schedules(my_file)
                 self.sc.length = len(self.sc.cur_schedules.schedules)
                 # reset generated schedule if any
                 self.schedules = []
@@ -694,9 +684,6 @@ class SimpleTabs(QWidget):
         )
 
         if not config_path:
-            QMessageBox.warning(
-                self, "No Config File Selected", "Please select a valid config file"
-            )
             return
 
         try:
