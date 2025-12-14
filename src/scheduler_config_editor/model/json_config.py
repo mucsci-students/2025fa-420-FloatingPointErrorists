@@ -38,7 +38,7 @@ class JsonConfig:
         """Initialize the JsonConfig with the path to the JSON file."""
         if not file_path.endswith(".json"):
             file_path += ".json"
-        if not os.path.isabs(file_path):
+        if not os.path.isabs(file_path) and not os.path.exists(file_path):
             file_path = os.path.join("configs", file_path)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         self._file_path = (

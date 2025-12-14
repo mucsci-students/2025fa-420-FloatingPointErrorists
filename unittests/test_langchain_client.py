@@ -1,17 +1,13 @@
 import os
 
 import pytest
-from scheduler import TimeRange
 
 from scheduler_config_editor.model import (
     LangchainClient,
     JsonConfig,
     Room,
     Lab,
-    Faculty,
-    Course,
 )
-from scheduler_config_editor.model import LangchainClient, JsonConfig, Room, Lab
 from scheduler_config_editor.model.langchain_client import (
     make_show_faculty,
     make_show_labs,
