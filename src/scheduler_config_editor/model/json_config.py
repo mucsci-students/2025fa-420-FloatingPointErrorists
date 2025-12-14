@@ -1,5 +1,6 @@
 import os
 import copy
+from enum import Enum
 from typing import Literal, List
 
 from scheduler import (
@@ -27,28 +28,48 @@ class JsonConfig:
     If you would like to modify the scheduler config in this class, take a look at: https://mucsci.github.io/Scheduler/scheduler.html#SchedulerConfig
     """
 
-    def __init__(self, file_path: str) -> None:
+    class Mode(Enum):
+        """Modes for JsonConfig operations."""
+
+        CREATE = 0
+        LOAD = 1
+
+    def __init__(self, file_path: str, mode: Mode = Mode.LOAD) -> None:
         """Initialize the JsonConfig with the path to the JSON file."""
-        if not os.path.exists(file_path):
-            file_path = f"configs/{file_path}"
-            if not file_path.endswith(".json"):
-                file_path += ".json"
-        self._file_path: str = file_path
-        # Ensure configs directory exists
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        # Check if file exists and is empty. If it is empty, populate it with default.json. If it doesn't exist, create it and populate it with default.json
-        if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
-            with open("data/default.json", encoding="utf-8") as default_config:
-                default_data = default_config.read()
-            with open(file_path, "w", encoding="utf-8") as target_file:
-                target_file.write(default_data)
+        if not file_path.endswith(".json"):
+            file_path += ".json"
+        if not os.path.isabs(file_path) and not os.path.exists(file_path):
+            file_path = os.path.join("configs", file_path)
+        dir_name = os.path.dirname(file_path)
+        if dir_name:
+            os.makedirs(dir_name, exist_ok=True)
+        self._file_path = (
+            file_path
+            if mode == JsonConfig.Mode.LOAD
+            else JsonConfig._create_config(file_path)
+        )
+        if not os.path.exists(self._file_path):
+            raise FileNotFoundError(
+                f"Configuration file {self._file_path} does not exist."
+            )
         self._combined_config: CombinedConfig = load_config_from_file(
-            CombinedConfig, file_path
+            CombinedConfig, self._file_path
         )
         self.__undo_stack: list[CombinedConfig] = []
         self.__redo_stack: list[CombinedConfig] = []
         self._scheduler_config: SchedulerConfig = self._combined_config.config
         self._time_slot_config: TimeSlotConfig = self._combined_config.time_slot_config
+
+    @staticmethod
+    def _create_config(file_path: str) -> str:
+        with open("data/default.json", encoding="utf-8") as default_config:
+            default_data = default_config.read()
+        with open(file_path, "w", encoding="utf-8") as target_file:
+            target_file.write(default_data)
+        return file_path
+
+    def _load_config(self):
+        pass
 
     @property
     def scheduler_config(self) -> SchedulerConfig:
@@ -120,6 +141,14 @@ class JsonConfig:
     def time_slot_str(self) -> str:
         """String representation of the time slot configuration."""
         time_slot_config = self._time_slot_config
+        lines = self.time_block_str() + self.class_pattern_str()
+        lines += f"\nMax Time Gap: {time_slot_config.max_time_gap}"
+        lines += f"\nMin Time Overlap: {time_slot_config.min_time_overlap}"
+        return lines
+
+    def time_block_str(self) -> str:
+        """String representation of the time block configuration."""
+        time_slot_config = self._time_slot_config
         lines = ["\nTime Slot Config:"]
         for day in DayList:
             slots = time_slot_config.times.get(day, [])
@@ -131,7 +160,12 @@ class JsonConfig:
                     lines.append(
                         f"    [{i}]- Start: {slot.start}, End: {slot.end}, Spacing: {slot.spacing}"
                     )
-        lines.append("\nClasses:")
+        return "\n".join(lines)
+
+    def class_pattern_str(self) -> str:
+        """String representation of the class pattern configuration."""
+        time_slot_config = self._time_slot_config
+        lines = ["\nClasses:"]
         if not time_slot_config.classes:
             lines.append("")
         else:
@@ -143,8 +177,6 @@ class JsonConfig:
                 lines.append(
                     f" [{i}] - Credits: {cls.credits}, Meetings: [{meetings_str}], Disabled:{cls.disabled}"
                 )
-        lines.append(f"\nMax Time Gap: {time_slot_config.max_time_gap}")
-        lines.append(f"\nMin Time Overlap: {time_slot_config.min_time_overlap}")
         return "\n".join(lines)
 
     def __str__(self) -> str:

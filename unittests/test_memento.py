@@ -56,7 +56,7 @@ class TestUndoRedo(unittest.TestCase):
         self.addCleanup(patcher1.stop)
         self.addCleanup(patcher2.stop)
 
-        self.cfg = JsonConfig("test_config.json")
+        self.cfg = JsonConfig("unittests/dummy.json")
 
     # -----------------------------------------------------------
     # add_to_undo_stack behavior

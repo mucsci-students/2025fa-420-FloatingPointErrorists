@@ -44,7 +44,7 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 * To load a specific configuration file, use:
 ```load-config <path-to-file>```
 * To create a new configuration file, use:
-```load-config <config-name>```. This will create a new file <config-name>.json in the configs directory of this project.
+```new-config <config-name>```. This will create a new json file in the configs directory of this project.
 * Once a configuration file is loaded, you can use the following commands:
     * `help` to bring up a list of commands.
     * `exit`, `quit` or ctrl+c to exit the program.
@@ -88,9 +88,10 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
     * We wanted to be able to undo and redo changes to the json config file, so we implemented the memento design pattern to store previous states of the json config.
     * File: json_config.py
  
-* Mediator:
-    * An essential part to MVC is the mediator design pattern. It lets us enforce separation of concerns. We don't want, for example, the faculty_editor_gui.py to have the logic to edit the json file directly, so it'll communicate with faculty_controller.py, the mediator, which will tell the model to do what it needs to do in order to make those modifications. All controller files, by nature, are examples of a Mediator design pattern. 
-    * File: all files under the src/scheduler_config_editor/controller directory
+* Utility Class:
+    * We used utility classes that do not hold any state, but provide functions that are used to modify the configuration. This was done to
+        avoid rewriting state that is already held in the configuration.
+    * File: All files relating to modifying the configuration under /model. They include faculty.py, courses.py, rooms.py, etc... 
 
 * Strategy: 
     * In pdf_writer.py, we use the enum PdfMode to determine whether we are exporting a schedule for a faculty member or room. 

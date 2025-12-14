@@ -6,6 +6,7 @@ from scheduler_config_editor.cli import base_cli
 
 DUMMY_JSON = os.path.join(os.path.dirname(__file__), "dummy.json")
 LOAD_COMMAND = "load-config"
+CREATE_COMMAND = "new-config"
 
 
 def test_load_config_valid_json():
@@ -20,8 +21,20 @@ def test_load_config_new_file():
     test_file = "nonexistent"
     try:
         result = runner.invoke(base_cli, [LOAD_COMMAND, test_file])
+        assert result.exit_code == 1
+        assert "does not exist." in result.output
+    finally:
+        if os.path.exists(f"configs/{test_file}.json"):
+            os.remove(f"configs/{test_file}.json")
+
+
+def test_create_new_config():
+    runner = CliRunner()
+    test_file = "nonexistent"
+    try:
+        result = runner.invoke(base_cli, [CREATE_COMMAND, test_file])
         assert result.exit_code == 0
-        assert "Configuration loaded" in result.output
+        assert "Configuration created" in result.output
     finally:
         if os.path.exists(f"configs/{test_file}.json"):
             os.remove(f"configs/{test_file}.json")

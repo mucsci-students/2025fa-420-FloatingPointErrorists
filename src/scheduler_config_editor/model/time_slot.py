@@ -137,7 +137,9 @@ class TimeSlot:
     def del_time_block(json_config: JsonConfig, day_index: int, index: int) -> str:
         """Deletes a time block from the config"""
         day = INDEX_TO_DAY[day_index]
-        time_blocks = json_config.time_slot_config.times.get(day)
+        time_blocks = json_config.time_slot_config.times[day]
+        if len(time_blocks) == 1:
+            raise ValueError("Cannot delete only time block in a day.")
         if time_blocks is None:
             return f"No time block found for day {day}"
         if index < 0 or index >= len(json_config.time_slot_config.times.get(day, [])):
@@ -149,6 +151,8 @@ class TimeSlot:
     @staticmethod
     def del_class_pattern(json_config: JsonConfig, index: int) -> str:
         """Deletes a class pattern from the config"""
+        if len(json_config.time_slot_config.classes) == 1:
+            raise ValueError("Cannot delete only class pattern.")
         if index < 0 or index >= len(json_config.time_slot_config.classes):
             raise IndexError("Class pattern index out of range.")
         json_config.add_to_undo_stack()
