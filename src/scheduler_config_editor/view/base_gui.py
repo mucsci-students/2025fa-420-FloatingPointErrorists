@@ -468,7 +468,7 @@ class SimpleTabs(QWidget):
         def pdf_export() -> None:
             """Export current schedule as PDF using a background worker and a spinner dialog."""
             file_path, _ = QFileDialog.getSaveFileName(
-                self, "Save PDF", "schedule.pdf", "PDF Files (*.pdf)"
+                self, "Save PDF", "pdf/schedule.pdf", "PDF Files (*.pdf)"
             )
             if not file_path:
                 return
@@ -488,7 +488,7 @@ class SimpleTabs(QWidget):
             path, file_format = QFileDialog.getSaveFileName(
                 self,
                 "Save Schedule as JSON",
-                "Schedules.json",
+                "schedules/Schedules.json",
                 "JSON Files (*.json);;CSV Files (*.csv)",
             )
             if not path:

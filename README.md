@@ -44,7 +44,7 @@ https://docs.astral.sh/uv/getting-started/installation/. You can check your vers
 * To load a specific configuration file, use:
 ```load-config <path-to-file>```
 * To create a new configuration file, use:
-```load-config <config-name>```. This will create a new file <config-name>.json in the configs directory of this project.
+```new-config <config-name>```. This will create a new json file in the configs directory of this project.
 * Once a configuration file is loaded, you can use the following commands:
     * `help` to bring up a list of commands.
     * `exit`, `quit` or ctrl+c to exit the program.
