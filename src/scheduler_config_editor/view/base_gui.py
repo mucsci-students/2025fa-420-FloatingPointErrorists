@@ -662,8 +662,15 @@ class SimpleTabs(QWidget):
 
     # Open Jarvis
     def activate_jarvis(self) -> None:
-        self.jarvis_gui.setWindowModality(Qt.WindowModality.ApplicationModal)
-        self.jarvis_gui.show()
+        try:
+            if self.config is None:
+                raise ValueError("No configuration loaded for J.A.R.V.I.S.")
+            self.jarvis_gui = JarvisGUI(self.config)
+            self.jarvis_gui.data_changed.connect(self.refresh)
+            self.jarvis_gui.setWindowModality(Qt.WindowModality.ApplicationModal)
+            self.jarvis_gui.show()
+        except ValueError as error:
+            QMessageBox.critical(self, "Load Error", str(error))
 
     # Reset all tab popups
     def reset_all_popups(self) -> None:
@@ -698,8 +705,6 @@ class SimpleTabs(QWidget):
             self.generator_controller.update_config(self.config)
             self.generator_gui.update_config(self.config)
             self.room_controller = RoomEditorController(self.config)
-            self.jarvis_gui = JarvisGUI(self.config)
-            self.jarvis_gui.data_changed.connect(self.refresh)
 
             # Enables save and jarvis button
             self.save_config_button.setEnabled(True)
@@ -734,8 +739,6 @@ class SimpleTabs(QWidget):
             self.generator_controller.update_config(self.config)
             self.generator_gui.update_config(self.config)
             self.room_controller = RoomEditorController(self.config)
-            self.jarvis_gui = JarvisGUI(self.config)
-            self.jarvis_gui.data_changed.connect(self.refresh)
 
             # Enables save and jarvis button
             self.save_config_button.setEnabled(True)

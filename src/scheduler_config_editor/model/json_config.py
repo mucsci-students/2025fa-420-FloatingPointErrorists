@@ -40,7 +40,9 @@ class JsonConfig:
             file_path += ".json"
         if not os.path.isabs(file_path) and not os.path.exists(file_path):
             file_path = os.path.join("configs", file_path)
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        dir_name = os.path.dirname(file_path)
+        if dir_name:
+            os.makedirs(dir_name, exist_ok=True)
         self._file_path = (
             file_path
             if mode == JsonConfig.Mode.LOAD
