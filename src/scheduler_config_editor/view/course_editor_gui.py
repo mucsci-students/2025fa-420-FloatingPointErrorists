@@ -194,29 +194,18 @@ class CoursesEditorWidget(QWidget):
             self.faculty_list.addItem(name)
         self.faculty_layout.addWidget(self.faculty_list)
         scroll_layout.addLayout(self.faculty_layout)
-        scroll_area.setWidget(scroll_content)
-        self.main_layout.addWidget(scroll_area)
 
         # Preference values main_layout
-        self.pref_layout = QHBoxLayout()
-        self.main_layout.addLayout(self.pref_layout)
+        pref_box = QWidget()
+        pref_box_layout = QHBoxLayout(pref_box)
         self.room_pref_layout = QFormLayout()
         self.course_pref_layout = QFormLayout()
         self.lab_pref_layout = QFormLayout()
-        self.pref_layout.addLayout(self.room_pref_layout)
-        self.pref_layout.addLayout(self.course_pref_layout)
-        self.pref_layout.addLayout(self.lab_pref_layout)
+        pref_box_layout.addLayout(self.room_pref_layout)
+        pref_box_layout.addLayout(self.course_pref_layout)
+        pref_box_layout.addLayout(self.lab_pref_layout)
 
-        for selection_layout in [
-            self.pref_layout,
-            self.course_pref_layout,
-            self.lab_pref_layout,
-        ]:
-            selection_widget = QWidget()
-            selection_widget.setLayout(selection_layout)
-            selection_widget.setLayout(selection_layout)
-            scroll_layout.addWidget(selection_widget)
-
+        scroll_layout.addWidget(pref_box)
         scroll_area.setWidget(scroll_content)
         self.main_layout.addWidget(scroll_area)
 

@@ -8,7 +8,9 @@ class ScheduleWriter:
     @staticmethod
     def write_as_json(slist: list[list["CourseInstance"]], name: str) -> None:
         # make new file
-        path = os.path.join("schedules", f"{name}.json")
+        path = os.path.join("schedules", f"{name}")
+        if not path.endswith(".json"):
+            path += ".json"
         os.makedirs(os.path.dirname(path), exist_ok=True)
         file = open(path, "w")
         # writing for json
@@ -21,7 +23,9 @@ class ScheduleWriter:
     @staticmethod
     def write_as_csv(slist: list[list["CourseInstance"]], name: str) -> None:
         # make new file
-        path = os.path.join("schedules", f"{name}.csv")
+        path = os.path.join("schedules", f"{name}")
+        if not path.endswith(".csv"):
+            path += ".csv"
         os.makedirs(os.path.dirname(path), exist_ok=True)
         file = open(path, "w")
         # writing for csv

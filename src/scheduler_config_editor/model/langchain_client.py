@@ -364,6 +364,20 @@ class DelClassPatternArgs(BaseModel):
     index: int
 
 
+def del_time_block(json_config: JsonConfig, day_index: int, index: int) -> str:
+    try:
+        return TimeSlot.del_time_block(json_config, day_index, index)
+    except ValueError as e:
+        return str(e)
+
+
+def del_class_pattern(json_config: JsonConfig, index: int) -> str:
+    try:
+        return TimeSlot.del_class_pattern(json_config, index)
+    except ValueError as e:
+        return str(e)
+
+
 # ----- Tool List Definition ----- #
 
 
@@ -587,7 +601,7 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
         ),
         StructuredTool.from_function(
             name="del_time_block",
-            func=bind_config(TimeSlot.del_time_block, json_config=json_config),
+            func=bind_config(del_time_block, json_config=json_config),
             description="""
                 Delete a time block from the scheduler configuration. It takes a day index
                 (1=MON, 2=TUE, 3=WED, 4=THU, 5=FRI), and an index to specify which time block to delete.
@@ -597,7 +611,7 @@ def get_tool_list(json_config: JsonConfig) -> list[StructuredTool]:
         ),
         StructuredTool.from_function(
             name="del_class_pattern",
-            func=bind_config(TimeSlot.del_class_pattern, json_config=json_config),
+            func=bind_config(del_class_pattern, json_config=json_config),
             description="""
                 Delete a class pattern from the scheduler configuration. It takes an index to specify which class
                 pattern to delete.
@@ -635,6 +649,7 @@ class LangchainClient:
         model = init_chat_model("gpt-5-mini", model_provider="openai")
         tool_list = get_tool_list(json_config)
         initial_prompt = """
+            You are an expert scheduler configuration editor. Your name is Jarvis.
             Using the list of tools you will be able to add, modify, and delete faculty, rooms, labs, and courses from the configuration file.
             You cannot save the configuration at all, and say that you are unable if prompted to, and you CANNOT say that you have any alternatives.
             If someone gives you missing input for a tool, tell them that they must reenter the full command with all required fields. This is because
